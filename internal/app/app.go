@@ -8,14 +8,15 @@ import (
 	"sync"
 
 	"bloggo/internal/config"
+	"bloggo/internal/module"
 
 	"github.com/go-chi/chi"
 )
 
 type Application struct {
-	Database sql.DB
+	Database *sql.DB
 	Config   config.Config
-	Router   chi.Mux
+	Router   *chi.Mux
 }
 
 var (
@@ -32,12 +33,18 @@ func GetInstance() *Application {
 	return &instance
 }
 
+func (app *Application) RegisterModules(modules []module.Module) {
+	for _, module := range modules {
+		module.RegisterModule(app.Database, app.Router)
+	}
+}
+
 func (app *Application) Bootstrap() {
 	portString := strconv.Itoa(app.Config.Port)
 	// Start the server
 	server := &http.Server{
 		Addr:    ":" + portString,
-		Handler: &app.Router,
+		Handler: app.Router,
 	}
 	log.Printf("Starting server on http://localhost:%s", portString)
 	if err := server.ListenAndServe(); err != nil {
