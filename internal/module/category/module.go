@@ -16,6 +16,7 @@ func NewModule(database *sql.DB) CategoryModule {
 	repository := NewCategoryRepository(database)
 	service := NewCategoryService(repository)
 	handler := NewCategoryHandler(service)
+
 	return CategoryModule{
 		Handler:    handler,
 		Service:    service,
