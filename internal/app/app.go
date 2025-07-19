@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"bloggo/internal/config"
+	"bloggo/internal/db"
 	"bloggo/internal/module"
 
 	"github.com/go-chi/chi"
@@ -27,7 +28,9 @@ var (
 func GetInstance() *Application {
 	once.Do(func() {
 		instance = Application{
-			Config: config.Load("bloggo-config.json"),
+			Database: db.GetInstance(),
+			Config:   config.Load("bloggo-config.json"),
+			Router:   chi.NewRouter(),
 		}
 	})
 	return &instance
