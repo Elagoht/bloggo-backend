@@ -14,7 +14,9 @@ const (
   role_id INT NOT NULL,
   FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE RESTRICT
 );`
-	CreateEmailUnique = `CREATE UNIQUE INDEX IF NOT EXISTS unique_active_email ON users(email) WHERE deleted_at IS NULL;`
+	CreateEmailUnique = `CREATE UNIQUE INDEX IF NOT EXISTS unique_active_email
+  ON users(email)
+  WHERE deleted_at IS NULL;`
 	// ROLE BASED ACCESS CONTROL
 	CreateRoles = `CREATE TABLE IF NOT EXISTS roles (
   id SERIAL PRIMARY KEY,
@@ -41,7 +43,9 @@ const (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   deleted_at TIMESTAMP WITH TIME ZONE
 );`
-	CreateCategorySlugUnique = `CREATE UNIQUE INDEX IF NOT EXISTS unique_active_slug_category ON categories(slug) WHERE deleted_at IS NULL;`
+	CreateCategorySlugUnique = `CREATE UNIQUE INDEX IF NOT EXISTS unique_active_slug_category
+  ON categories(slug)
+  WHERE deleted_at IS NULL;`
 	// POST AND VERSIONS
 	CreatePosts = `CREATE TABLE IF NOT EXISTS posts (
   id SERIAL PRIMARY KEY,
@@ -55,8 +59,10 @@ const (
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
   FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
 );`
-	CreatePostSlugUnique = `CREATE UNIQUE INDEX IF NOT EXISTS unique_active_slug_post ON posts(slug) WHERE deleted_at IS NULL;`
-	CreatePostVersions   = `CREATE TABLE IF NOT EXISTS post_versions (
+	CreatePostSlugUnique = `CREATE UNIQUE INDEX IF NOT EXISTS unique_active_slug_post
+  ON posts(slug)
+  WHERE deleted_at IS NULL;`
+	CreatePostVersions = `CREATE TABLE IF NOT EXISTS post_versions (
   id SERIAL PRIMARY KEY,
   post_id INT NOT NULL,
   title TEXT NOT NULL,
