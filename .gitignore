@@ -1,0 +1,11 @@
+# Environment variables
+.env
+
+# Database
+*.db
+
+# Certificates
+certs/
+
+# Built files
+bloggo
