@@ -10,7 +10,7 @@ func main() {
 	// Create singleton application
 	application := app.GetInstance()
 
-	// Register odules
+	// Register modules
 	modules := []module.Module{
 		category.NewModule(application.Database),
 	}
