@@ -9,3 +9,6 @@ certs/
 
 # Built files
 bloggo
+
+# config files
+bloggo-config.json
