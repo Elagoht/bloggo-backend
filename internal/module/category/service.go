@@ -26,3 +26,9 @@ func (service *CategoryService) CategoryCreate(
 		Id: id,
 	}, nil
 }
+
+func (service *CategoryService) GetCategoryBySlug(
+	slug string,
+) (*models.ResponseCategoryDetails, error) {
+	return service.repository.GetCategoryBySlug(slug)
+}

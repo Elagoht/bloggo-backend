@@ -39,3 +39,24 @@ func (repository *CategoryRepository) CategoryCreate(
 
 	return id, nil
 }
+
+func (repository *CategoryRepository) GetCategoryBySlug(
+	slug string,
+) (*models.ResponseCategoryDetails, error) {
+	row := repository.database.QueryRow(QueryCategoryGetBySlug, slug)
+
+	var category models.ResponseCategoryDetails
+	err := row.Scan(
+		&category.Id,
+		&category.Name,
+		&category.Slug,
+		&category.Description,
+		&category.CreatedAt,
+		&category.UpdatedAt,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &category, nil
+}

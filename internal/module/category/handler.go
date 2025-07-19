@@ -36,3 +36,21 @@ func (handler *CategoryHandler) CategoryCreate(
 	writer.WriteHeader(http.StatusCreated)
 	json.NewEncoder(writer).Encode(response)
 }
+
+func (handler *CategoryHandler) GetCategoryBySlug(
+	writer http.ResponseWriter,
+	request *http.Request,
+) {
+	slug, ok := handlers.GetParam[string](writer, request, "slug")
+	if !ok {
+		return
+	}
+
+	details, err := handler.service.GetCategoryBySlug(slug)
+	if err != nil {
+		apierrors.MapErrors(err, writer, nil)
+		return
+	}
+
+	json.NewEncoder(writer).Encode(details)
+}
