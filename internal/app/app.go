@@ -25,6 +25,7 @@ var (
 	instance Application
 )
 
+// Get singleton instance
 func GetInstance() *Application {
 	once.Do(func() {
 		instance = Application{
