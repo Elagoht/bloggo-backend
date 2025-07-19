@@ -1,8 +1,10 @@
 package apierrors
 
 import (
+	"database/sql"
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
 
 	"strings"
@@ -67,15 +69,19 @@ func MapErrors(
 	writer http.ResponseWriter,
 	customErrors HTTPErrorMapping,
 ) {
+	log.Default().Println(err)
+
 	var item HTTPErrorMapItem
 	found := false
 
 	// Handle sqlite3 errors
 	if sqliteErr, ok := err.(sqlite3.Error); ok {
+		// Temporarily mark as found, default case will set false
+		found = true
+
 		switch sqliteErr.Code {
 		case sqlite3.ErrConstraint:
 			item = (*DefaultErrorMapping)[ErrConflict]
-			found = true
 
 			details := extractConflictFields(err)
 			apiErr := NewAPIError(item.Message, err)
@@ -85,16 +91,18 @@ func MapErrors(
 			return
 		case sqlite3.ErrNotFound:
 			item = (*DefaultErrorMapping)[ErrNotFound]
-			found = true
 		case sqlite3.ErrAuth:
 			item = (*DefaultErrorMapping)[ErrUnauthorized]
-			found = true
 		case sqlite3.ErrBusy:
 			item = (*DefaultErrorMapping)[ErrServiceUnavailable]
-			found = true
+		case sqlite3.ErrEmpty:
+		case sqlite3.ErrNotFound:
+			item = (*DefaultErrorMapping)[ErrNotFound]
 		case sqlite3.ErrError:
 			item = (*DefaultErrorMapping)[ErrBadRequest]
-			found = true
+		default:
+			// Re-set as false if not matched
+			found = false
 		}
 	}
 
@@ -149,6 +157,7 @@ var (
 )
 
 var DefaultErrorMapping = &HTTPErrorMapping{
+	// Standard Errors
 	ErrConflict:             {ErrConflict.Error(), http.StatusConflict},
 	ErrNotFound:             {ErrNotFound.Error(), http.StatusNotFound},
 	ErrUnauthorized:         {ErrUnauthorized.Error(), http.StatusUnauthorized},
@@ -162,7 +171,8 @@ var DefaultErrorMapping = &HTTPErrorMapping{
 	ErrServiceUnavailable:   {ErrServiceUnavailable.Error(), http.StatusServiceUnavailable},
 	ErrUnsupportedMediaType: {ErrUnsupportedMediaType.Error(), http.StatusUnsupportedMediaType},
 	ErrPreconditionFailed:   {ErrPreconditionFailed.Error(), http.StatusPreconditionFailed},
-	ErrEncryptionError:      {ErrEncryptionError.Error(), http.StatusInternalServerError},
+	// Standard SQL errors
+	sql.ErrNoRows: {ErrNotFound.Error(), http.StatusNotFound},
 }
 
 // To implement default Error interface
