@@ -3,6 +3,7 @@
 
 # Database
 *.db
+*.sqlite
 
 # Certificates
 certs/
