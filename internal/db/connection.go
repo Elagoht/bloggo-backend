@@ -24,7 +24,6 @@ func GetInstance() *sql.DB {
 		if err = db.Ping(); err != nil {
 			log.Fatal("Cannot connect to database.")
 		}
-
 	})
 
 	// If the database recently created, create the tables
