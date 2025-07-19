@@ -54,3 +54,16 @@ func (handler *CategoryHandler) GetCategoryBySlug(
 
 	json.NewEncoder(writer).Encode(details)
 }
+
+func (handler *CategoryHandler) GetCategories(
+	writer http.ResponseWriter,
+	request *http.Request,
+) {
+	categories, err := handler.service.GetCategories()
+	if err != nil {
+		apierrors.MapErrors(err, writer, nil)
+		return
+	}
+
+	json.NewEncoder(writer).Encode(categories)
+}

@@ -32,3 +32,7 @@ func (service *CategoryService) GetCategoryBySlug(
 ) (*models.ResponseCategoryDetails, error) {
 	return service.repository.GetCategoryBySlug(slug)
 }
+
+func (service *CategoryService) GetCategories() ([]models.ResponseCategoryCard, error) {
+	return service.repository.GetCategories()
+}

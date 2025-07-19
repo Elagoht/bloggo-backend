@@ -2,11 +2,23 @@ package category
 
 const (
 	QueryCategoryGetBySlug = `
-	SELECT id, name, slug, description, created_at, updated_at
-	FROM categories
-	WHERE slug = ? AND deleted_at IS NULL;`
-	QueryCategoryGetBlogsCards = `
-	SELECT `
+	SELECT c.id, c.name, c.slug, c.description, c.created_at, c.updated_at,
+	(
+    SELECT COUNT(*)
+    FROM posts p
+    WHERE p.category_id = c.id AND p.deleted_at IS NULL
+  ) AS blogCount
+	FROM categories c
+	WHERE c.slug = ? AND c.deleted_at IS NULL;`
+	QueryCategoryGetCategories = `
+	SELECT c.id, c.name, c.slug,
+	(
+    SELECT COUNT(*)
+    FROM posts p
+    WHERE p.category_id = c.id AND p.deleted_at IS NULL
+  ) AS blogCount
+	FROM categories c
+	WHERE c.deleted_at IS NULL;`
 	QueryCategoryCreate = `
 	INSERT INTO categories (
 		name,

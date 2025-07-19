@@ -53,10 +53,40 @@ func (repository *CategoryRepository) GetCategoryBySlug(
 		&category.Description,
 		&category.CreatedAt,
 		&category.UpdatedAt,
+		&category.BlogCount,
 	)
 	if err != nil {
 		return nil, err
 	}
 
 	return &category, nil
+}
+
+func (repository *CategoryRepository) GetCategories() ([]models.ResponseCategoryCard, error) {
+	rows, err := repository.database.Query(QueryCategoryGetCategories)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var categories []models.ResponseCategoryCard
+	for rows.Next() {
+		var category models.ResponseCategoryCard
+		err := rows.Scan(
+			&category.Id,
+			&category.Name,
+			&category.Slug,
+			&category.BlogCount,
+		)
+		if err != nil {
+			return nil, err
+		}
+		categories = append(categories, category)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return categories, nil
 }
