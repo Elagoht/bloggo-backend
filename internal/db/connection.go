@@ -15,7 +15,8 @@ var (
 
 func GetInstance() *sql.DB {
 	once.Do(func() {
-		db, err := sql.Open("sqlite3", "bloggo.sqlite")
+		var err error
+		db, err = sql.Open("sqlite3", "bloggo.sqlite")
 		if err != nil {
 			log.Fatal("Cannot open the database.")
 		}
@@ -23,6 +24,10 @@ func GetInstance() *sql.DB {
 		if err = db.Ping(); err != nil {
 			log.Fatal("Cannot connect to database.")
 		}
+
 	})
+
+	// If the database recently created, create the tables
+	InitializeTables(db)
 	return db
 }
