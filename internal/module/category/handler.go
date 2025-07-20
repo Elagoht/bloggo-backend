@@ -61,19 +61,14 @@ func (handler *CategoryHandler) GetCategories(
 	writer http.ResponseWriter,
 	request *http.Request,
 ) {
-	paginate, ok := pagination.GetPaginationOptions(
-		writer,
-		request,
-		[]string{"name", "created_at", "updated_at"},
-	)
+	paginate, ok := pagination.GetPaginationOptions(writer, request, []string{
+		"name", "created_at", "updated_at",
+	})
 	if !ok {
 		return
 	}
 
-	search, ok := filter.GetSearchOptions(
-		writer,
-		request,
-	)
+	search, ok := filter.GetSearchOptions(writer, request)
 	if !ok {
 		return
 	}
