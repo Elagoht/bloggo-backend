@@ -90,3 +90,21 @@ func (handler *CategoryHandler) CategoryUpdate(
 
 	writer.WriteHeader(http.StatusNoContent)
 }
+
+func (handler *CategoryHandler) CategoryDelete(
+	writer http.ResponseWriter,
+	request *http.Request,
+) {
+	slug, ok := handlers.GetParam[string](writer, request, "slug")
+	if !ok {
+		return
+	}
+
+	err := handler.service.CategoryDelete(slug)
+	if err != nil {
+		apierrors.MapErrors(err, writer, nil)
+		return
+	}
+
+	writer.WriteHeader(http.StatusNoContent)
+}

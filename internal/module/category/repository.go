@@ -122,3 +122,28 @@ func (repository *CategoryRepository) CategoryUpdate(
 
 	return nil
 }
+
+func (repository *CategoryRepository) CategoryDelete(
+	slug string,
+) error {
+	statement, err := repository.database.Prepare(QueryCategorySoftDelete)
+	if err != nil {
+		return err
+	}
+
+	result, err := statement.Exec(slug)
+	if err != nil {
+		return err
+	}
+
+	affected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if affected == 0 {
+		return apierrors.ErrNotFound
+	}
+
+	return nil
+}

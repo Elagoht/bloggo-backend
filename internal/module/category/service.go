@@ -53,3 +53,9 @@ func (service *CategoryService) CategoryUpdate(
 		models.ToUpdateCategoryParams(model),
 	)
 }
+
+func (service *CategoryService) CategoryDelete(
+	slug string,
+) error {
+	return service.repository.CategoryDelete(slug)
+}
