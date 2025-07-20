@@ -48,10 +48,11 @@ func GetSearchOptions(
 // The fields to search are provided by the programmer
 // Example: WHERE (field1 LIKE ? OR field2 LIKE ?)
 // Returns the clause and the args (with %q%)
-func (opts SearchOptions) BuildSearchClause(
+func BuildSearchClause(
+	opts *SearchOptions,
 	fields []string,
 ) (clause string, args []any) {
-	if opts.Q == nil || len(fields) == 0 {
+	if opts == nil || opts.Q == nil || len(fields) == 0 {
 		return "", nil
 	}
 	var parts []string
@@ -66,6 +67,9 @@ func (opts SearchOptions) BuildSearchClause(
 	// Replace %s with field names
 	for _, f := range fields {
 		clause = strings.Replace(clause, "%s", f, 1)
+	}
+	if clause != "" {
+		clause = "AND " + clause
 	}
 	return
 }

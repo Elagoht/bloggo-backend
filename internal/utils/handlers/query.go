@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"bloggo/internal/utils/apierrors"
+	"fmt"
 	"net/http"
 	"reflect"
 	"strconv"
@@ -73,4 +74,24 @@ func GetQuery[T any](
 	}
 
 	return result.(T), true
+}
+
+func BuildModifiedSQL(baseQuery string, clauses []string, args [][]any) (string, []any) {
+	var mergedClauses string
+	var mergedArgs []any
+
+	// Merge clauses into a single string separated by spaces
+	if len(clauses) > 0 {
+		mergedClauses = clauses[0]
+		for _, clause := range clauses[1:] {
+			mergedClauses += " " + clause
+		}
+	}
+
+	// Flatten args [][]any to []any
+	for _, argGroup := range args {
+		mergedArgs = append(mergedArgs, argGroup...)
+	}
+
+	return fmt.Sprintf(baseQuery, " "+mergedClauses), mergedArgs
 }

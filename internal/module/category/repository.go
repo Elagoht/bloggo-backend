@@ -4,9 +4,9 @@ import (
 	"bloggo/internal/module/category/models"
 	"bloggo/internal/utils/apierrors"
 	"bloggo/internal/utils/filter"
+	"bloggo/internal/utils/handlers"
 	"bloggo/internal/utils/pagination"
 	"database/sql"
-	"fmt"
 )
 
 type CategoryRepository struct {
@@ -66,23 +66,24 @@ func (repository *CategoryRepository) GetCategoryBySlug(
 	return &category, nil
 }
 
-// Remove CategoryQueryOptions, use handlers.PaginationOptions instead
-
 func (repository *CategoryRepository) GetCategories(
 	paginate *pagination.PaginationOptions,
 	search *filter.SearchOptions,
 ) ([]models.ResponseCategoryCard, error) {
+	// Handle pagination and order params
 	orderByClause, limitClause, offsetClause, args := paginate.BuildPaginationClauses()
-	searchClause, searchArgs := "", []any{}
-	if search != nil && search.Q != nil {
-		searchClause, searchArgs = search.BuildSearchClause([]string{"name"})
-		if searchClause != "" {
-			searchClause = " AND " + searchClause
-		}
-	}
-	query := fmt.Sprintf(QueryCategoryGetCategories, searchClause, orderByClause, limitClause, offsetClause)
-	allArgs := append(searchArgs, args...)
 
+	// Handle search by name
+	searchClause, searchArgs := filter.BuildSearchClause(search, []string{"name"})
+
+	// Merge them and generate query
+	query, allArgs := handlers.BuildModifiedSQL(
+		QueryCategoryGetCategories,
+		[]string{searchClause, orderByClause, limitClause, offsetClause},
+		[][]any{searchArgs, args},
+	)
+
+	// Run query
 	rows, err := repository.database.Query(query, allArgs...)
 	if err != nil {
 		return nil, err
