@@ -9,7 +9,7 @@ import (
 )
 
 type Config struct {
-	Port int `json:"port" validate:"required,min=0,max=65535"`
+	Port int `json:"port" validate:"required,port"`
 }
 
 func (conf Config) Save(file string) {

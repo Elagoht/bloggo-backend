@@ -3,8 +3,6 @@ package validate
 import (
 	"log"
 	"path/filepath"
-	"regexp"
-	"strconv"
 	"strings"
 	"sync"
 
@@ -31,25 +29,14 @@ func GetValidator() *validator.Validate {
 }
 
 var customValidator = map[string]func(validator.FieldLevel) bool{
-	"port":     PortStringValidator,
+	"port":     PortValidator,
 	"safePath": SafePathValidator,
 }
 
-// Checks if a string is a valid port number (1025-65535)
-func PortStringValidator(fl validator.FieldLevel) bool {
-	portStr := fl.Field().String()
-	if portStr == "" {
-		return false
-	}
-	matched, _ := regexp.MatchString(`^\d+$`, portStr)
-	if !matched {
-		return false
-	}
-	port, err := strconv.Atoi(portStr)
-	if err != nil {
-		return false
-	}
-	return port >= 1025 && port <= 65535
+// Checks if a number is a valid port number (80, 443 or in range 1025-65535)
+func PortValidator(fieldLevel validator.FieldLevel) bool {
+	port := fieldLevel.Field().Int()
+	return port == 80 || port == 443 || (port >= 1024 && port <= 65535)
 }
 
 // Checks if a path is valid and does not contain path traversal
