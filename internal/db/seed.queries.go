@@ -49,8 +49,8 @@ const (
 	DefaultAdminEmail      = "root@admin"
 	DefaultAdminPassphrase = "ChangeMeNow123!"
 	InsertUserSQL          = `
-	INSERT INTO users (name, email, avatar, passphrase_hash, role_id)
-	VALUES (?, ?, '', ?, ?)
+	INSERT INTO users (name, email, passphrase_hash, role_id)
+	VALUES (?, ?, ?, ?)
 	ON CONFLICT DO NOTHING;`
 )
 
