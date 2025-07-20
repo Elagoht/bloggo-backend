@@ -30,7 +30,7 @@ func GetInstance() *Application {
 	once.Do(func() {
 		instance = Application{
 			Database: db.GetInstance(),
-			Config:   config.Load("bloggo-config.json"),
+			Config:   config.Get(),
 			Router:   chi.NewRouter(),
 		}
 	})

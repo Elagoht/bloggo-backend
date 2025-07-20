@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"bloggo/internal/config"
 	"database/sql"
 
 	"github.com/go-chi/chi"
@@ -12,10 +13,10 @@ type AuthModule struct {
 	Repository AuthRepository
 }
 
-func NewModule(database *sql.DB) AuthModule {
+func NewModule(database *sql.DB, config *config.Config) AuthModule {
 	repository := NewAuthRepository(database)
-	service := NewAuthService(repository)
-	handler := NewAuthHandler(service)
+	service := NewAuthService(repository, config)
+	handler := NewAuthHandler(service, config)
 
 	return AuthModule{
 		Handler:    handler,
