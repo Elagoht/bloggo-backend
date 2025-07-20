@@ -28,5 +28,6 @@ func GetInstance() *sql.DB {
 
 	// If the database recently created, create the tables
 	InitializeTables(db)
+	SeedDatabase(db)
 	return db
 }
