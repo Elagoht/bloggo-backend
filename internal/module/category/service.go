@@ -6,13 +6,6 @@ import (
 	"bloggo/internal/utils/pagination"
 )
 
-type CategoryServiceInterface interface {
-	CategoryCreate(model *models.RequestCategoryCreate) (*models.ResponseCategoryCreated, error)
-	GetCategoryBySlug(slug string) (*models.ResponseCategoryDetails, error)
-	GetCategories(pagination *pagination.PaginationOptions, search *filter.SearchOptions) ([]models.ResponseCategoryCard, error)
-	CategoryUpdate(slug string, model *models.RequestCategoryUpdate) error
-}
-
 type CategoryService struct {
 	repository CategoryRepository
 }
