@@ -29,13 +29,14 @@ const (
 	UPDATE categories
 	SET
 		name = COALESCE(?, name),
+		slug = COALESCE(?, slug),
 		description = COALESCE(?, description),
 		updated_at = CURRENT_TIMESTAMP
-	WHERE id = ? AND deleted_at IS NULL;`
+	WHERE slug = ? AND deleted_at IS NULL;`
 	QueryCategorySoftDelete = `
 	UPDATE categories
 	SET
 		deleted_at = CURRENT_TIMESTAMP,
 		updated_at = CURRENT_TIMESTAMP
-	WHERE id = ? AND deleted_at IS NULL;`
+	WHERE slug = ? AND deleted_at IS NULL;`
 )

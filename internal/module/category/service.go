@@ -2,6 +2,13 @@ package category
 
 import "bloggo/internal/module/category/models"
 
+type CategoryServiceInterface interface {
+	CategoryCreate(model *models.RequestCategoryCreate) (*models.ResponseCategoryCreated, error)
+	GetCategoryBySlug(slug string) (*models.ResponseCategoryDetails, error)
+	GetCategories() ([]models.ResponseCategoryCard, error)
+	CategoryUpdate(slug string, model *models.RequestCategoryUpdate) error
+}
+
 type CategoryService struct {
 	repository CategoryRepository
 }
@@ -35,4 +42,14 @@ func (service *CategoryService) GetCategoryBySlug(
 
 func (service *CategoryService) GetCategories() ([]models.ResponseCategoryCard, error) {
 	return service.repository.GetCategories()
+}
+
+func (service *CategoryService) CategoryUpdate(
+	slug string,
+	model *models.RequestCategoryUpdate,
+) error {
+	return service.repository.CategoryUpdate(
+		slug,
+		models.ToUpdateCategoryParams(model),
+	)
 }

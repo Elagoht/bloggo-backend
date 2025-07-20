@@ -2,6 +2,7 @@ package category
 
 import (
 	"bloggo/internal/module/category/models"
+	"bloggo/internal/utils/apierrors"
 	"database/sql"
 )
 
@@ -89,4 +90,35 @@ func (repository *CategoryRepository) GetCategories() ([]models.ResponseCategory
 	}
 
 	return categories, nil
+}
+
+func (repository *CategoryRepository) CategoryUpdate(
+	slug string,
+	model *models.QueryParamsCategoryUpdate,
+) error {
+	statement, err := repository.database.Prepare(QueryCategoryPatch)
+	if err != nil {
+		return err
+	}
+
+	result, err := statement.Exec(
+		model.Name,
+		model.Slug,
+		model.Description,
+		slug,
+	)
+	if err != nil {
+		return err
+	}
+
+	affected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if affected == 0 {
+		return apierrors.ErrNotFound
+	}
+
+	return nil
 }

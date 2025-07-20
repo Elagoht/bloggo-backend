@@ -67,3 +67,26 @@ func (handler *CategoryHandler) GetCategories(
 
 	json.NewEncoder(writer).Encode(categories)
 }
+
+func (handler *CategoryHandler) CategoryUpdate(
+	writer http.ResponseWriter,
+	request *http.Request,
+) {
+	slug, ok := handlers.GetParam[string](writer, request, "slug")
+	if !ok {
+		return
+	}
+
+	body, ok := handlers.BindAndValidate[models.RequestCategoryUpdate](writer, request)
+	if !ok {
+		return
+	}
+
+	err := handler.service.CategoryUpdate(slug, &body)
+	if err != nil {
+		apierrors.MapErrors(err, writer, nil)
+		return
+	}
+
+	writer.WriteHeader(http.StatusNoContent)
+}

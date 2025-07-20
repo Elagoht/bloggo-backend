@@ -30,6 +30,7 @@ func (module CategoryModule) RegisterModule(
 ) {
 	router.Route("/categories", func(router chi.Router) {
 		router.Post("/", module.Handler.CategoryCreate)
+		router.Patch("/{slug}", module.Handler.CategoryUpdate)
 		router.Get("/{slug}", module.Handler.GetCategoryBySlug)
 		router.Get("/", module.Handler.GetCategories)
 	})

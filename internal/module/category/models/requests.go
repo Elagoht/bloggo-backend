@@ -8,6 +8,6 @@ type RequestCategoryCreate struct {
 
 // -- Patch existing category with only given properties -- //
 type RequestCategoryUpdate struct {
-	Name        string `json:"name" validate:"max=100"`
-	Description string `json:"description" validate:"min=70,max=155"`
+	Name        string `json:"name,omitempty" validate:"omitempty,max=100"`
+	Description string `json:"description,omitempty" validate:"omitempty,min=70,max=155"`
 }
