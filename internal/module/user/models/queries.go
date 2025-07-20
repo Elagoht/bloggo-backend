@@ -1,6 +1,6 @@
 package models
 
-import cryptography "bloggo/internal/utils/crypto"
+import cryptography "bloggo/internal/utils/cryptography"
 
 // -- Create New User -- //
 type UserCreateParams struct {
@@ -8,7 +8,7 @@ type UserCreateParams struct {
 	Email          string
 	Avatar         string
 	PassphraseHash string
-	RoleId         string
+	RoleId         int64
 }
 
 func (model *RequestUserCreate) HashUserPassphrase() (*UserCreateParams, error) {

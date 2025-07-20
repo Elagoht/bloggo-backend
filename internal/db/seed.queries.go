@@ -24,7 +24,7 @@ const (
   ('user:create'),
   ('user:update'),
   ('user:delete'),
-  ('user:change_password'),
+  ('user:change_passphrase'),
   ('stats:view'),
   ('role:assign'),
   ('auditlog:view'),
@@ -49,7 +49,7 @@ const (
 var (
 	RolePermissionsMatrix = map[string][]string{
 		"admin": {
-			"post:create", "post:edit", "post:edit_own", "post:delete", "post:delete_own", "post:publish", "post:view", "post:schedule", "tag:manage", "category:manage", "user:view", "user:create", "user:update", "user:delete", "user:change_password", "stats:view", "role:assign", "auditlog:view", "schedule:create", "schedule:update", "schedule:delete", "schedule:view",
+			"post:create", "post:edit", "post:edit_own", "post:delete", "post:delete_own", "post:publish", "post:view", "post:schedule", "tag:manage", "category:manage", "user:view", "user:create", "user:update", "user:delete", "user:change_passphrase", "stats:view", "role:assign", "auditlog:view", "schedule:create", "schedule:update", "schedule:delete", "schedule:view",
 		},
 		"editor": {
 			"post:create", "post:edit", "post:edit_own", "post:delete", "post:delete_own", "post:publish", "post:view", "post:schedule", "stats:view", "schedule:create", "schedule:update", "schedule:delete", "schedule:view",
