@@ -1,6 +1,7 @@
 package db
 
 import (
+	"bloggo/internal/utils/cryptography"
 	"database/sql"
 	"log"
 )
@@ -67,6 +68,28 @@ func SeedDatabase(database *sql.DB) {
 			)
 			if err != nil {
 				log.Printf("Failed to insert role_permission: %s-%s", role, permission)
+			}
+		}
+	}
+
+	// -- Admin User Seeding -- //
+	adminRoleID, ok := roleIDs["admin"]
+	if !ok {
+		log.Printf("Admin role not found, cannot create default admin user.")
+	} else {
+		hashedPass, err := cryptography.HashPassphrase(DefaultAdminPassphrase)
+		if err != nil {
+			log.Printf("Failed to hash admin passphrase: %v", err)
+		} else {
+			_, err := database.Exec(
+				InsertUserSQL,
+				DefaultAdminName,
+				DefaultAdminEmail,
+				hashedPass,
+				adminRoleID,
+			)
+			if err != nil {
+				log.Printf("Failed to insert default admin user: %v", err)
 			}
 		}
 	}

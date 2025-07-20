@@ -44,6 +44,14 @@ const (
 	GetRolesSQL = `
   SELECT id, name
   FROM roles;`
+	// Default admin user seed
+	DefaultAdminName       = "Root User"
+	DefaultAdminEmail      = "root@admin"
+	DefaultAdminPassphrase = "ChangeMeNow123!"
+	InsertUserSQL          = `
+	INSERT INTO users (name, email, avatar, passphrase_hash, role_id)
+	VALUES (?, ?, '', ?, ?)
+	ON CONFLICT DO NOTHING;`
 )
 
 var (
