@@ -3,6 +3,7 @@ package category
 import (
 	"bloggo/internal/module/category/models"
 	"bloggo/internal/utils/apierrors"
+	"bloggo/internal/utils/filter"
 	"bloggo/internal/utils/pagination"
 	"database/sql"
 	"fmt"
@@ -68,12 +69,21 @@ func (repository *CategoryRepository) GetCategoryBySlug(
 // Remove CategoryQueryOptions, use handlers.PaginationOptions instead
 
 func (repository *CategoryRepository) GetCategories(
-	opts *pagination.PaginationOptions,
+	paginate *pagination.PaginationOptions,
+	search *filter.SearchOptions,
 ) ([]models.ResponseCategoryCard, error) {
-	orderByClause, limitClause, offsetClause, args := opts.BuildPaginationClauses()
-	query := fmt.Sprintf(QueryCategoryGetCategories, orderByClause, limitClause, offsetClause)
+	orderByClause, limitClause, offsetClause, args := paginate.BuildPaginationClauses()
+	searchClause, searchArgs := "", []any{}
+	if search != nil && search.Q != nil {
+		searchClause, searchArgs = search.BuildSearchClause([]string{"name"})
+		if searchClause != "" {
+			searchClause = " AND " + searchClause
+		}
+	}
+	query := fmt.Sprintf(QueryCategoryGetCategories, searchClause, orderByClause, limitClause, offsetClause)
+	allArgs := append(searchArgs, args...)
 
-	rows, err := repository.database.Query(query, args...)
+	rows, err := repository.database.Query(query, allArgs...)
 	if err != nil {
 		return nil, err
 	}

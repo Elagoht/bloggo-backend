@@ -18,7 +18,7 @@ const (
     WHERE p.category_id = c.id AND p.deleted_at IS NULL
   ) AS blogCount
 	FROM categories c
-	WHERE c.deleted_at IS NULL %s %s %s;`
+	WHERE c.deleted_at IS NULL%s %s %s %s;`
 	QueryCategoryCreate = `
 	INSERT INTO categories (
 		name,

@@ -3,6 +3,7 @@ package category
 import (
 	"bloggo/internal/module/category/models"
 	"bloggo/internal/utils/apierrors"
+	"bloggo/internal/utils/filter"
 	"bloggo/internal/utils/handlers"
 	"bloggo/internal/utils/pagination"
 	"encoding/json"
@@ -69,7 +70,15 @@ func (handler *CategoryHandler) GetCategories(
 		return
 	}
 
-	categories, err := handler.service.GetCategories(paginate)
+	search, ok := filter.GetSearchOptions(
+		writer,
+		request,
+	)
+	if !ok {
+		return
+	}
+
+	categories, err := handler.service.GetCategories(paginate, search)
 	if err != nil {
 		apierrors.MapErrors(err, writer, nil)
 		return
