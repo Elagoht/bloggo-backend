@@ -1,31 +1,33 @@
 package config
 
 import (
+	"bloggo/internal/utils/validate"
 	"encoding/json"
+	"log"
 	"os"
 	"path/filepath"
 )
 
 type Config struct {
-	Port int `json:"port" validate:"required"`
+	Port int `json:"port" validate:"required,min=0,max=65535"`
 }
 
 func (conf Config) Save(file string) {
 	// Ensure the directory exists
 	dir := filepath.Dir(file)
 	if err := os.MkdirAll(dir, 0755); err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	// Marshal config to JSON
 	data, err := json.MarshalIndent(conf, "", "  ")
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	// Write to file
 	if err := os.WriteFile(file, data, 0644); err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 }
 
@@ -40,13 +42,20 @@ func Load(file string) Config {
 	// Read content
 	content, err := os.ReadFile(file)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	// Convert to object and return
 	result := Config{}
 	if err := json.Unmarshal(content, &result); err != nil {
-		panic("Error while parsing configuration.")
+		log.Fatal("Error while parsing configuration.")
 	}
+
+	// Validate unmarshalled data
+	err = validate.GetValidator().Struct(result)
+	if err != nil {
+		log.Fatal("Configuration loaded but is not valid.")
+	}
+
 	return result
 }

@@ -1,6 +1,7 @@
 package validate
 
 import (
+	"log"
 	"path/filepath"
 	"regexp"
 	"strconv"
@@ -22,7 +23,7 @@ func GetValidator() *validator.Validate {
 		for key, validateFunction := range customValidator {
 			err := validatorInstance.RegisterValidation(key, validateFunction)
 			if err != nil {
-				panic(err)
+				log.Fatal(err)
 			}
 		}
 	})
