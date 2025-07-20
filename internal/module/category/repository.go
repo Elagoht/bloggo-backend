@@ -3,7 +3,9 @@ package category
 import (
 	"bloggo/internal/module/category/models"
 	"bloggo/internal/utils/apierrors"
+	"bloggo/internal/utils/pagination"
 	"database/sql"
+	"fmt"
 )
 
 type CategoryRepository struct {
@@ -63,14 +65,21 @@ func (repository *CategoryRepository) GetCategoryBySlug(
 	return &category, nil
 }
 
-func (repository *CategoryRepository) GetCategories() ([]models.ResponseCategoryCard, error) {
-	rows, err := repository.database.Query(QueryCategoryGetCategories)
+// Remove CategoryQueryOptions, use handlers.PaginationOptions instead
+
+func (repository *CategoryRepository) GetCategories(
+	opts *pagination.PaginationOptions,
+) ([]models.ResponseCategoryCard, error) {
+	orderByClause, limitClause, offsetClause, args := opts.BuildPaginationClauses()
+	query := fmt.Sprintf(QueryCategoryGetCategories, orderByClause, limitClause, offsetClause)
+
+	rows, err := repository.database.Query(query, args...)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var categories []models.ResponseCategoryCard
+	categories := []models.ResponseCategoryCard{}
 	for rows.Next() {
 		var category models.ResponseCategoryCard
 		err := rows.Scan(

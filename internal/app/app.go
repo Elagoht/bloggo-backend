@@ -43,6 +43,14 @@ func (app *Application) RegisterModules(modules []module.Module) {
 	}
 }
 
+func (app *Application) RegisterGlobalMiddlewares(
+	middlewares []func(http.Handler) http.Handler,
+) {
+	for _, middleware := range middlewares {
+		app.Router.Use(middleware)
+	}
+}
+
 func (app *Application) Bootstrap() {
 	portString := strconv.Itoa(app.Config.Port)
 	// Start the server

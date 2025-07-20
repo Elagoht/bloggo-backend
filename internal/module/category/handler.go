@@ -4,6 +4,7 @@ import (
 	"bloggo/internal/module/category/models"
 	"bloggo/internal/utils/apierrors"
 	"bloggo/internal/utils/handlers"
+	"bloggo/internal/utils/pagination"
 	"encoding/json"
 	"net/http"
 )
@@ -59,7 +60,16 @@ func (handler *CategoryHandler) GetCategories(
 	writer http.ResponseWriter,
 	request *http.Request,
 ) {
-	categories, err := handler.service.GetCategories()
+	paginate, ok := pagination.GetPaginationOptions(
+		writer,
+		request,
+		[]string{"name", "created_at", "updated_at"},
+	)
+	if !ok {
+		return
+	}
+
+	categories, err := handler.service.GetCategories(paginate)
 	if err != nil {
 		apierrors.MapErrors(err, writer, nil)
 		return

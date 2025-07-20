@@ -1,6 +1,9 @@
 package category
 
-import "bloggo/internal/module/category/models"
+import (
+	"bloggo/internal/module/category/models"
+	"bloggo/internal/utils/pagination"
+)
 
 type CategoryServiceInterface interface {
 	CategoryCreate(model *models.RequestCategoryCreate) (*models.ResponseCategoryCreated, error)
@@ -40,8 +43,10 @@ func (service *CategoryService) GetCategoryBySlug(
 	return service.repository.GetCategoryBySlug(slug)
 }
 
-func (service *CategoryService) GetCategories() ([]models.ResponseCategoryCard, error) {
-	return service.repository.GetCategories()
+func (service *CategoryService) GetCategories(
+	pagination *pagination.PaginationOptions,
+) ([]models.ResponseCategoryCard, error) {
+	return service.repository.GetCategories(pagination)
 }
 
 func (service *CategoryService) CategoryUpdate(
