@@ -28,3 +28,21 @@ func (service *UserService) GetUserById(
 ) (*models.ResponseUserDetails, error) {
 	return service.repository.GetUserById(id)
 }
+
+func (service *UserService) UserCreate(
+	model *models.RequestUserCreate,
+) (*models.ResponseUserCreated, error) {
+	processed, err := model.HashUserPassphrase()
+	if err != nil {
+		return nil, err
+	}
+
+	id, err := service.repository.UserCreate(processed)
+	if err != nil {
+		return nil, err
+	}
+
+	return &models.ResponseUserCreated{
+		Id: id,
+	}, nil
+}

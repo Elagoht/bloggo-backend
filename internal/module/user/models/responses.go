@@ -1,5 +1,10 @@
 package models
 
+// -- New User Created -- //
+type ResponseUserCreated struct {
+	Id int64 `json:"id"`
+}
+
 // -- User Card -- //
 type ResponseUserCard struct {
 	Id                 int64  `json:"id"`

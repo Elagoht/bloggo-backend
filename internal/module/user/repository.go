@@ -94,3 +94,30 @@ func (repository *UserRepository) GetUserById(
 
 	return &user, nil
 }
+
+func (repository *UserRepository) UserCreate(
+	model *models.UserCreateParams,
+) (int64, error) {
+	statement, err := repository.database.Prepare(QueryUserCreate)
+	if err != nil {
+		return 0, err
+	}
+
+	result, err := statement.Exec(
+		&model.Name,
+		&model.Email,
+		&model.Avatar,
+		&model.PassphraseHash,
+		&model.RoleId,
+	)
+	if err != nil {
+		return 0, err
+	}
+
+	id, err := result.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+
+	return id, nil
+}

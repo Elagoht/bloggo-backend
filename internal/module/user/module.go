@@ -31,7 +31,7 @@ func (module UserModule) RegisterModule(
 	router.Route("/users", func(router chi.Router) {
 		router.Get("/", module.Handler.GetUsers)
 		router.Get("/{id}", module.Handler.GetUserById)
-		// router.Post("/", module.Handler.UserCreate)
+		router.Post("/", module.Handler.UserCreate)
 		// router.Patch("/{id}", module.Handler.UserUpdate)
 		// router.Delete("/{id}", module.Handler.UserDelete)
 	})

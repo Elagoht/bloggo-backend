@@ -14,7 +14,9 @@ const (
 	FROM users
 	LEFT JOIN roles ON users.role_id = roles.id
 	WHERE users.id = ? AND users.deleted_at IS NULL;`
-	QueryUserCreate     = ``
+	QueryUserCreate = `
+	INSERT INTO users (name, email, avatar, password, role_id)
+	VALUES (?, ?, ?, ?, ?);`
 	QueryUserUpdate     = ``
 	QueryUserAssignRole = ``
 	QueryUserDelete     = ``
