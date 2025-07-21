@@ -33,12 +33,70 @@ func (handler *AuthHandler) Login(
 		return
 	}
 
-	accessToken, refreshToken, err := handler.service.Login(body)
+	accessToken, refreshToken, err := handler.service.GenerateTokens(body)
 	if err != nil {
 		apierrors.MapErrors(err, writer, nil)
 		return
 	}
 
+	handler.sendTokens(writer, accessToken, refreshToken)
+}
+
+func (handler *AuthHandler) Refresh(
+	writer http.ResponseWriter,
+	request *http.Request,
+) {
+	// Get refresh token
+	refreshCookie, err := request.Cookie("refreshToken")
+	if err != nil {
+		apierrors.MapErrors(apierrors.ErrUnauthorized, writer, nil)
+		return
+	}
+
+	// Refresh all tokens
+	accessToken, refreshToken, err := handler.service.RefreshTokens(
+		refreshCookie.Value,
+	)
+	if err != nil {
+		apierrors.MapErrors(err, writer, nil)
+		return
+	}
+
+	handler.sendTokens(writer, accessToken, refreshToken)
+}
+
+func (handler *AuthHandler) Logout(
+	writer http.ResponseWriter,
+	request *http.Request,
+) {
+	// Get refresh token
+	refreshCookie, err := request.Cookie("refreshToken")
+	if err != nil {
+		apierrors.MapErrors(apierrors.ErrUnauthorized, writer, nil)
+		return
+	}
+
+	// Revoke refresh token from store
+	handler.service.RevokeRefreshToken(refreshCookie.Value)
+
+	// Remove refresh token from client
+	cookie := http.Cookie{
+		Name:     "refreshToken",
+		Value:    "",
+		HttpOnly: true,
+		Secure:   true,
+		Path:     "/",
+		MaxAge:   -1, // Expire immediately
+	}
+	http.SetCookie(writer, &cookie)
+	writer.WriteHeader(http.StatusOK)
+}
+
+func (handler *AuthHandler) sendTokens(
+	writer http.ResponseWriter,
+	accessToken string,
+	refreshToken string,
+) {
 	// Set refresh token as an HTTP-Only cookie
 	cookie := http.Cookie{
 		Name:     "refreshToken",
@@ -55,34 +113,4 @@ func (handler *AuthHandler) Login(
 		AccessToken: accessToken,
 	}
 	json.NewEncoder(writer).Encode(response)
-}
-
-func (handler *AuthHandler) Refresh(
-	writer http.ResponseWriter,
-	request *http.Request,
-) {
-	// TODO: Implement refresh token logic
-	// 1. Read refresh token from cookie
-	// 2. Validate refresh token
-	// 3. Issue new access token (and possibly new refresh token)
-	// 4. Return new access token in response
-}
-
-func (handler *AuthHandler) Logout(
-	writer http.ResponseWriter,
-	request *http.Request,
-) {
-	// TODO: Implement logout logic
-	// 1. Invalidate refresh token (if using server-side storage)
-	// 2. Remove refresh token cookie
-	cookie := http.Cookie{
-		Name:     "refreshToken",
-		Value:    "",
-		HttpOnly: true,
-		Secure:   true,
-		Path:     "/",
-		MaxAge:   -1, // Expire immediately
-	}
-	http.SetCookie(writer, &cookie)
-	writer.WriteHeader(http.StatusOK)
 }

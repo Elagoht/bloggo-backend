@@ -27,7 +27,7 @@ func NewAuthService(
 	}
 }
 
-func (service *AuthService) Login(
+func (service *AuthService) GenerateTokens(
 	model *models.RequestLogin,
 ) (accessToken string, refreshToken string, err error) {
 	// Compare passphrase hashes
@@ -69,4 +69,54 @@ func (service *AuthService) Login(
 	)
 
 	return accessToken, refreshToken, nil
+}
+
+func (service *AuthService) RefreshTokens(
+	refreshToken string,
+) (accessToken string, rotatedRefreshToken string, err error) {
+	userId, found := service.refreshStore.Get(refreshToken)
+	if !found {
+		return "", "", apierrors.ErrUnauthorized
+	}
+
+	details, err := service.repository.GetUserLoginDataById(userId)
+	if err != nil {
+		return "", "", apierrors.ErrUnauthorized
+	}
+
+	// Generate new access token
+	accessToken, err = cryptography.GenerateJWT(
+		"", // Email is not available here, can be added if needed
+		details.UserId,
+		details.RoleId,
+		service.config.JWTSecret,
+		service.config.AccessTokenDuration,
+	)
+	if err != nil {
+		return "", "", err
+	}
+
+	// Rotate refresh token
+	newRefreshToken, err := cryptography.GenerateUniqueId()
+	if err != nil {
+		return "", "", err
+	}
+
+	// Set new refresh token to Refresh Token Store
+	service.refreshStore.Set(
+		newRefreshToken,
+		details.UserId,
+		service.config.RefreshTokenDuration,
+	)
+	// Revoke old refresh token
+	service.refreshStore.Delete(refreshToken)
+
+	return accessToken, newRefreshToken, nil
+}
+
+func (service *AuthService) RevokeRefreshToken(
+	refreshToken string,
+) {
+	// Revoke refresh token
+	service.refreshStore.Delete(refreshToken)
 }
