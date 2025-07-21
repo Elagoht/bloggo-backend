@@ -31,10 +31,7 @@ func NewModule(
 	}
 }
 
-func (module AuthModule) RegisterModule(
-	database *sql.DB,
-	router *chi.Mux,
-) {
+func (module AuthModule) RegisterModule(router *chi.Mux) {
 	router.Route("/auth", func(router chi.Router) {
 		router.Post("/login", module.Handler.Login)
 		router.Post("/refresh", module.Handler.Refresh)

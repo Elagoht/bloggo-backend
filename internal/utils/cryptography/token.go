@@ -30,7 +30,7 @@ func GenerateJWT(
 		"sub": subject,
 		"uid": userId,
 		"rid": roleId,
-		"exp": time.Now().Add(time.Duration(duration)).Unix(),
+		"exp": time.Now().Add(time.Duration(duration) * time.Second).Unix(),
 		"iat": time.Now().Unix(),
 		"iss": "bloggo",
 	}

@@ -22,7 +22,7 @@ func main() {
 
 	// Register modules
 	modules := []module.Module{
-		category.NewModule(application.Database),
+		category.NewModule(application.Database, &application.Config, application.Permissions),
 		user.NewModule(application.Database),
 		auth.NewModule(application.Database, &application.Config),
 	}

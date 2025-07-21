@@ -46,7 +46,7 @@ func GetInstance() *Application {
 
 func (app *Application) RegisterModules(modules []module.Module) {
 	for _, module := range modules {
-		module.RegisterModule(app.Database, app.Router)
+		module.RegisterModule(app.Router)
 	}
 }
 

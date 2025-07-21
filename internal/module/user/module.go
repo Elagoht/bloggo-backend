@@ -24,10 +24,7 @@ func NewModule(database *sql.DB) UserModule {
 	}
 }
 
-func (module UserModule) RegisterModule(
-	database *sql.DB,
-	router *chi.Mux,
-) {
+func (module UserModule) RegisterModule(router *chi.Mux) {
 	router.Route("/users", func(router chi.Router) {
 		router.Get("/", module.Handler.GetUsers)
 		router.Get("/{id}", module.Handler.GetUserById)
