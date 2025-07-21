@@ -32,6 +32,7 @@ func GetInstance() *Application {
 	once.Do(func() {
 		databaseConnection := db.GetInstance()
 		permissionStore := permissionstore.GetStore()
+		// Initial cache from database
 		permissionStore.Load(databaseConnection)
 
 		instance = Application{
