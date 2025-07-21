@@ -28,14 +28,14 @@ func newMemoryStore() RefreshTokenStore {
 func (store *memoryTokenStore) Set(
 	token string,
 	userID int64,
-	expiresAt int,
+	duration int,
 ) {
 	store.lock.Lock()
 	defer store.lock.Unlock()
 
 	store.tokens[token] = tokenData{
 		userID:    userID,
-		expiresAt: time.Now().Add(time.Duration(expiresAt)),
+		expiresAt: time.Now().Add(time.Duration(duration) * time.Second),
 	}
 }
 
