@@ -7,6 +7,11 @@ import (
 	"time"
 )
 
+type memoryTokenStore struct {
+	tokens tokenStore
+	lock   sync.RWMutex
+}
+
 var (
 	once     sync.Once
 	instance RefreshTokenStore

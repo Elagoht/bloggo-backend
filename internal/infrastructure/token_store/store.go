@@ -1,7 +1,6 @@
 package tokenstore
 
 import (
-	"sync"
 	"time"
 )
 
@@ -10,11 +9,6 @@ type RefreshTokenStore interface {
 	Set(token string, userID int64, duration int)
 	Get(token string) (userID int64, found bool)
 	Delete(token string)
-}
-
-type memoryTokenStore struct {
-	tokens tokenStore
-	lock   sync.RWMutex
 }
 
 type tokenData struct {
