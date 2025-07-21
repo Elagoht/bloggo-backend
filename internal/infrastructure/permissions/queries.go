@@ -1,4 +1,4 @@
-package permissionstore
+package permissions
 
 const (
 	QueryGetPermissionRoles = `

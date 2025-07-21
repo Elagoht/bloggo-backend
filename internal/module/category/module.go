@@ -2,9 +2,9 @@ package category
 
 import (
 	"bloggo/internal/config"
-	permissionstore "bloggo/internal/infrastructure/permission_store"
+	"bloggo/internal/infrastructure/permissions"
 	"bloggo/internal/middleware"
-	checkpermission "bloggo/internal/utils/check_permission"
+	"bloggo/internal/utils/permission"
 	"database/sql"
 
 	"github.com/go-chi/chi"
@@ -15,13 +15,13 @@ type CategoryModule struct {
 	Service     CategoryService
 	Repository  CategoryRepository
 	Config      *config.Config
-	Permissions permissionstore.PermissionStore
+	Permissions permissions.Store
 }
 
 func NewModule(
 	database *sql.DB,
 	config *config.Config,
-	permissions permissionstore.PermissionStore,
+	permissions permissions.Store,
 ) CategoryModule {
 	repository := NewCategoryRepository(database)
 	service := NewCategoryService(repository)
@@ -40,24 +40,24 @@ func (module CategoryModule) RegisterModule(router *chi.Mux) {
 	router.With(middleware.AuthMiddleware(module.Config)).Route(
 		"/categories",
 		func(router chi.Router) {
-			permission := checkpermission.NewChecker(module.Permissions)
+			authority := permission.NewChecker(module.Permissions)
 
 			router.Get("/",
-				permission.Require("category:manage", module.Handler.GetCategories),
+				authority.Require("category:manage", module.Handler.GetCategories),
 			)
 
 			router.Get("/{slug}", module.Handler.GetCategoryBySlug)
 
 			router.Post("/",
-				permission.Require("category:manage", module.Handler.CategoryCreate),
+				authority.Require("category:manage", module.Handler.CategoryCreate),
 			)
 
 			router.Patch("/{slug}",
-				permission.Require("category:manage", module.Handler.CategoryUpdate),
+				authority.Require("category:manage", module.Handler.CategoryUpdate),
 			)
 
 			router.Delete("/{slug}",
-				permission.Require("category:manage", module.Handler.CategoryDelete),
+				authority.Require("category:manage", module.Handler.CategoryDelete),
 			)
 		},
 	)

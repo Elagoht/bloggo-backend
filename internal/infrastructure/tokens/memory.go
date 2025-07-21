@@ -1,6 +1,6 @@
 // Refresh token store implemented to use in-memory
 
-package tokenstore
+package tokens
 
 import (
 	"sync"
@@ -14,17 +14,17 @@ type memoryStore struct {
 
 var (
 	once     sync.Once
-	instance RefreshTokenStore
+	instance Store
 )
 
-func GetStore() RefreshTokenStore {
+func GetStore() Store {
 	once.Do(func() {
 		instance = newMemoryStore()
 	})
 	return instance
 }
 
-func newMemoryStore() RefreshTokenStore {
+func newMemoryStore() Store {
 	return &memoryStore{
 		tokens: make(tokenStore),
 	}

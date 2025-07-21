@@ -1,17 +1,17 @@
-package checkpermission
+package permission
 
 import (
-	permissionstore "bloggo/internal/infrastructure/permission_store"
+	"bloggo/internal/infrastructure/permissions"
 	"bloggo/internal/middleware"
 	"net/http"
 )
 
 type Checker struct {
-	permissions permissionstore.PermissionStore
+	permissions permissions.Store
 }
 
 func NewChecker(
-	permissions permissionstore.PermissionStore,
+	permissions permissions.Store,
 ) *Checker {
 	return &Checker{
 		permissions,

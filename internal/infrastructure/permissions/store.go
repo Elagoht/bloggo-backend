@@ -1,10 +1,10 @@
-package permissionstore
+package permissions
 
 import (
 	"database/sql"
 )
 
-type PermissionStore interface {
+type Store interface {
 	Load(db *sql.DB) error
 	HasPermission(role string, permission string) bool
 }

@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	permissionstore "bloggo/internal/infrastructure/permission_store"
+	"bloggo/internal/infrastructure/permissions"
 	"bloggo/internal/utils/apierrors"
 	"bloggo/internal/utils/handlers"
 	"net/http"
@@ -9,7 +9,7 @@ import (
 
 // Checks if the userRole in context has the required permission
 func RequirePermission(
-	permissionStore permissionstore.PermissionStore,
+	permissionStore permissions.Store,
 	requiredPermission string,
 ) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {

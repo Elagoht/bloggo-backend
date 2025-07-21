@@ -1,11 +1,11 @@
-package tokenstore
+package tokens
 
 import (
 	"time"
 )
 
 // Store refresh token to create, track and revoke sessions
-type RefreshTokenStore interface {
+type Store interface {
 	Set(token string, userID int64, duration int)
 	Get(token string) (userID int64, found bool)
 	Delete(token string)

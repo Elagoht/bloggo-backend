@@ -9,7 +9,7 @@ import (
 
 	"bloggo/internal/config"
 	"bloggo/internal/db"
-	permissionstore "bloggo/internal/infrastructure/permission_store"
+	"bloggo/internal/infrastructure/permissions"
 	"bloggo/internal/module"
 
 	"github.com/go-chi/chi"
@@ -19,7 +19,7 @@ type Application struct {
 	Database    *sql.DB
 	Config      config.Config
 	Router      *chi.Mux
-	Permissions permissionstore.PermissionStore
+	Permissions permissions.Store
 }
 
 var (
@@ -31,7 +31,7 @@ var (
 func GetInstance() *Application {
 	once.Do(func() {
 		databaseConnection := db.GetInstance()
-		permissionStore := permissionstore.GetStore()
+		permissionStore := permissions.GetStore()
 		// Initial cache from database
 		permissionStore.Load(databaseConnection)
 

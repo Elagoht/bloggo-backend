@@ -2,7 +2,7 @@ package auth
 
 import (
 	"bloggo/internal/config"
-	tokenstore "bloggo/internal/infrastructure/token_store"
+	"bloggo/internal/infrastructure/tokens"
 	"database/sql"
 
 	"github.com/go-chi/chi"
@@ -18,7 +18,7 @@ func NewModule(
 	database *sql.DB,
 	config *config.Config,
 ) AuthModule {
-	refreshStore := tokenstore.GetStore()
+	refreshStore := tokens.GetStore()
 
 	repository := NewAuthRepository(database)
 	service := NewAuthService(repository, config, refreshStore)

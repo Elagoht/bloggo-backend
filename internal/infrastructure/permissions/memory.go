@@ -1,4 +1,4 @@
-package permissionstore
+package permissions
 
 import (
 	"database/sql"
@@ -12,10 +12,10 @@ type memoryStore struct {
 
 var (
 	once     sync.Once
-	instance PermissionStore
+	instance Store
 )
 
-func GetStore() PermissionStore {
+func GetStore() Store {
 	once.Do(func() {
 		instance = newMemoryStore()
 	})

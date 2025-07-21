@@ -2,7 +2,7 @@ package auth
 
 import (
 	"bloggo/internal/config"
-	tokenstore "bloggo/internal/infrastructure/token_store"
+	"bloggo/internal/infrastructure/tokens"
 	"bloggo/internal/module/auth/models"
 	"bloggo/internal/utils/apierrors"
 	"bloggo/internal/utils/cryptography"
@@ -11,13 +11,13 @@ import (
 type AuthService struct {
 	repository   AuthRepository
 	config       *config.Config
-	refreshStore tokenstore.RefreshTokenStore
+	refreshStore tokens.Store
 }
 
 func NewAuthService(
 	repository AuthRepository,
 	config *config.Config,
-	refreshStore tokenstore.RefreshTokenStore,
+	refreshStore tokens.Store,
 
 ) AuthService {
 	return AuthService{
