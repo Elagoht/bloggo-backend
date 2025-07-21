@@ -2,23 +2,28 @@ package auth
 
 import (
 	"bloggo/internal/config"
+	tokenstore "bloggo/internal/infrastructure/token_store"
 	"bloggo/internal/module/auth/models"
 	"bloggo/internal/utils/apierrors"
 	"bloggo/internal/utils/cryptography"
 )
 
 type AuthService struct {
-	repository AuthRepository
-	config     *config.Config
+	repository   AuthRepository
+	config       *config.Config
+	refreshStore tokenstore.RefreshTokenStore
 }
 
 func NewAuthService(
 	repository AuthRepository,
 	config *config.Config,
+	refreshStore tokenstore.RefreshTokenStore,
+
 ) AuthService {
 	return AuthService{
 		repository,
 		config,
+		refreshStore,
 	}
 }
 
@@ -54,6 +59,14 @@ func (service *AuthService) Login(
 	if err != nil {
 		return "", "", err
 	}
+
+	// Set refresh token to Refresh Token Store
+	// to be able to revoke sessions by hand
+	service.refreshStore.Set(
+		refreshToken,
+		details.UserId,
+		service.config.RefreshTokenDuration,
+	)
 
 	return accessToken, refreshToken, nil
 }
