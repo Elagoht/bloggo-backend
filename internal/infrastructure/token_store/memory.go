@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-type memoryTokenStore struct {
+type memoryStore struct {
 	tokens tokenStore
 	lock   sync.RWMutex
 }
@@ -17,7 +17,7 @@ var (
 	instance RefreshTokenStore
 )
 
-func GetRefreshTokenStore() RefreshTokenStore {
+func GetStore() RefreshTokenStore {
 	once.Do(func() {
 		instance = newMemoryStore()
 	})
@@ -25,12 +25,12 @@ func GetRefreshTokenStore() RefreshTokenStore {
 }
 
 func newMemoryStore() RefreshTokenStore {
-	return &memoryTokenStore{
+	return &memoryStore{
 		tokens: make(tokenStore),
 	}
 }
 
-func (store *memoryTokenStore) Set(
+func (store *memoryStore) Set(
 	token string,
 	userID int64,
 	duration int,
@@ -44,7 +44,7 @@ func (store *memoryTokenStore) Set(
 	}
 }
 
-func (store *memoryTokenStore) Get(token string) (int64, bool) {
+func (store *memoryStore) Get(token string) (int64, bool) {
 	store.lock.RLock()
 	defer store.lock.RUnlock()
 
@@ -56,7 +56,7 @@ func (store *memoryTokenStore) Get(token string) (int64, bool) {
 	return data.userID, true
 }
 
-func (store *memoryTokenStore) Delete(token string) {
+func (store *memoryStore) Delete(token string) {
 	store.lock.Lock()
 	defer store.lock.Unlock()
 

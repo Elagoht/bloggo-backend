@@ -18,7 +18,7 @@ func NewModule(
 	database *sql.DB,
 	config *config.Config,
 ) AuthModule {
-	refreshStore := tokenstore.GetRefreshTokenStore()
+	refreshStore := tokenstore.GetStore()
 
 	repository := NewAuthRepository(database)
 	service := NewAuthService(repository, config, refreshStore)

@@ -9,15 +9,17 @@ import (
 
 	"bloggo/internal/config"
 	"bloggo/internal/db"
+	permissionstore "bloggo/internal/infrastructure/permission_store"
 	"bloggo/internal/module"
 
 	"github.com/go-chi/chi"
 )
 
 type Application struct {
-	Database *sql.DB
-	Config   config.Config
-	Router   *chi.Mux
+	Database    *sql.DB
+	Config      config.Config
+	Router      *chi.Mux
+	Permissions permissionstore.PermissionStore
 }
 
 var (
@@ -28,10 +30,15 @@ var (
 // Get singleton instance
 func GetInstance() *Application {
 	once.Do(func() {
+		databaseConnection := db.GetInstance()
+		permissionStore := permissionstore.GetStore()
+		permissionStore.Load(databaseConnection)
+
 		instance = Application{
-			Database: db.GetInstance(),
-			Config:   config.Get(),
-			Router:   chi.NewRouter(),
+			Database:    databaseConnection,
+			Config:      config.Get(),
+			Router:      chi.NewRouter(),
+			Permissions: permissionStore,
 		}
 	})
 	return &instance
