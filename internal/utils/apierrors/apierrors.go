@@ -87,7 +87,7 @@ func MapErrors(
 			apiErr := NewAPIError(item.Message, err)
 			apiErr.Details = details
 			writer.WriteHeader(item.Status)
-			_ = json.NewEncoder(writer).Encode(apiErr)
+			json.NewEncoder(writer).Encode(apiErr)
 			return
 		case sqlite3.ErrNotFound:
 			item = (*DefaultErrorMapping)[ErrNotFound]
@@ -129,14 +129,14 @@ func MapErrors(
 	if found {
 		apiErr := NewAPIError(item.Message, err)
 		writer.WriteHeader(item.Status)
-		_ = json.NewEncoder(writer).Encode(apiErr)
+		json.NewEncoder(writer).Encode(apiErr)
 		return
 	}
 
 	// Fallback: unknown error
 	apiErr := NewAPIError(ErrInternalServer.Error(), err)
 	writer.WriteHeader(http.StatusInternalServerError)
-	_ = json.NewEncoder(writer).Encode(apiErr)
+	json.NewEncoder(writer).Encode(apiErr)
 }
 
 var (
