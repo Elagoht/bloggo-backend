@@ -6,6 +6,7 @@ import "bloggo/internal/utils/slugify"
 type QueryParamsCategoryCreate struct {
 	Name        string
 	Slug        string
+	Spot        string
 	Description string
 }
 
@@ -15,6 +16,7 @@ func ToCreateCategoryParams(
 	return &QueryParamsCategoryCreate{
 		model.Name,
 		slugify.Slugify(model.Name),
+		model.Spot,
 		model.Description,
 	}
 }
@@ -23,6 +25,7 @@ func ToCreateCategoryParams(
 type QueryParamsCategoryUpdate struct {
 	Name        *string
 	Slug        *string
+	Spot        *string
 	Description *string
 }
 
@@ -35,6 +38,10 @@ func ToUpdateCategoryParams(
 		params.Name = &model.Name
 		slug := slugify.Slugify(model.Name)
 		params.Slug = &slug
+	}
+
+	if model.Spot != "" {
+		params.Spot = &model.Spot
 	}
 
 	if model.Description != "" {

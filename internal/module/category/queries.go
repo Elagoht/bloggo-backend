@@ -2,7 +2,7 @@ package category
 
 const (
 	QueryCategoryGetBySlug = `
-	SELECT c.id, c.name, c.slug, c.description, c.created_at, c.updated_at,
+	SELECT c.id, c.name, c.slug, c.spot, c.description, c.created_at, c.updated_at,
 	(
     SELECT COUNT(*)
     FROM posts p
@@ -11,7 +11,7 @@ const (
 	FROM categories c
 	WHERE c.slug = ? AND c.deleted_at IS NULL;`
 	QueryCategoryGetCategories = `
-	SELECT c.id, c.name, c.slug,
+	SELECT c.id, c.name, c.slug, c.spot,
 	(
     SELECT COUNT(*)
     FROM posts p
@@ -23,13 +23,15 @@ const (
 	INSERT INTO categories (
 		name,
 		slug,
+		spot,
 		description
-	) VALUES (?, ?, ?);`
+	) VALUES (?, ?, ?, ?);`
 	QueryCategoryPatch = `
 	UPDATE categories
 	SET
 		name = COALESCE(?, name),
 		slug = COALESCE(?, slug),
+		spot = COALESCE(?, spot),
 		description = COALESCE(?, description),
 		updated_at = CURRENT_TIMESTAMP
 	WHERE slug = ? AND deleted_at IS NULL;`

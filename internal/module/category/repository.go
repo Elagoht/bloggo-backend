@@ -30,6 +30,7 @@ func (repository *CategoryRepository) CategoryCreate(
 	result, err := statement.Exec(
 		model.Name,
 		model.Slug,
+		model.Spot,
 		model.Description,
 	)
 	if err != nil {
@@ -54,6 +55,7 @@ func (repository *CategoryRepository) GetCategoryBySlug(
 		&category.Id,
 		&category.Name,
 		&category.Slug,
+		&category.Spot,
 		&category.Description,
 		&category.CreatedAt,
 		&category.UpdatedAt,
@@ -97,6 +99,7 @@ func (repository *CategoryRepository) GetCategories(
 			&category.Id,
 			&category.Name,
 			&category.Slug,
+			&category.Spot,
 			&category.BlogCount,
 		)
 		if err != nil {
@@ -124,6 +127,7 @@ func (repository *CategoryRepository) CategoryUpdate(
 	result, err := statement.Exec(
 		model.Name,
 		model.Slug,
+		model.Spot,
 		model.Description,
 		slug,
 	)
