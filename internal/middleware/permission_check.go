@@ -27,9 +27,10 @@ func RequirePermission(
 				), http.StatusUnauthorized)
 			}
 
+			// FMT print all permission store and values' types
+
 			// Check if userRole is a string and has the required permission
-			roleStr, ok := role.(string)
-			if !ok || !permissionStore.HasPermission(roleStr, requiredPermission) {
+			if !permissionStore.HasPermission(role.(int64), requiredPermission) {
 				handlers.WriteError(writer, apierrors.NewAPIError(
 					"Insufficent permission",
 					apierrors.ErrForbidden,

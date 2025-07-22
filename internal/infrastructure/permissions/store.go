@@ -6,8 +6,8 @@ import (
 
 type Store interface {
 	Load(db *sql.DB) error
-	HasPermission(role string, permission string) bool
+	HasPermission(role int64, permission string) bool
 }
 
 type permissionCell = map[string]bool
-type permissionStore = map[string]permissionCell
+type permissionStore = map[int64]permissionCell

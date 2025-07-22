@@ -42,7 +42,9 @@ func (store *memoryStore) Load(db *sql.DB) error {
 	store.permissions = make(permissionStore)
 
 	for rows.Next() {
-		var role, permission string
+		var role int64
+		var permission string
+
 		if err := rows.Scan(&role, &permission); err != nil {
 			return err
 		}
@@ -56,7 +58,7 @@ func (store *memoryStore) Load(db *sql.DB) error {
 
 // Checks if the given role has the specified permission.
 func (store *memoryStore) HasPermission(
-	role string,
+	role int64,
 	permission string,
 ) bool {
 	store.lock.RLock()
