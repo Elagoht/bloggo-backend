@@ -23,7 +23,9 @@ func (repository *AuthRepository) GetUserLoginDataByEmail(
 	var result = models.UserLoginDetails{}
 	err := row.Scan(
 		&result.UserId,
+		&result.UserName,
 		&result.RoleId,
+		&result.RoleName,
 		&result.PassphraseHash,
 	)
 	if err != nil {
@@ -36,12 +38,14 @@ func (repository *AuthRepository) GetUserLoginDataByEmail(
 func (repository *AuthRepository) GetUserLoginDataById(
 	userId int64,
 ) (*models.UserLoginDetails, error) {
-	row := repository.database.QueryRow("SELECT id, role_id, passphrase_hash FROM users WHERE id = ? AND deleted_at IS NULL;", userId)
+	row := repository.database.QueryRow(QueryUserLoginDataById, userId)
 
 	var result = models.UserLoginDetails{}
 	err := row.Scan(
 		&result.UserId,
+		&result.UserName,
 		&result.RoleId,
+		&result.RoleName,
 		&result.PassphraseHash,
 	)
 	if err != nil {
@@ -49,4 +53,29 @@ func (repository *AuthRepository) GetUserLoginDataById(
 	}
 
 	return &result, err
+}
+
+func (repository *AuthRepository) GetUserPermissionsById(
+	userId int64,
+) ([]string, error) {
+	rows, err := repository.database.Query(QueryUserPermissionsById, userId)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var permissions []string
+	for rows.Next() {
+		var permission string
+		if err := rows.Scan(&permission); err != nil {
+			return nil, err
+		}
+		permissions = append(permissions, permission)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return permissions, nil
 }

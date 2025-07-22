@@ -33,13 +33,13 @@ func (handler *AuthHandler) Login(
 		return
 	}
 
-	accessToken, refreshToken, err := handler.service.GenerateTokens(body)
+	session, refreshToken, err := handler.service.LoginUser(body)
 	if err != nil {
 		apierrors.MapErrors(err, writer, nil)
 		return
 	}
 
-	handler.sendTokens(writer, accessToken, refreshToken)
+	handler.sendSession(writer, session, refreshToken)
 }
 
 func (handler *AuthHandler) Refresh(
@@ -54,7 +54,7 @@ func (handler *AuthHandler) Refresh(
 	}
 
 	// Refresh all tokens
-	accessToken, refreshToken, err := handler.service.RefreshTokens(
+	session, newRefreshToken, err := handler.service.RefreshTokens(
 		refreshCookie.Value,
 	)
 	if err != nil {
@@ -62,7 +62,7 @@ func (handler *AuthHandler) Refresh(
 		return
 	}
 
-	handler.sendTokens(writer, accessToken, refreshToken)
+	handler.sendSession(writer, session, newRefreshToken)
 }
 
 func (handler *AuthHandler) Logout(
@@ -92,9 +92,9 @@ func (handler *AuthHandler) Logout(
 	writer.WriteHeader(http.StatusOK)
 }
 
-func (handler *AuthHandler) sendTokens(
+func (handler *AuthHandler) sendSession(
 	writer http.ResponseWriter,
-	accessToken string,
+	session *models.ResponseSession,
 	refreshToken string,
 ) {
 	// Set refresh token as an HTTP-Only cookie
@@ -109,8 +109,11 @@ func (handler *AuthHandler) sendTokens(
 	http.SetCookie(writer, &cookie)
 
 	// Write access token to response body
-	response := models.ResponseAccessToken{
-		AccessToken: accessToken,
+	response := models.ResponseSession{
+		AccessToken: session.AccessToken,
+		Name:        session.Name,
+		Role:        session.Role,
+		Permissions: session.Permissions,
 	}
 	json.NewEncoder(writer).Encode(response)
 }
