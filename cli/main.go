@@ -17,6 +17,7 @@ func main() {
 	// Register global middlewares
 	middlewares := []func(http.Handler) http.Handler{
 		middleware.ResponseJSON,
+		middleware.AllowSpecificOrigin,
 	}
 	application.RegisterGlobalMiddlewares(middlewares)
 
