@@ -33,7 +33,10 @@ func (service *AuthService) GenerateTokens(
 	// Compare passphrase hashes
 	details, err := service.repository.GetUserLoginDataByEmail(model.Email)
 	if err != nil {
-		return "", "", err
+		// Not sending "resource not found" error
+		// Do not allow hackers to brute force to
+		// find registered emails
+		return "", "", apierrors.ErrUnauthorized
 	}
 
 	if !cryptography.ComparePassphrase(
