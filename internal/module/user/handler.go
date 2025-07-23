@@ -98,3 +98,27 @@ func (handler *UserHandler) UserCreate(
 
 	json.NewEncoder(writer).Encode(created)
 }
+
+func (handler *UserHandler) UpdateSelfAvatar(
+	writer http.ResponseWriter,
+	request *http.Request,
+) {
+	userID, ok := handlers.GetContextValue[int64](writer, request, "userID")
+	if !ok {
+		return
+	}
+
+	file, fileHeader, ok := handlers.GetFormFile(writer, request, "avatar", 10<<20)
+	if !ok {
+		return
+	}
+	defer file.Close()
+
+	err := handler.service.UpdateAvatarById(userID, file, fileHeader)
+	if err != nil {
+		apierrors.MapErrors(err, writer, nil)
+		return
+	}
+
+	writer.WriteHeader(http.StatusNoContent)
+}

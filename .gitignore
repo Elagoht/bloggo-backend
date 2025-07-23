@@ -11,5 +11,8 @@ certs/
 # Built files
 bloggo
 
-# config files
+# Config files
 bloggo-config.json
+
+# Filesystem bucket files
+storage/

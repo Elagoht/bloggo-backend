@@ -17,7 +17,11 @@ const (
 	QueryUserCreate = `
 	INSERT INTO users (name, email, avatar, passphrase_hash, role_id)
 	VALUES (?, ?, ?, ?, ?);`
-	QueryUserUpdate     = ``
+	QueryUserUpdateById       = ``
+	QueryUserUpdateAvatarById = `
+	UPDATE users
+	SET avatar = ?
+	WHERE id = ? AND deleted_at IS NULL;`
 	QueryUserAssignRole = ``
 	QueryUserDelete     = ``
 )

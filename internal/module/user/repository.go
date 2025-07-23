@@ -121,3 +121,20 @@ func (repository *UserRepository) UserCreate(
 
 	return id, nil
 }
+
+func (repository *UserRepository) UpdateAvatarById(
+	userId int64,
+	fileName string,
+) error {
+	statement, err := repository.database.Prepare(QueryUserUpdateAvatarById)
+	if err != nil {
+		return err
+	}
+
+	_, err = statement.Exec(userId, fileName)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
