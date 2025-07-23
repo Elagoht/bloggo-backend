@@ -146,6 +146,58 @@ func (bucket *fileSystemBucket) Delete(name string) error {
 	return nil
 }
 
+// Delete files matching with pattern
+// whilst keeping matching with blacklist pattern
+func (bucket *fileSystemBucket) DeleteMatching(
+	pattern string,
+	blacklist string,
+) error {
+	bucket.mutex.Lock()
+	defer bucket.mutex.Unlock()
+
+	// Merge pattern with root directory
+	patternPath := filepath.Join(bucket.RootDir, pattern)
+
+	// Find matching files
+	matches, err := filepath.Glob(patternPath)
+	if err != nil {
+		return fmt.Errorf("failed to match pattern: %w", err)
+	}
+
+	// Merge blacklist pattern with root directory if not empty
+	var blacklistPath string
+	if blacklist != "" {
+		blacklistPath = filepath.Join(bucket.RootDir, blacklist)
+	}
+
+	// Delete matcing files
+	for _, filePath := range matches {
+		// Check if they are a file...
+		info, err := os.Stat(filePath)
+		if err != nil {
+			return fmt.Errorf("failed to stat file %s: %w", filePath, err)
+		}
+		if info.IsDir() {
+			continue // ...and not a directory
+		}
+
+		// Skip blacklisted files
+		if blacklist != "" {
+			matched, _ := filepath.Match(blacklistPath, filePath)
+			if matched {
+				continue
+			}
+		}
+
+		// Delete files
+		if err := os.Remove(filePath); err != nil {
+			return fmt.Errorf("failed to delete file %s: %w", filePath, err)
+		}
+	}
+
+	return nil
+}
+
 func (bucket *fileSystemBucket) makeSureRootDirExists() error {
 	if err := os.MkdirAll(bucket.RootDir, 0755); err != nil {
 		return fmt.Errorf("failed to create directory: %w", err)

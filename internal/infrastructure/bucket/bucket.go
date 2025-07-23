@@ -10,4 +10,5 @@ type Bucket interface {
 	Get(name string) ([]byte, error)
 	// Destroy data
 	Delete(name string) error
+	DeleteMatching(pattern string, blacklist string) error
 }
