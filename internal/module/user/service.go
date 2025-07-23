@@ -6,8 +6,9 @@ import (
 	"bloggo/internal/utils/cryptography"
 	"bloggo/internal/utils/filter"
 	"bloggo/internal/utils/pagination"
+	"fmt"
+	"log"
 	"mime/multipart"
-	"strconv"
 )
 
 type UserService struct {
@@ -62,27 +63,27 @@ func (service *UserService) UpdateAvatarById(
 	header *multipart.FileHeader,
 ) error {
 	// Create a unique name but related to user via a seperator.
-	fileName, err := service.createUserRelatedUUID(userID)
-	if err != nil {
-		return err
+	fileName := service.createUserRelatedUUID(userID) + ".png"
+
+	// Save new avatar
+	if err := service.bucket.SaveMultiPart(file, fileName); err != nil {
+		return fmt.Errorf("failed to save avatar: %w", err)
 	}
 
-	fileNameWithExtension := fileName + ".png"
-
-	// Upsert avatar image by userID to storage
-	if err := service.bucket.SaveMultiPart(
-		file,
-		fileNameWithExtension,
+	// Delete old avatar
+	if err := service.bucket.DeleteMatching(
+		fmt.Sprintf("%d_*.png", userID),
+		fileName, // Proptect new imate by blacklisting it
 	); err != nil {
-		return err
+		return fmt.Errorf("failed to delete old avatars: %w", err)
 	}
 
-	// Update new image URL on database
-	if err := service.repository.UpdateAvatarById(
-		userID,
-		fileNameWithExtension,
-	); err != nil {
-		return err
+	// Update database
+	if err := service.repository.UpdateAvatarById(userID, fileName); err != nil {
+		if deleteErr := service.bucket.Delete(fileName); deleteErr != nil {
+			log.Printf("Failed to delete avatar after db error: %v", deleteErr)
+		}
+		return fmt.Errorf("failed to update avatar in database: %w", err)
 	}
 
 	return nil
@@ -90,11 +91,7 @@ func (service *UserService) UpdateAvatarById(
 
 func (service *UserService) createUserRelatedUUID(
 	userID int64,
-) (string, error) {
-	uuid, err := cryptography.GenerateUniqueId()
-	if err != nil {
-		return "", err
-	}
-
-	return strconv.FormatInt(userID, 10) + "_" + uuid, nil
+) string {
+	uuid := cryptography.GenerateUniqueId()
+	return fmt.Sprintf("%d_%s", userID, uuid)
 }
