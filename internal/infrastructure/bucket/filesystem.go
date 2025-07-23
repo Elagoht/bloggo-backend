@@ -69,7 +69,7 @@ func (bucket *fileSystemBucket) Save(file []byte, name string) error {
 	filePath := filepath.Join(bucket.RootDir, name)
 
 	// Save file
-	if err := os.WriteFile(filePath, file, 0644); err != nil {
+	if err := os.WriteFile(filePath, file, 0600); err != nil {
 		return fmt.Errorf("failed to write file: %w", err)
 	}
 
@@ -95,7 +95,7 @@ func (bucket *fileSystemBucket) SaveMultiPart(
 	filePath := filepath.Join(bucket.RootDir, name)
 
 	// Create file
-	out, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
+	out, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
 	if err != nil {
 		return fmt.Errorf("failed to create file: %w", err)
 	}
