@@ -9,12 +9,8 @@ import (
 )
 
 // Creates a unique random string for refresh token.
-func GenerateUniqueId() (string, error) {
-	uniqueId, err := uuid.NewRandom()
-	if err != nil {
-		return "", err
-	}
-	return uniqueId.String(), nil
+func GenerateUniqueId() string {
+	return uuid.New().String()
 }
 
 // Creates a JWT with the given expiry and type.

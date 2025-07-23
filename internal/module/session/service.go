@@ -58,10 +58,7 @@ func (service *SessionService) CreateSession(
 		return nil, "", err
 	}
 
-	refreshToken, err = cryptography.GenerateUniqueId()
-	if err != nil {
-		return nil, "", err
-	}
+	refreshToken = cryptography.GenerateUniqueId()
 
 	// Get user permissions
 	permissions, err := service.repository.GetUserPermissionsById(details.UserId)
@@ -119,10 +116,7 @@ func (service *SessionService) RefreshSession(
 	}
 
 	// Rotate refresh token
-	newRefreshToken, err := cryptography.GenerateUniqueId()
-	if err != nil {
-		return nil, "", err
-	}
+	newRefreshToken := cryptography.GenerateUniqueId()
 
 	// Set new refresh token to Refresh Token Store
 	service.refreshStore.Set(
