@@ -70,7 +70,7 @@ func (repository *UserRepository) GetUsers(
 }
 
 func (repository *UserRepository) GetUserById(
-	id int,
+	id int64,
 ) (*models.ResponseUserDetails, error) {
 	row := repository.database.QueryRow(QueryUserGetById, id)
 

@@ -24,7 +24,7 @@ func (service *UserService) GetUsers(
 }
 
 func (service *UserService) GetUserById(
-	id int,
+	id int64,
 ) (*models.ResponseUserDetails, error) {
 	return service.repository.GetUserById(id)
 }

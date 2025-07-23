@@ -20,6 +20,24 @@ func NewUserHandler(service UserService) UserHandler {
 	}
 }
 
+func (handler *UserHandler) GetSelf(
+	writer http.ResponseWriter,
+	request *http.Request,
+) {
+	userID, ok := handlers.GetContextValue[int64](writer, request, "userID")
+	if !ok {
+		return
+	}
+
+	user, err := handler.service.GetUserById(userID)
+	if err != nil {
+		apierrors.MapErrors(err, writer, nil)
+		return
+	}
+
+	json.NewEncoder(writer).Encode(user)
+}
+
 func (handler *UserHandler) GetUsers(
 	writer http.ResponseWriter,
 	request *http.Request,
@@ -49,7 +67,7 @@ func (handler *UserHandler) GetUserById(
 	writer http.ResponseWriter,
 	request *http.Request,
 ) {
-	id, ok := handlers.GetParam[int](writer, request, "id")
+	id, ok := handlers.GetParam[int64](writer, request, "id")
 	if !ok {
 		return
 	}
