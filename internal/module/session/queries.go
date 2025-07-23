@@ -1,12 +1,12 @@
-package auth
+package session
 
 const (
-	QueryUserLoginDataByEmail = `
+	QuerySessionCreateDataByEmail = `
 	SELECT u.id, u.name, u.role_id, r.name AS role_name, u.passphrase_hash
 	FROM users u
 	JOIN roles r ON r.id = u.role_id
 	WHERE u.email = ? AND u.deleted_at IS NULL;`
-	QueryUserLoginDataById = `
+	QuerySessionCreateDataById = `
 	SELECT u.id, u.name, u.role_id, r.name AS role_name, u.passphrase_hash
 	FROM users u
 	JOIN roles r ON r.id = u.role_id

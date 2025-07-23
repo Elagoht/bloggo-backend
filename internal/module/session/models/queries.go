@@ -1,7 +1,7 @@
 package models
 
 // -- Login Related Data -- //
-type UserLoginDetails struct {
+type SessionCreateDetails struct {
 	UserId         int64
 	RoleId         int64
 	UserName       string

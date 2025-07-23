@@ -1,34 +1,34 @@
-package auth
+package session
 
 import (
 	"bloggo/internal/config"
 	"bloggo/internal/infrastructure/tokens"
-	"bloggo/internal/module/auth/models"
+	"bloggo/internal/module/session/models"
 	"bloggo/internal/utils/apierrors"
 	"bloggo/internal/utils/cryptography"
 )
 
-type AuthService struct {
-	repository   AuthRepository
+type SessionService struct {
+	repository   SessionRepository
 	config       *config.Config
 	refreshStore tokens.Store
 }
 
-func NewAuthService(
-	repository AuthRepository,
+func NewSessionService(
+	repository SessionRepository,
 	config *config.Config,
 	refreshStore tokens.Store,
 
-) AuthService {
-	return AuthService{
+) SessionService {
+	return SessionService{
 		repository,
 		config,
 		refreshStore,
 	}
 }
 
-func (service *AuthService) LoginUser(
-	model *models.RequestLogin,
+func (service *SessionService) CreateSession(
+	model *models.RequestSessionCreate,
 ) (session *models.ResponseSession, refreshToken string, err error) {
 	// Compare passphrase hashes
 	details, err := service.repository.GetUserLoginDataByEmail(model.Email)
@@ -87,7 +87,7 @@ func (service *AuthService) LoginUser(
 	return sessionData, refreshToken, nil
 }
 
-func (service *AuthService) RefreshTokens(
+func (service *SessionService) RefreshSession(
 	refreshToken string,
 ) (session *models.ResponseSession, rotatedRefreshToken string, err error) {
 	userId, found := service.refreshStore.Get(refreshToken)
@@ -143,7 +143,7 @@ func (service *AuthService) RefreshTokens(
 	return sessionData, newRefreshToken, nil
 }
 
-func (service *AuthService) RevokeRefreshToken(
+func (service *SessionService) RevokeSession(
 	refreshToken string,
 ) {
 	// Revoke refresh token

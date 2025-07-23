@@ -1,39 +1,39 @@
-package auth
+package session
 
 import (
 	"bloggo/internal/config"
-	"bloggo/internal/module/auth/models"
+	"bloggo/internal/module/session/models"
 	"bloggo/internal/utils/apierrors"
 	"bloggo/internal/utils/handlers"
 	"encoding/json"
 	"net/http"
 )
 
-type AuthHandler struct {
-	service AuthService
+type SessionHandler struct {
+	service SessionService
 	config  *config.Config
 }
 
-func NewAuthHandler(
-	service AuthService,
+func NewSessionHandler(
+	service SessionService,
 	config *config.Config,
-) AuthHandler {
-	return AuthHandler{
+) SessionHandler {
+	return SessionHandler{
 		service,
 		config,
 	}
 }
 
-func (handler *AuthHandler) Login(
+func (handler *SessionHandler) CreateSession(
 	writer http.ResponseWriter,
 	request *http.Request,
 ) {
-	body, ok := handlers.BindAndValidate[*models.RequestLogin](writer, request)
+	body, ok := handlers.BindAndValidate[*models.RequestSessionCreate](writer, request)
 	if !ok {
 		return
 	}
 
-	session, refreshToken, err := handler.service.LoginUser(body)
+	session, refreshToken, err := handler.service.CreateSession(body)
 	if err != nil {
 		apierrors.MapErrors(err, writer, nil)
 		return
@@ -42,7 +42,7 @@ func (handler *AuthHandler) Login(
 	handler.sendSession(writer, session, refreshToken)
 }
 
-func (handler *AuthHandler) Refresh(
+func (handler *SessionHandler) RefreshSession(
 	writer http.ResponseWriter,
 	request *http.Request,
 ) {
@@ -54,7 +54,7 @@ func (handler *AuthHandler) Refresh(
 	}
 
 	// Refresh all tokens
-	session, newRefreshToken, err := handler.service.RefreshTokens(
+	session, newRefreshToken, err := handler.service.RefreshSession(
 		refreshCookie.Value,
 	)
 	if err != nil {
@@ -65,7 +65,7 @@ func (handler *AuthHandler) Refresh(
 	handler.sendSession(writer, session, newRefreshToken)
 }
 
-func (handler *AuthHandler) Logout(
+func (handler *SessionHandler) DeleteSession(
 	writer http.ResponseWriter,
 	request *http.Request,
 ) {
@@ -77,7 +77,7 @@ func (handler *AuthHandler) Logout(
 	}
 
 	// Revoke refresh token from store
-	handler.service.RevokeRefreshToken(refreshCookie.Value)
+	handler.service.RevokeSession(refreshCookie.Value)
 
 	// Remove refresh token from client
 	cookie := http.Cookie{
@@ -92,7 +92,7 @@ func (handler *AuthHandler) Logout(
 	writer.WriteHeader(http.StatusOK)
 }
 
-func (handler *AuthHandler) sendSession(
+func (handler *SessionHandler) sendSession(
 	writer http.ResponseWriter,
 	session *models.ResponseSession,
 	refreshToken string,

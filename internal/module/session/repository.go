@@ -1,26 +1,26 @@
-package auth
+package session
 
 import (
-	"bloggo/internal/module/auth/models"
+	"bloggo/internal/module/session/models"
 	"database/sql"
 )
 
-type AuthRepository struct {
+type SessionRepository struct {
 	database *sql.DB
 }
 
-func NewAuthRepository(database *sql.DB) AuthRepository {
-	return AuthRepository{
+func NewSessionRepository(database *sql.DB) SessionRepository {
+	return SessionRepository{
 		database,
 	}
 }
 
-func (repository *AuthRepository) GetUserLoginDataByEmail(
+func (repository *SessionRepository) GetUserLoginDataByEmail(
 	email string,
-) (*models.UserLoginDetails, error) {
-	row := repository.database.QueryRow(QueryUserLoginDataByEmail, email)
+) (*models.SessionCreateDetails, error) {
+	row := repository.database.QueryRow(QuerySessionCreateDataByEmail, email)
 
-	var result = models.UserLoginDetails{}
+	var result = models.SessionCreateDetails{}
 	err := row.Scan(
 		&result.UserId,
 		&result.UserName,
@@ -35,12 +35,12 @@ func (repository *AuthRepository) GetUserLoginDataByEmail(
 	return &result, err
 }
 
-func (repository *AuthRepository) GetUserLoginDataById(
+func (repository *SessionRepository) GetUserLoginDataById(
 	userId int64,
-) (*models.UserLoginDetails, error) {
-	row := repository.database.QueryRow(QueryUserLoginDataById, userId)
+) (*models.SessionCreateDetails, error) {
+	row := repository.database.QueryRow(QuerySessionCreateDataById, userId)
 
-	var result = models.UserLoginDetails{}
+	var result = models.SessionCreateDetails{}
 	err := row.Scan(
 		&result.UserId,
 		&result.UserName,
@@ -55,7 +55,7 @@ func (repository *AuthRepository) GetUserLoginDataById(
 	return &result, err
 }
 
-func (repository *AuthRepository) GetUserPermissionsById(
+func (repository *SessionRepository) GetUserPermissionsById(
 	userId int64,
 ) ([]string, error) {
 	rows, err := repository.database.Query(QueryUserPermissionsById, userId)
