@@ -32,7 +32,7 @@ func NewModule(
 }
 
 func (module SessionModule) RegisterModule(router *chi.Mux) {
-	router.Route("/Session", func(router chi.Router) {
+	router.Route("/session", func(router chi.Router) {
 		router.Post("/", module.Handler.CreateSession)
 		router.Post("/refresh", module.Handler.RefreshSession)
 		router.Delete("/", module.Handler.DeleteSession)
