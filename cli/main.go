@@ -4,8 +4,8 @@ import (
 	"bloggo/internal/app"
 	"bloggo/internal/middleware"
 	"bloggo/internal/module"
-	"bloggo/internal/module/auth"
 	"bloggo/internal/module/category"
+	"bloggo/internal/module/session"
 	"bloggo/internal/module/user"
 	"net/http"
 )
@@ -25,7 +25,7 @@ func main() {
 	modules := []module.Module{
 		category.NewModule(application.Database, &application.Config, application.Permissions),
 		user.NewModule(application.Database),
-		auth.NewModule(application.Database, &application.Config),
+		session.NewModule(application.Database, &application.Config),
 	}
 	application.RegisterModules(modules)
 
