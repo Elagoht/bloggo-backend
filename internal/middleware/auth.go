@@ -59,6 +59,7 @@ func AuthMiddleware(cfg *config.Config) func(http.Handler) http.Handler {
 
 			// Extract the role ID (rid) from the claims (JWT numbers are float64)
 			rid, ok := claims["rid"].(float64)
+			uid, ok := claims["uid"].(float64)
 			if !ok {
 				// If the role is not found, return 401 Unauthorized
 				handlers.WriteError(w, apierrors.NewAPIError(
@@ -70,6 +71,7 @@ func AuthMiddleware(cfg *config.Config) func(http.Handler) http.Handler {
 
 			// Set userRole in the request context as int64
 			ctx := context.WithValue(r.Context(), "userRole", int64(rid))
+			ctx = context.WithValue(ctx, "userID", int64(uid))
 			// Call the next handler with the updated context
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
