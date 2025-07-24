@@ -22,6 +22,11 @@ func (validator *ImageValidator) Validate(
 	file multipart.File,
 	header *multipart.FileHeader,
 ) error {
+	// Check size
+	if header.Size > validator.MaxSize {
+		return fmt.Errorf("file is too large: max %d bytes allowed", validator.MaxSize)
+	}
+
 	// Read first 512 byte to get mimetype
 	buffer := make([]byte, 512)
 	if _, err := file.Read(buffer); err != nil {

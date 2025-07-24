@@ -27,7 +27,7 @@ func NewModule(
 	if err != nil {
 		log.Fatalln("User module cannot created file storage")
 	}
-	imageValidator := validatefile.NewImageValidator(5)
+	imageValidator := validatefile.NewImageValidator(5 << 20) // 5MB
 	avatarResizer := transformfile.NewImageTransformer(512, 512)
 
 	repository := NewUserRepository(database)
