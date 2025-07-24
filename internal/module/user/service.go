@@ -92,7 +92,7 @@ func (service *UserService) UpdateAvatarById(
 	// Delete old avatar
 	if err := service.bucket.DeleteMatching(
 		fmt.Sprintf("%d_*.webp", userID),
-		fileName, // Proptect new image by blacklisting it
+		fileName, // Protect new image by blacklisting it
 	); err != nil {
 		return fmt.Errorf("failed to delete old avatars: %w", err)
 	}
