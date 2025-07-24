@@ -15,6 +15,13 @@ type ImageTransformer struct {
 	Height uint
 }
 
+func NewImageTransformer(width uint, height uint) FileTransformer {
+	return &ImageTransformer{
+		width,
+		height,
+	}
+}
+
 func (transformer *ImageTransformer) Transform(
 	input multipart.File,
 ) ([]byte, error) {
