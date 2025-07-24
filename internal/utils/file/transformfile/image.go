@@ -1,4 +1,4 @@
-package transtormfile
+package transformfile
 
 import (
 	"bytes"
