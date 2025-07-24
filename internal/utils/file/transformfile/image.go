@@ -4,10 +4,16 @@ import (
 	"bytes"
 	"fmt"
 	"image"
+	"io"
 	"mime/multipart"
 
 	"github.com/chai2010/webp"
 	"github.com/nfnt/resize"
+
+	_ "github.com/chai2010/webp"
+	_ "image/gif"
+	_ "image/jpeg"
+	_ "image/png"
 )
 
 type ImageTransformer struct {
@@ -25,6 +31,11 @@ func NewImageTransformer(width uint, height uint) FileTransformer {
 func (transformer *ImageTransformer) Transform(
 	input multipart.File,
 ) ([]byte, error) {
+	// Make sure file seeker at start
+	if seeker, ok := input.(io.Seeker); ok {
+		seeker.Seek(0, io.SeekStart)
+	}
+
 	// Decode image
 	img, _, err := image.Decode(input)
 	if err != nil {
@@ -40,11 +51,11 @@ func (transformer *ImageTransformer) Transform(
 	)
 
 	// Convert to webp
-	var buf bytes.Buffer
-	err = webp.Encode(&buf, resized, &webp.Options{Quality: 90})
+	var buffer bytes.Buffer
+	err = webp.Encode(&buffer, resized, &webp.Options{Quality: 90})
 	if err != nil {
 		return nil, fmt.Errorf("failed to encode image as webp: %w", err)
 	}
 
-	return buf.Bytes(), nil
+	return buffer.Bytes(), nil
 }
