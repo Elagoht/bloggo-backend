@@ -4,6 +4,8 @@ import (
 	"bloggo/internal/config"
 	"bloggo/internal/infrastructure/bucket"
 	"bloggo/internal/middleware"
+	"bloggo/internal/utils/file/transformfile"
+	"bloggo/internal/utils/file/validatefile"
 	"database/sql"
 	"log"
 
@@ -25,8 +27,11 @@ func NewModule(
 	if err != nil {
 		log.Fatalln("User module cannot created file storage")
 	}
+	imageValidator := validatefile.NewImageValidator(5)
+	avatarResizer := transformfile.NewImageTransformer(512, 512)
+
 	repository := NewUserRepository(database)
-	service := NewUserService(repository, bucket)
+	service := NewUserService(repository, bucket, imageValidator, avatarResizer)
 	handler := NewUserHandler(service)
 
 	return UserModule{
