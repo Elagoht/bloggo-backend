@@ -18,6 +18,7 @@ func main() {
 	middlewares := []func(http.Handler) http.Handler{
 		middleware.ResponseJSON,
 		middleware.AllowSpecificOrigin,
+		middleware.GlobalRateLimiter(),
 	}
 	application.RegisterGlobalMiddlewares(middlewares)
 
