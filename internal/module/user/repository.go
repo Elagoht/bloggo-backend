@@ -131,7 +131,7 @@ func (repository *UserRepository) UpdateAvatarById(
 		return err
 	}
 
-	_, err = statement.Exec(userId, fileName)
+	_, err = statement.Exec(fileName, userId)
 	if err != nil {
 		return err
 	}
