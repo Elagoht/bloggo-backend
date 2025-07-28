@@ -7,6 +7,7 @@ import (
 	"bloggo/internal/module/category"
 	"bloggo/internal/module/health"
 	"bloggo/internal/module/session"
+	"bloggo/internal/module/storage"
 	"bloggo/internal/module/user"
 	"net/http"
 )
@@ -28,6 +29,7 @@ func main() {
 		category.NewModule(application.Database, &application.Config, application.Permissions),
 		user.NewModule(application.Database, &application.Config),
 		session.NewModule(application.Database, &application.Config),
+		storage.NewModule(application.Database, &application.Config, application.Permissions),
 		health.NewModule(),
 	}
 	application.RegisterModules(modules)

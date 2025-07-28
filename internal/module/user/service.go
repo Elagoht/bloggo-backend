@@ -44,7 +44,15 @@ func (service *UserService) GetUsers(
 func (service *UserService) GetUserById(
 	id int64,
 ) (*models.ResponseUserDetails, error) {
-	return service.repository.GetUserById(id)
+	user, err := service.repository.GetUserById(id)
+	if err != nil {
+		return nil, err
+	}
+
+	if user.Avatar != nil && *user.Avatar != "" {
+		*user.Avatar = fmt.Sprintf("/storage/avatar/%s", *user.Avatar)
+	}
+	return user, nil
 }
 
 func (service *UserService) UserCreate(
@@ -66,7 +74,7 @@ func (service *UserService) UserCreate(
 }
 
 func (service *UserService) UpdateAvatarById(
-	userID int64,
+	userId int64,
 	file multipart.File,
 	header *multipart.FileHeader,
 ) error {
@@ -82,7 +90,8 @@ func (service *UserService) UpdateAvatarById(
 	}
 
 	// Create a unique name but related to user via a seperator.
-	fileName := service.createUserRelatedUUID(userID) + ".webp"
+	imageId := service.createUserRelatedUUID(userId)
+	fileName := imageId + ".webp"
 
 	// Save new avatar
 	if err := service.bucket.Save(converted, fileName); err != nil {
@@ -91,14 +100,14 @@ func (service *UserService) UpdateAvatarById(
 
 	// Delete old avatar
 	if err := service.bucket.DeleteMatching(
-		fmt.Sprintf("%d_*.webp", userID),
+		fmt.Sprintf("%d_*.webp", userId),
 		fileName, // Protect new image by blacklisting it
 	); err != nil {
 		return fmt.Errorf("failed to delete old avatars: %w", err)
 	}
 
 	// Update database
-	if err := service.repository.UpdateAvatarById(userID, fileName); err != nil {
+	if err := service.repository.UpdateAvatarById(userId, imageId); err != nil {
 		if deleteErr := service.bucket.Delete(fileName); deleteErr != nil {
 			log.Printf("Failed to delete avatar after db error: %v", deleteErr)
 		}
