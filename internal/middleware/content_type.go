@@ -10,7 +10,7 @@ func ResponseJSON(next http.Handler) http.Handler {
 		writer http.ResponseWriter,
 		request *http.Request,
 	) {
-		if !strings.HasPrefix(request.URL.Path, "/storage/") {
+		if !strings.HasPrefix(request.URL.Path, "/bucket/") {
 			writer.Header().Add("Content-Type", "application/json")
 		}
 		next.ServeHTTP(writer, request)
