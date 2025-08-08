@@ -28,7 +28,7 @@ const (
 	JOIN post_versions pv ON pv.id = p.current_version_id
 	LEFT JOIN categories c ON c.id = p.category_id
 	LEFT JOIN users u ON u.id = p.created_by
-	WHERE p.deleted_at IS NULL;`
+	WHERE p.deleted_at IS NULL`
 	QueryPostCreate     = ``
 	QueryPostPatch      = ``
 	QueryPostSoftDelete = ``
