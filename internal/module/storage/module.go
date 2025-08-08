@@ -30,9 +30,9 @@ func NewModule(
 }
 
 func (module StorageModule) RegisterModule(router *chi.Mux) {
-	router.Route("/bucket", func(router chi.Router) {
+	router.Route("/uploads", func(router chi.Router) {
 		router.With(middleware.AuthMiddleware(module.Config)).Route(
-			"/bucket",
+			"/uploads",
 			func(router chi.Router) {
 				// authority := permission.NewChecker(module.Permissions)
 			},

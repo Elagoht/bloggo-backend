@@ -50,7 +50,7 @@ func (service *UserService) GetUserById(
 	}
 
 	if user.Avatar != nil && *user.Avatar != "" {
-		*user.Avatar = fmt.Sprintf("/storage/avatar/%s", *user.Avatar)
+		*user.Avatar = fmt.Sprintf("/uploads/avatar/%s", *user.Avatar)
 	}
 	return user, nil
 }

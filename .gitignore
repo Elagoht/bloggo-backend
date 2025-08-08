@@ -15,4 +15,4 @@ bloggo
 bloggo-config.json
 
 # Filesystem bucket files
-bucket/
+uploads/

@@ -23,7 +23,7 @@ func NewFileSystemBucket(subDir string) (Bucket, error) {
 	}
 
 	// Set main storage as 'cwd/storage'
-	baseBucketDir := filepath.Join(cwd, "storage")
+	baseBucketDir := filepath.Join(cwd, "uploads")
 
 	// Calculate final, absolute path
 	finalRootDir := baseBucketDir
@@ -56,7 +56,7 @@ func NewFileSystemBucket(subDir string) (Bucket, error) {
 // Save byte array to a file with given name
 func (bucket *fileSystemBucket) Save(file []byte, name string) error {
 	if name == "" {
-		return errors.New("File name cannot be null")
+		return errors.New("file name cannot be null")
 	}
 
 	bucket.mutex.Lock()
@@ -82,7 +82,7 @@ func (bucket *fileSystemBucket) SaveMultiPart(
 	name string,
 ) error {
 	if name == "" {
-		return errors.New("File name cannot be null")
+		return errors.New("file name cannot be null")
 	}
 
 	bucket.mutex.Lock()
@@ -113,7 +113,7 @@ func (bucket *fileSystemBucket) SaveMultiPart(
 // Read the file with given name
 func (bucket *fileSystemBucket) Get(name string) ([]byte, error) {
 	if name == "" {
-		return nil, errors.New("File name cannot be null")
+		return nil, errors.New("file name cannot be null")
 	}
 
 	bucket.mutex.RLock()
@@ -132,7 +132,7 @@ func (bucket *fileSystemBucket) Get(name string) ([]byte, error) {
 // Delete the file with given name
 func (bucket *fileSystemBucket) Delete(name string) error {
 	if name == "" {
-		return errors.New("File name cannot be null")
+		return errors.New("file name cannot be null")
 	}
 	filePath := filepath.Join(bucket.RootDir, name)
 

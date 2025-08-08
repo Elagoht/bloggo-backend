@@ -22,7 +22,7 @@ func (handler *StorageHandler) ServeUserAvatars(
 	}
 
 	avatarPath := filepath.Join(
-		"storage",
+		"uploads",
 		"users",
 		"avatars",
 		imageId+".webp",
