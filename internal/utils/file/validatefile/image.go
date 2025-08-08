@@ -24,7 +24,10 @@ func (validator *ImageValidator) Validate(
 ) error {
 	// Check size
 	if header.Size > validator.MaxSize {
-		return fmt.Errorf("file is too large: max %d bytes allowed", validator.MaxSize)
+		return fmt.Errorf(
+			"file is too large: max %d bytes allowed",
+			validator.MaxSize,
+		)
 	}
 
 	// Read first 512 byte to get mimetype
