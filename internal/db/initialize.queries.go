@@ -60,7 +60,8 @@ const (
   deleted_at TIMESTAMP WITH TIME ZONE,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
   FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
-);`
+);
+  CREATE INDEX IF NOT EXISTS idx_posts_id_deleted_at ON posts(id, deleted_at);`
 	CreatePostSlugUnique = `CREATE UNIQUE INDEX IF NOT EXISTS unique_active_slug_post
   ON posts(slug)
   WHERE deleted_at IS NULL;`
@@ -86,14 +87,17 @@ const (
   created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP WITH TIME ZONE,
   deleted_at TIMESTAMP WITH TIME ZONE
-);`
+);
+  CREATE UNIQUE INDEX IF NOT EXISTS idx_tags_slug ON tags(slug) WHERE deleted_at IS NULL;`
 	CreatePostTags = `CREATE TABLE IF NOT EXISTS post_tags (
   post_id INT NOT NULL,
   tag_id INT NOT NULL,
   PRIMARY KEY (post_id, tag_id),
   FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
   FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE
-);`
+);
+  CREATE INDEX IF NOT EXISTS idx_post_tags_tag_id ON post_tags(tag_id);
+  CREATE INDEX IF NOT EXISTS idx_post_tags_post_id ON post_tags(post_id);`
 	// VIEWS
 	CreateViews = `CREATE TABLE IF NOT EXISTS post_views (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
