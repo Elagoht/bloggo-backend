@@ -12,7 +12,7 @@ const (
   updated_at TIMESTAMP WITH TIME ZONE,
   last_login TIMESTAMP WITH TIME ZONE,
   deleted_at TIMESTAMP WITH TIME ZONE,
-  role_id INT NOT NULL,
+  role_id INTEGER NOT NULL,
   FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE RESTRICT
 );`
 	CreateEmailUnique = `CREATE UNIQUE INDEX IF NOT EXISTS unique_active_email
@@ -28,8 +28,8 @@ const (
   name VARCHAR(50) NOT NULL UNIQUE
 );`
 	CreateRolePermissions = `CREATE TABLE IF NOT EXISTS role_permissions (
-  role_id INT NOT NULL,
-  permission_id INT NOT NULL,
+  role_id INTEGER NOT NULL,
+  permission_id INTEGER NOT NULL,
   PRIMARY KEY (role_id, permission_id),
   FOREIGN KEY (role_id) REFERENCES roles(id),
   FOREIGN KEY (permission_id) REFERENCES permissions(id)
@@ -44,41 +44,50 @@ const (
   created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP WITH TIME ZONE,
   deleted_at TIMESTAMP WITH TIME ZONE
-);`
-	CreateCategorySlugUnique = `CREATE UNIQUE INDEX IF NOT EXISTS unique_active_slug_category
+);
+  CREATE UNIQUE INDEX IF NOT EXISTS unique_active_slug_category
   ON categories(slug)
   WHERE deleted_at IS NULL;`
-	// POST AND VERSIONS
+	// POSTS
 	CreatePosts = `CREATE TABLE IF NOT EXISTS posts (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  user_id INT NOT NULL,
-  category_id INT NULL,
-  slug VARCHAR(150) NOT NULL,
-  published_version_id INT NULL,
+  created_by INTEGER NOT NULL,
+  category_id INTEGER NULL,
+  current_version_id INTEGER NULL,
   created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP WITH TIME ZONE,
   deleted_at TIMESTAMP WITH TIME ZONE,
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-  FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
+  FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE RESTRICT,
+  FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL,
+  FOREIGN KEY (current_version_id) REFERENCES post_versions(id) ON DELETE SET NULL
 );
-  CREATE INDEX IF NOT EXISTS idx_posts_id_deleted_at ON posts(id, deleted_at);`
-	CreatePostSlugUnique = `CREATE UNIQUE INDEX IF NOT EXISTS unique_active_slug_post
-  ON posts(slug)
-  WHERE deleted_at IS NULL;`
+  CREATE INDEX IF NOT EXISTS idx_posts_deleted_at ON posts(deleted_at);`
+	// POST VERSIONS
 	CreatePostVersions = `CREATE TABLE IF NOT EXISTS post_versions (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  post_id INT NOT NULL,
-  title TEXT NOT NULL,
-  description TEXT NOT NULL,
+  post_id INTEGER NOT NULL,
+  title VARCHAR(250) NOT NULL,
+  slug VARCHAR(250) NOT NULL,
   content TEXT NOT NULL,
   cover_image VARCHAR(255) NULL,
-  status VARCHAR(20) NOT NULL DEFAULT 'draft',
-  created_by INT NOT NULL,
+  description VARCHAR(155) NOT NULL,
+  spot VARCHAR(75) NOT NULL,
+  status INTEGER NOT NULL DEFAULT 0,
+  is_active BOOLEAN NOT NULL DEFAULT 0,
+  created_by INTEGER NOT NULL,
+  status_changed_at TIMESTAMP WITH TIME ZONE NULL,
+  status_changed_by INTEGER NULL,
+  status_change_note TEXT NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  deleted_at TIMESTAMP WITH TIME ZONE,
+  updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
-  FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
-);`
+  FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
+  FOREIGN KEY (status_changed_by) REFERENCES users(id) ON DELETE SET NULL
+);
+  CREATE INDEX IF NOT EXISTS idx_post_versions_post_id_status
+  ON post_versions(post_id, status);
+  CREATE UNIQUE INDEX IF NOT EXISTS idx_post_versions_slug_status
+  ON post_versions(slug, status)
+  WHERE status = 5; `
 	// TAGS
 	CreateTags = `CREATE TABLE IF NOT EXISTS tags (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -90,8 +99,8 @@ const (
 );
   CREATE UNIQUE INDEX IF NOT EXISTS idx_tags_slug ON tags(slug) WHERE deleted_at IS NULL;`
 	CreatePostTags = `CREATE TABLE IF NOT EXISTS post_tags (
-  post_id INT NOT NULL,
-  tag_id INT NOT NULL,
+  post_id INTEGER NOT NULL,
+  tag_id INTEGER NOT NULL,
   PRIMARY KEY (post_id, tag_id),
   FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
   FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE
@@ -101,24 +110,15 @@ const (
 	// VIEWS
 	CreateViews = `CREATE TABLE IF NOT EXISTS post_views (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  post_id INT NOT NULL,
+  post_id INTEGER NOT NULL,
   viewed_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
   user_agent TEXT NULL,
-  FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE
-);`
-	// SCHEDULES
-	CreateSchedules = `CREATE TABLE IF NOT EXISTS schedules (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  post_id INT NOT NULL,
-  scheduled_at TIMESTAMP WITH TIME ZONE NOT NULL,
-  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  executed_at TIMESTAMP WITH TIME ZONE NULL,
   FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE
 );`
 	// AUDIT LOGS
 	CreateAuditLogs = `CREATE TABLE IF NOT EXISTS audit_logs (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  user_id INTEGER NOT NULL,
+  user_id INTEGER NULL,
   entity TEXT NOT NULL,
   entity_id INTEGER NOT NULL,
   action TEXT NOT NULL,
@@ -134,13 +134,10 @@ var InitializeQueries = []string{
 	CreatePermission,
 	CreateRolePermissions,
 	CreateCategories,
-	CreateCategorySlugUnique,
 	CreatePosts,
-	CreatePostSlugUnique,
 	CreatePostVersions,
 	CreateTags,
 	CreatePostTags,
 	CreateViews,
-	CreateSchedules,
 	CreateAuditLogs,
 }
