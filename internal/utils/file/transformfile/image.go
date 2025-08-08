@@ -7,13 +7,12 @@ import (
 	"io"
 	"mime/multipart"
 
-	"github.com/chai2010/webp"
-	"github.com/nfnt/resize"
-
-	_ "github.com/chai2010/webp"
 	_ "image/gif"
 	_ "image/jpeg"
 	_ "image/png"
+
+	"github.com/chai2010/webp"
+	"github.com/nfnt/resize"
 )
 
 type ImageTransformer struct {
