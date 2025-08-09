@@ -29,7 +29,11 @@ const (
 	LEFT JOIN categories c ON c.id = p.category_id
 	LEFT JOIN users u ON u.id = p.created_by
 	WHERE p.deleted_at IS NULL`
-	QueryPostCreate     = ``
+	QueryPostCreate = `
+	INSERT INTO posts (title, content, cover, description, spot, category_id)
+	VALUES
+		()
+		`
 	QueryPostPatch      = ``
 	QueryPostSoftDelete = ``
 )
