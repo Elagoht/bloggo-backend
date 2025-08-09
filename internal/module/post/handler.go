@@ -92,6 +92,28 @@ func (handler *PostHandler) ListPostVersionsGetByPostId(
 	json.NewEncoder(writer).Encode(versions)
 }
 
+func (handler *PostHandler) GetPostVersionById(
+	writer http.ResponseWriter,
+	request *http.Request,
+) {
+	postId, ok := handlers.GetParam[int64](writer, request, "id")
+	if !ok {
+		return
+	}
+	versionId, ok := handlers.GetParam[int64](writer, request, "versionId")
+	if !ok {
+		return
+	}
+
+	version, err := handler.service.GetPostVersionById(postId, versionId)
+	if err != nil {
+		apierrors.MapErrors(err, writer, nil)
+		return
+	}
+
+	json.NewEncoder(writer).Encode(version)
+}
+
 func (handler *PostHandler) DeletePostById(
 	writer http.ResponseWriter,
 	request *http.Request,

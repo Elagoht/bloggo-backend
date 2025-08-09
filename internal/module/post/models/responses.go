@@ -14,20 +14,16 @@ type ResponsePostDetails struct {
 		Name   string  `json:"name"`
 		Avatar *string `json:"avatar,omitempty"`
 	} `json:"author"`
-	Title            *string `json:"title"`
-	Slug             *string `json:"slug"`
-	Content          *string `json:"content"`
-	CoverImage       *string `json:"coverImage"`
-	Description      *string `json:"description"`
-	Spot             *string `json:"spot"`
-	Status           int64   `json:"status"`
-	StatusChangedAt  *string `json:"statusChangedAt"`
-	StatusChangedBy  *string `json:"statusChangedBy"`
-	StatusChangeNote *string `json:"statusChangeNote"`
-	CreatedBy        string  `json:"createdBy"`
-	CreatedAt        *string `json:"createdAt"`
-	UpdatedAt        *string `json:"updatedAt"`
-	Category         struct {
+	Title       *string `json:"title"`
+	Slug        *string `json:"slug"`
+	Content     *string `json:"content"`
+	CoverImage  *string `json:"coverImage"`
+	Description *string `json:"description"`
+	Spot        *string `json:"spot"`
+	Status      int64   `json:"status"`
+	CreatedAt   *string `json:"createdAt"`
+	UpdatedAt   *string `json:"updatedAt"`
+	Category    struct {
 		Id   *string `json:"id"`
 		Name *string `json:"name"`
 		Slug *string `json:"slug"`
@@ -79,4 +75,31 @@ type ResponseVersionsOfPost struct {
 		Avatar *string `json:"avatar"`
 	} `json:"originalAuthor"`
 	Versions []PostVersionsCard `json:"versions"`
+}
+
+// -- Post Specific Version List Item -- //
+type ResponseVersionOfPost struct {
+	VersionId     int64 `json:"versionId"`
+	VersionAuthor struct {
+		Id     int64   `json:"id"`
+		Name   string  `json:"name"`
+		Avatar *string `json:"avatar,omitempty"`
+	} `json:"versionAuthor"`
+	Title            *string `json:"title"`
+	Slug             *string `json:"slug"`
+	Content          *string `json:"content"`
+	CoverImage       *string `json:"coverImage"`
+	Description      *string `json:"description"`
+	Spot             *string `json:"spot"`
+	Status           int64   `json:"status"`
+	StatusChangedAt  *string `json:"statusChangedAt"`
+	StatusChangedBy  *string `json:"statusChangedBy"`
+	StatusChangeNote *string `json:"statusChangeNote"`
+	CreatedAt        *string `json:"createdAt"`
+	UpdatedAt        *string `json:"updatedAt"`
+	Category         struct {
+		Id   *string `json:"id"`
+		Name *string `json:"name"`
+		Slug *string `json:"slug"`
+	} `json:"category"`
 }

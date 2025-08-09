@@ -6,13 +6,15 @@ const (
 		p.id as post_id, pv.id as version_id,
 		u.id as author_id, u.name as author_name, u.avatar as author_avatar,
 		pv.title, pv.slug, pv.content, pv.cover_image, pv.description, pv.spot,
-		pv.status, pv.status_changed_at, pv.status_changed_by, pv.status_change_note,
-		pv.created_by, pv.created_at, pv.updated_at,
+		pv.status, pv.created_at, pv.updated_at,
 		c.slug AS category_slug, c.id AS category_id, c.name AS category_name
 	FROM posts p
-	JOIN post_versions pv ON pv.id = p.current_version_id
-	LEFT JOIN categories c ON c.id = pv.category_id
-	LEFT JOIN users u ON u.id = p.created_by
+	JOIN post_versions pv
+	ON pv.id = p.current_version_id
+	LEFT JOIN categories c
+	ON c.id = pv.category_id
+	LEFT JOIN users u
+	ON u.id = p.created_by
 	WHERE pv.slug = ?
 		AND p.deleted_at IS NULL
 	LIMIT 1;`
@@ -21,13 +23,15 @@ const (
 		p.id as post_id, pv.id as version_id,
 		u.id as author_id, u.name as author_name, u.avatar as author_avatar,
 		pv.title, pv.slug, pv.content, pv.cover_image, pv.description, pv.spot,
-		pv.status, pv.status_changed_at, pv.status_changed_by, pv.status_change_note,
-		pv.created_by, pv.created_at, pv.updated_at,
+		pv.status, pv.created_at, pv.updated_at,
 		c.slug AS category_slug, c.id AS category_id, c.name AS category_name
 	FROM posts p
-	JOIN post_versions pv ON pv.id = p.current_version_id
-	LEFT JOIN categories c ON c.id = pv.category_id
-	LEFT JOIN users u ON u.id = p.created_by
+	JOIN post_versions pv
+	ON pv.id = p.current_version_id
+	LEFT JOIN categories c
+	ON c.id = pv.category_id
+	LEFT JOIN users u
+	ON u.id = p.created_by
 	WHERE p.id = ?
 		AND p.deleted_at IS NULL
 	LIMIT 1;`
@@ -40,10 +44,31 @@ const (
 		pv.created_at, pv.updated_at,
 		c.slug AS category_slug, c.id AS category_id, c.name AS category_name
 	FROM posts p
-	JOIN post_versions pv ON pv.id = p.current_version_id
-	LEFT JOIN categories c ON c.id = pv.category_id
-	LEFT JOIN users u ON u.id = p.created_by
+	JOIN post_versions pv
+	ON pv.id = p.current_version_id
+	LEFT JOIN categories c
+	ON c.id = pv.category_id
+	LEFT JOIN users u
+	ON u.id = p.created_by
 	WHERE p.deleted_at IS NULL;`
+	QueryPostVersionGetById = `
+	SELECT
+		pv.id,
+		u.id as author_id, u.name as author_name, u.avatar as author_avatar,
+		pv.title, pv.slug, pv.content, pv.cover_image, pv.description, pv.spot,
+		pv.status, pv.status_changed_at, pv.status_changed_by, pv.status_change_note,
+		pv.created_at, pv.updated_at,
+		c.slug AS category_slug, c.id AS category_id, c.name AS category_name
+	FROM posts p
+	JOIN post_versions pv
+	ON pv.id = p.current_version_id
+	LEFT JOIN categories c
+	ON c.id = pv.category_id
+	LEFT JOIN users u
+	ON u.id = p.created_by
+	WHERE p.id = ?
+	AND pv.id = ?
+	AND p.deleted_at IS NULL;`
 	QueryPostCreate = `
 	INSERT INTO posts (created_by)
 	VALUES (?);`
@@ -58,7 +83,8 @@ const (
 	QueryPostSetCurrentVersion = `
 	UPDATE posts
 	SET current_version_id = ?
-	WHERE id = ? AND deleted_at IS NULL;`
+	WHERE id = ?
+	AND deleted_at IS NULL;`
 	QueryPostVersionsGetByPostId = `
 	SELECT
 		pv.id,
@@ -67,7 +93,7 @@ const (
 	FROM post_versions pv
 	LEFT JOIN users u
 	ON pv.created_by = u.id
-	WHERE pv.post_id = ? AND p.deleted_at IS NULL;;`
+	WHERE pv.post_id = ?;`
 	QueryPostDetailsForVersionsGetByPostId = `
 	SELECT
 	p.current_version_id, p.created_at,
@@ -75,12 +101,14 @@ const (
 	FROM posts p
 	LEFT JOIN users u
 	ON u.id = p.created_by
-	WHERE p.id = ? AND p.deleted_at IS NULL;;`
+	WHERE p.id = ?
+	AND p.deleted_at IS NULL;`
 	QueryPostPatch      = ``
 	QueryPostSoftDelete = `
 	UPDATE posts
 	SET deleted_at = CURRENT_TIMESTAMP
-	WHERE id = ? AND deleted_at IS NULL;`
+	WHERE id = ?
+	AND deleted_at IS NULL;`
 	QueryPostAllRelatedCovers = `
 	SELECT cover_image
 	FROM post_versions

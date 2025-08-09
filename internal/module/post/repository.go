@@ -74,10 +74,6 @@ func (repository *PostRepository) GetPostById(
 		&post.Description,
 		&post.Spot,
 		&post.Status,
-		&post.StatusChangedAt,
-		&post.StatusChangedBy,
-		&post.StatusChangeNote,
-		&post.CreatedBy,
 		&post.CreatedAt,
 		&post.UpdatedAt,
 		&post.Category.Slug,
@@ -110,10 +106,6 @@ func (repository *PostRepository) GetPostGetByCurrentVersionSlug(
 		&post.Description,
 		&post.Spot,
 		&post.Status,
-		&post.StatusChangedAt,
-		&post.StatusChangedBy,
-		&post.StatusChangeNote,
-		&post.CreatedBy,
 		&post.CreatedAt,
 		&post.UpdatedAt,
 		&post.Category.Slug,
@@ -235,6 +227,40 @@ func (repository *PostRepository) ListPostVersionsGetByPostId(
 		versions = append(versions, version)
 	}
 	result.Versions = versions
+
+	return &result, nil
+}
+
+func (repository *PostRepository) GetPostVersionById(
+	postId int64,
+	versionId int64,
+) (*models.ResponseVersionOfPost, error) {
+	row := repository.database.QueryRow(QueryPostVersionGetById, postId, versionId)
+
+	result := models.ResponseVersionOfPost{}
+	if err := row.Scan(
+		&result.VersionId,
+		&result.VersionAuthor.Id,
+		&result.VersionAuthor.Name,
+		&result.VersionAuthor.Avatar,
+		&result.Title,
+		&result.Slug,
+		&result.Content,
+		&result.CoverImage,
+		&result.Description,
+		&result.Spot,
+		&result.Status,
+		&result.StatusChangedAt,
+		&result.StatusChangedBy,
+		&result.StatusChangeNote,
+		&result.CreatedAt,
+		&result.UpdatedAt,
+		&result.Category.Id,
+		&result.Category.Name,
+		&result.Category.Slug,
+	); err != nil {
+		return nil, err
+	}
 
 	return &result, nil
 }

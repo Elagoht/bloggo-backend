@@ -85,6 +85,13 @@ func (service *PostService) ListPostVersionsGetByPostId(
 	return service.repository.ListPostVersionsGetByPostId(id)
 }
 
+func (service *PostService) GetPostVersionById(
+	postId int64,
+	versionId int64,
+) (*models.ResponseVersionOfPost, error) {
+	return service.repository.GetPostVersionById(postId, versionId)
+}
+
 func (service *PostService) DeletePostById(
 	id int64,
 ) error {
