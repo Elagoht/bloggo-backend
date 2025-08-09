@@ -49,8 +49,8 @@ func extractConflictFields(err error) []ValidationError {
 	if err != nil {
 		msg := err.Error()
 		if idx := strings.Index(msg, ": "); idx != -1 {
-			fields := strings.Split(msg[idx+2:], ", ")
-			for _, field := range fields {
+			fields := strings.SplitSeq(msg[idx+2:], ", ")
+			for field := range fields {
 				// Only take the last part after the dot, e.g., categories.slug -> slug
 				parts := strings.Split(field, ".")
 				fieldName := parts[len(parts)-1]
