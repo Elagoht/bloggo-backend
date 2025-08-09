@@ -30,20 +30,20 @@ func (repository *PostRepository) GetPostList() (
 		var post models.ResponsePostCard
 
 		err := rows.Scan(
-			post.PostId,
-			post.Author.Name,
-			post.Author.Avatar,
-			post.Title,
-			post.Slug,
-			post.CoverImage,
-			post.Spot,
-			post.Status,
-			post.IsActive,
-			post.CreatedAt,
-			post.UpdatedAt,
-			post.Category.Slug,
-			post.Category.Id,
-			post.Category.Name,
+			&post.PostId,
+			&post.Author.Name,
+			&post.Author.Avatar,
+			&post.Title,
+			&post.Slug,
+			&post.CoverImage,
+			&post.Spot,
+			&post.Status,
+			&post.IsActive,
+			&post.CreatedAt,
+			&post.UpdatedAt,
+			&post.Category.Slug,
+			&post.Category.Id,
+			&post.Category.Name,
 		)
 		if err != nil {
 			return nil, err
@@ -54,35 +54,72 @@ func (repository *PostRepository) GetPostList() (
 	return posts, nil
 }
 
-func (repository *PostRepository) GetPostBySlug(
-	slug string,
+func (repository *PostRepository) GetPostById(
+	id int64,
 ) (*models.ResponsePostDetails, error) {
-	row := repository.database.QueryRow(QueryPostGetBySlug, slug)
+	row := repository.database.QueryRow(QueryPostGetById, id)
 
 	var post models.ResponsePostDetails
 	err := row.Scan(
-		post.PostId,
-		post.VersionId,
-		post.Author.Name,
-		post.Author.Email,
-		post.Author.Avatar,
-		post.Title,
-		post.Slug,
-		post.Content,
-		post.CoverImage,
-		post.Description,
-		post.Spot,
-		post.Status,
-		post.StatusChangedAt,
-		post.StatusChangedBy,
-		post.StatusChangeNote,
-		post.IsActive,
-		post.CreatedBy,
-		post.CreatedAt,
-		post.UpdatedAt,
-		post.Category.Slug,
-		post.Category.Id,
-		post.Category.Name,
+		&post.PostId,
+		&post.VersionId,
+		&post.Author.Name,
+		&post.Author.Email,
+		&post.Author.Avatar,
+		&post.Title,
+		&post.Slug,
+		&post.Content,
+		&post.CoverImage,
+		&post.Description,
+		&post.Spot,
+		&post.Status,
+		&post.StatusChangedAt,
+		&post.StatusChangedBy,
+		&post.StatusChangeNote,
+		&post.IsActive,
+		&post.CreatedBy,
+		&post.CreatedAt,
+		&post.UpdatedAt,
+		&post.Category.Slug,
+		&post.Category.Id,
+		&post.Category.Name,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &post, nil
+}
+
+func (repository *PostRepository) GetPostGetByCurrentVersionSlug(
+	slug string,
+) (*models.ResponsePostDetails, error) {
+	row := repository.database.QueryRow(QueryPostGetByCurrentVersionSlug, slug)
+
+	var post models.ResponsePostDetails
+	err := row.Scan(
+		&post.PostId,
+		&post.VersionId,
+		&post.Author.Name,
+		&post.Author.Email,
+		&post.Author.Avatar,
+		&post.Title,
+		&post.Slug,
+		&post.Content,
+		&post.CoverImage,
+		&post.Description,
+		&post.Spot,
+		&post.Status,
+		&post.StatusChangedAt,
+		&post.StatusChangedBy,
+		&post.StatusChangeNote,
+		&post.IsActive,
+		&post.CreatedBy,
+		&post.CreatedAt,
+		&post.UpdatedAt,
+		&post.Category.Slug,
+		&post.Category.Id,
+		&post.Category.Name,
 	)
 	if err != nil {
 		return nil, err
@@ -101,6 +138,7 @@ func (repository *PostRepository) CreatePost(
 		return 0, err
 	}
 
+	// Create Post
 	createdPost, err := transaction.Exec(QueryPostCreate, authorId)
 	if err != nil {
 		transaction.Rollback()
@@ -113,7 +151,8 @@ func (repository *PostRepository) CreatePost(
 		return 0, err
 	}
 
-	_, err = transaction.Exec(
+	// Create first version automatically
+	createdVersion, err := transaction.Exec(
 		QueryPostVersionCreate,
 		createdPostId,
 		model.Title,
@@ -124,6 +163,23 @@ func (repository *PostRepository) CreatePost(
 		model.Spot,
 		model.CategoryId,
 		authorId,
+	)
+	if err != nil {
+		transaction.Rollback()
+		return 0, err
+	}
+
+	createdVersionId, err := createdVersion.LastInsertId()
+	if err != nil {
+		transaction.Rollback()
+		return 0, err
+	}
+
+	// Assign its first version to created post
+	_, err = repository.database.Exec(
+		QueryPostSetCurrentVersion,
+		createdVersionId,
+		createdPostId,
 	)
 	if err != nil {
 		transaction.Rollback()

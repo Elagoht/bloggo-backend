@@ -31,16 +31,16 @@ func (handler *PostHandler) ListPosts(
 	json.NewEncoder(writer).Encode(details)
 }
 
-func (handler *PostHandler) GetPostBySlug(
+func (handler *PostHandler) GetPostById(
 	writer http.ResponseWriter,
 	request *http.Request,
 ) {
-	slug, ok := handlers.GetParam[string](writer, request, "slug")
+	id, ok := handlers.GetParam[int64](writer, request, "id")
 	if !ok {
 		return
 	}
 
-	details, err := handler.service.GetPostBySlug(slug)
+	details, err := handler.service.GetPostById(id)
 	if err != nil {
 		apierrors.MapErrors(err, writer, nil)
 		return
@@ -65,7 +65,11 @@ func (handler *PostHandler) CreatePostWithFirstVersion(
 		return
 	}
 
-	handler.service.CreatePostWithFirstVersion(body, files["cover"], userId)
+	createdId, err := handler.service.CreatePostWithFirstVersion(body, files["cover"], userId)
+	if err != nil {
+		apierrors.MapErrors(err, writer, nil)
+		return
+	}
 
-	json.NewEncoder(writer).Encode(body)
+	json.NewEncoder(writer).Encode(createdId)
 }

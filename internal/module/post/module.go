@@ -2,9 +2,13 @@ package post
 
 import (
 	"bloggo/internal/config"
+	"bloggo/internal/infrastructure/bucket"
 	"bloggo/internal/infrastructure/permissions"
 	"bloggo/internal/middleware"
+	"bloggo/internal/utils/file/transformfile"
+	"bloggo/internal/utils/file/validatefile"
 	"database/sql"
+	"log"
 
 	"github.com/go-chi/chi"
 )
@@ -22,8 +26,15 @@ func NewModule(
 	config *config.Config,
 	permissions permissions.Store,
 ) PostModule {
+	bucket, err := bucket.NewFileSystemBucket("posts/versions/covers")
+	if err != nil {
+		log.Fatalln("Post module cannot created file storage")
+	}
+	imageValidator := validatefile.NewImageValidator(10 << 20) // 5MB
+	coverResizer := transformfile.NewImageTransformer(1280, 720)
+
 	repository := NewPostRepository(database)
-	service := NewPostService(repository)
+	service := NewPostService(repository, bucket, imageValidator, coverResizer)
 	handler := NewPostHandler(service)
 
 	return PostModule{
@@ -42,7 +53,7 @@ func (module PostModule) RegisterModule(router *chi.Mux) {
 			// authority := permission.NewChecker(module.Permissions)
 
 			router.Get("/", module.Handler.ListPosts)
-			router.Get("/{slug}", module.Handler.GetPostBySlug)
+			router.Get("/{id}", module.Handler.GetPostById)
 			router.Post("/", module.Handler.CreatePostWithFirstVersion)
 		},
 	)
