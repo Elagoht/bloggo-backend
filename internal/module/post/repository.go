@@ -2,6 +2,7 @@ package post
 
 import (
 	"bloggo/internal/module/post/models"
+	"bloggo/internal/utils/slugify"
 	"database/sql"
 )
 
@@ -91,17 +92,48 @@ func (repository *PostRepository) GetPostBySlug(
 }
 
 func (repository *PostRepository) CreatePost(
+	model *models.RequestPostUpsert,
+	coverPath string,
 	authorId int64,
 ) (int64, error) {
-	statement, err := repository.database.Prepare(QueryPostCreate)
+	transaction, err := repository.database.Begin()
 	if err != nil {
 		return 0, err
 	}
 
-	result, err := statement.Exec(authorId)
+	createdPost, err := transaction.Exec(QueryPostCreate, authorId)
+	if err != nil {
+		transaction.Rollback()
+		return 0, err
+	}
+
+	createdPostId, err := createdPost.LastInsertId()
+	if err != nil {
+		transaction.Rollback()
+		return 0, err
+	}
+
+	_, err = transaction.Exec(
+		QueryPostVersionCreate,
+		createdPostId,
+		model.Title,
+		slugify.Slugify(model.Title),
+		model.Content,
+		coverPath,
+		model.Description,
+		model.Spot,
+		model.CategoryId,
+		authorId,
+	)
+	if err != nil {
+		transaction.Rollback()
+		return 0, err
+	}
+
+	err = transaction.Commit()
 	if err != nil {
 		return 0, err
 	}
 
-	return result.LastInsertId()
+	return createdPostId, nil
 }

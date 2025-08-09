@@ -33,7 +33,9 @@ func (service *PostService) CreatePostWithFirstVersion(
 	cover *multipart.FileHeader,
 	userId int64,
 ) (*models.ResponsePostCreated, error) {
-	createdId, err := service.repository.CreatePost(userId)
+	// TODO: Upload file
+
+	createdId, err := service.repository.CreatePost(model, "", userId)
 	if err != nil {
 		return nil, err
 	}

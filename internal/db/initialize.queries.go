@@ -14,8 +14,8 @@ const (
   deleted_at TIMESTAMP WITH TIME ZONE,
   role_id INTEGER NOT NULL,
   FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE RESTRICT
-);`
-	CreateEmailUnique = `CREATE UNIQUE INDEX IF NOT EXISTS unique_active_email
+);
+  CREATE UNIQUE INDEX IF NOT EXISTS unique_active_email
   ON users(email)
   WHERE deleted_at IS NULL;`
 	// ROLE BASED ACCESS CONTROL
@@ -129,7 +129,6 @@ const (
 
 var InitializeQueries = []string{
 	CreateUsersTable,
-	CreateEmailUnique,
 	CreateRoles,
 	CreatePermission,
 	CreateRolePermissions,

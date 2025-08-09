@@ -15,7 +15,7 @@ const (
 	LEFT JOIN users u ON u.id = p.created_by
 	WHERE pv.slug = ?
 		AND p.deleted_at IS NULL
-	LIMIT 1`
+	LIMIT 1;`
 	QueryPostGetList = `
 	SELECT
 		p.id as post_id,
@@ -25,13 +25,20 @@ const (
 		pv.is_active, pv.created_at, pv.updated_at,
 		c.slug AS category_slug, c.id AS category_id, c.name AS category_name
 	FROM posts p
-	JOIN post_versions    ON pv.id = p.current_version_id
+	JOIN post_versions pv  ON pv.id = p.current_version_id
 	LEFT JOIN categories c ON c.id = pv.category_id
 	LEFT JOIN users u ON u.id = p.created_by
-	WHERE p.deleted_at IS NULL`
+	WHERE p.deleted_at IS NULL;`
 	QueryPostCreate = `
-	INSERT INTO posts (created_by)
-	VALUES (?);`
+	INSERT INTO post_versions (
+		post_id, title, slug, content, cover_image,
+		description, spot, category_id, created_by
+	) VALUES (
+		?, ?, ?, ?, ?,
+		?, ?, ?, ?
+	);`
+	QueryPostVersionCreate = `
+	INSERT INTO post_versions ()`
 	QueryPostPatch      = ``
 	QueryPostSoftDelete = ``
 )
