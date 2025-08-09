@@ -6,13 +6,13 @@ import (
 
 // Store refresh token to create, track and revoke sessions
 type Store interface {
-	Set(token string, userID int64, duration int)
-	Get(token string) (userID int64, found bool)
+	Set(token string, userId int64, duration int)
+	Get(token string) (userId int64, found bool)
 	Delete(token string)
 }
 
 type tokenData struct {
-	userID    int64
+	userId    int64
 	expiresAt time.Time
 }
 

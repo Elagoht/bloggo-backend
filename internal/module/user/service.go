@@ -118,8 +118,8 @@ func (service *UserService) UpdateAvatarById(
 }
 
 func (service *UserService) createUserRelatedUUID(
-	userID int64,
+	userId int64,
 ) string {
 	uuid := cryptography.GenerateUniqueId()
-	return fmt.Sprintf("%d_%s", userID, uuid)
+	return fmt.Sprintf("%d_%s", userId, uuid)
 }

@@ -71,7 +71,7 @@ func AuthMiddleware(cfg *config.Config) func(http.Handler) http.Handler {
 
 			// Set userRole in the request context as int64
 			ctx := context.WithValue(r.Context(), "userRole", int64(rid))
-			ctx = context.WithValue(ctx, "userID", int64(uid))
+			ctx = context.WithValue(ctx, "userId", int64(uid))
 			// Call the next handler with the updated context
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})

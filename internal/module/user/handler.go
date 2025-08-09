@@ -24,12 +24,12 @@ func (handler *UserHandler) GetSelf(
 	writer http.ResponseWriter,
 	request *http.Request,
 ) {
-	userID, ok := handlers.GetContextValue[int64](writer, request, "userID")
+	userId, ok := handlers.GetContextValue[int64](writer, request, "userId")
 	if !ok {
 		return
 	}
 
-	user, err := handler.service.GetUserById(userID)
+	user, err := handler.service.GetUserById(userId)
 	if err != nil {
 		apierrors.MapErrors(err, writer, nil)
 		return
@@ -103,7 +103,7 @@ func (handler *UserHandler) UpdateSelfAvatar(
 	writer http.ResponseWriter,
 	request *http.Request,
 ) {
-	userID, ok := handlers.GetContextValue[int64](writer, request, "userID")
+	userId, ok := handlers.GetContextValue[int64](writer, request, "userId")
 	if !ok {
 		return
 	}
@@ -114,7 +114,7 @@ func (handler *UserHandler) UpdateSelfAvatar(
 	}
 	defer file.Close()
 
-	err := handler.service.UpdateAvatarById(userID, file, fileHeader)
+	err := handler.service.UpdateAvatarById(userId, file, fileHeader)
 	if err != nil {
 		apierrors.MapErrors(err, writer, nil)
 		return
