@@ -13,31 +13,44 @@ import (
 )
 
 // Reads the JWT access token from the Authorization header, validates it, and sets userRole in the context.
-func AuthMiddleware(cfg *config.Config) func(http.Handler) http.Handler {
+func AuthMiddleware(
+	configuration *config.Config,
+) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		return http.HandlerFunc(func(
+			writer http.ResponseWriter,
+			request *http.Request,
+		) {
 			// Extract the Authorization header
-			header := r.Header.Get("Authorization")
+			header := request.Header.Get("Authorization")
 
 			// Check if the header is present and starts with "Bearer "
 			if header == "" || !strings.HasPrefix(header, "Bearer ") {
-				handlers.WriteError(w, apierrors.NewAPIError(
-					"Missing or invalid Authorization header",
-					apierrors.ErrUnauthorized,
-				), http.StatusUnauthorized)
+				handlers.WriteError(
+					writer,
+					apierrors.NewAPIError(
+						"Missing or invalid Authorization header",
+						apierrors.ErrUnauthorized,
+					),
+					http.StatusUnauthorized,
+				)
 				return
 			}
 
 			// Remove "Bearer " prefix to get the token string
 			tokenString := strings.TrimPrefix(header, "Bearer ")
 			// Decode the JWT secret from base64
-			key, err := base64.RawURLEncoding.DecodeString(cfg.JWTSecret)
+			key, err := base64.RawURLEncoding.DecodeString(configuration.JWTSecret)
 			if err != nil {
 				// If the secret can't be decoded, return 500 Internal Server Error
-				handlers.WriteError(w, apierrors.NewAPIError(
-					"Server misconfiguration",
-					err,
-				), http.StatusInternalServerError)
+				handlers.WriteError(
+					writer,
+					apierrors.NewAPIError(
+						"Server misconfiguration",
+						err,
+					),
+					http.StatusInternalServerError,
+				)
 				return
 			}
 
@@ -50,30 +63,55 @@ func AuthMiddleware(cfg *config.Config) func(http.Handler) http.Handler {
 			)
 			if err != nil {
 				// If the token is invalid or expired, return 401 Unauthorized
-				handlers.WriteError(w, apierrors.NewAPIError(
-					"Invalid or expired token",
-					apierrors.ErrUnauthorized,
-				), http.StatusUnauthorized)
+				handlers.WriteError(
+					writer,
+					apierrors.NewAPIError(
+						"Invalid or expired token",
+						apierrors.ErrUnauthorized,
+					),
+					http.StatusUnauthorized,
+				)
 				return
 			}
 
-			// Extract the role ID (rid) from the claims (JWT numbers are float64)
+			// Extract the role id (rid) and user id (uid) from the claims (JWT numbers are float64)
 			rid, ok := claims["rid"].(float64)
-			uid, ok := claims["uid"].(float64)
 			if !ok {
 				// If the role is not found, return 401 Unauthorized
-				handlers.WriteError(w, apierrors.NewAPIError(
-					"Role not found in token",
-					apierrors.ErrUnauthorized,
-				), http.StatusUnauthorized)
+				handlers.WriteError(
+					writer,
+					apierrors.NewAPIError(
+						"Role not found in token",
+						apierrors.ErrUnauthorized,
+					),
+					http.StatusUnauthorized,
+				)
+				return
+			}
+			uid, ok := claims["uid"].(float64)
+			if !ok {
+				// If the user id is not found, return 401 Unauthorized
+				handlers.WriteError(
+					writer,
+					apierrors.NewAPIError(
+						"User id not found in token",
+						apierrors.ErrUnauthorized,
+					),
+					http.StatusUnauthorized,
+				)
 				return
 			}
 
 			// Set userRole in the request context as int64
-			ctx := context.WithValue(r.Context(), "userRole", int64(rid))
-			ctx = context.WithValue(ctx, "userId", int64(uid))
+			newContext := context.WithValue(
+				request.Context(),
+				handlers.TokenUserRoleId,
+				int64(rid),
+			)
+			newContext = context.WithValue(newContext, handlers.TokenUserId, int64(uid))
 			// Call the next handler with the updated context
-			next.ServeHTTP(w, r.WithContext(ctx))
+
+			next.ServeHTTP(writer, request.WithContext(newContext))
 		})
 	}
 }

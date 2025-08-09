@@ -7,20 +7,27 @@ import (
 	"strconv"
 )
 
+type JWTContext string
+
+const (
+	TokenUserId     JWTContext = "userId"
+	TokenUserRoleId JWTContext = "userRole"
+)
+
 // GetContextValue retrieves a value from the request context and converts it to the specified type.
 func GetContextValue[T any](
 	writer http.ResponseWriter,
 	request *http.Request,
-	key string,
+	key JWTContext,
 ) (T, bool) {
 	var zeroValue T
 
 	// Retrieve value from context
-	ctxValue := request.Context().Value(key)
-	if ctxValue == nil {
+	contextValue := request.Context().Value(key)
+	if contextValue == nil {
 		WriteError(
 			writer,
-			apierrors.NewAPIError("Field \""+key+"\" not found in context", nil),
+			apierrors.NewAPIError("Field \""+string(key)+"\" not found in context", nil),
 			http.StatusInternalServerError,
 		)
 		return zeroValue, false
@@ -34,13 +41,13 @@ func GetContextValue[T any](
 	// Handle type conversion based on the type of T
 	switch typeOfType.Kind() {
 	case reflect.String:
-		if str, ok := ctxValue.(string); ok {
+		if str, ok := contextValue.(string); ok {
 			result = str
 		} else {
 			success = false
 		}
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		switch v := ctxValue.(type) {
+		switch v := contextValue.(type) {
 		case int:
 			result = reflect.ValueOf(v).Convert(typeOfType).Interface()
 		case int64:
@@ -55,7 +62,7 @@ func GetContextValue[T any](
 			success = false
 		}
 	case reflect.Float32, reflect.Float64:
-		switch v := ctxValue.(type) {
+		switch v := contextValue.(type) {
 		case float64:
 			result = reflect.ValueOf(v).Convert(typeOfType).Interface()
 		case string:
@@ -68,7 +75,7 @@ func GetContextValue[T any](
 			success = false
 		}
 	case reflect.Bool:
-		switch v := ctxValue.(type) {
+		switch v := contextValue.(type) {
 		case bool:
 			result = v
 		case string:
@@ -87,7 +94,7 @@ func GetContextValue[T any](
 	if !success {
 		WriteError(
 			writer,
-			apierrors.NewAPIError("Field \""+key+"\" could not be converted to requested type", nil),
+			apierrors.NewAPIError("Field \""+string(key)+"\" could not be converted to requested type", nil),
 			http.StatusUnprocessableEntity,
 		)
 		return zeroValue, false
