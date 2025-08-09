@@ -67,7 +67,7 @@ const (
 	FROM post_versions pv
 	LEFT JOIN users u
 	ON pv.created_by = u.id
-	WHERE pv.post_id = ?;`
+	WHERE pv.post_id = ? AND p.deleted_at IS NULL;;`
 	QueryPostDetailsForVersionsGetByPostId = `
 	SELECT
 	p.current_version_id, p.created_at,
@@ -75,7 +75,14 @@ const (
 	FROM posts p
 	LEFT JOIN users u
 	ON u.id = p.created_by
-	WHERE p.id = ?;`
+	WHERE p.id = ? AND p.deleted_at IS NULL;;`
 	QueryPostPatch      = ``
-	QueryPostSoftDelete = ``
+	QueryPostSoftDelete = `
+	UPDATE posts
+	SET deleted_at = CURRENT_TIMESTAMP
+	WHERE id = ? AND deleted_at IS NULL;`
+	QueryPostAllRelatedCovers = `
+	SELECT cover_image
+	FROM post_versions
+	WHERE post_id = ?;`
 )

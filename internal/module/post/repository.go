@@ -2,6 +2,7 @@ package post
 
 import (
 	"bloggo/internal/module/post/models"
+	"bloggo/internal/utils/apierrors"
 	"bloggo/internal/utils/slugify"
 	"database/sql"
 )
@@ -235,4 +236,45 @@ func (repository *PostRepository) ListPostVersionsGetByPostId(
 	result.Versions = versions
 
 	return &result, nil
+}
+
+func (repository *PostRepository) GetAllRelatedCovers(
+	id int64,
+) ([]string, error) {
+	rows, err := repository.database.Query(QueryPostAllRelatedCovers, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	coverPaths := []string{}
+	for rows.Next() {
+		var coverPath string
+		if err := rows.Scan(&coverPath); err != nil {
+			return nil, err
+		}
+		coverPaths = append(coverPaths, coverPath)
+	}
+
+	return coverPaths, nil
+}
+
+func (repository *PostRepository) SoftDeletePostById(
+	id int64,
+) error {
+	result, err := repository.database.Exec(QueryPostSoftDelete, id)
+	if err != nil {
+		return err
+	}
+
+	affected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if affected < 1 {
+		return apierrors.ErrNotFound
+	}
+
+	return err
 }

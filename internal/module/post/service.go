@@ -84,3 +84,24 @@ func (service *PostService) ListPostVersionsGetByPostId(
 ) (*models.ResponseVersionsOfPost, error) {
 	return service.repository.ListPostVersionsGetByPostId(id)
 }
+
+func (service *PostService) DeletePostById(
+	id int64,
+) error {
+	// Store cover photo paths before deleting post
+	coverPaths, err := service.repository.GetAllRelatedCovers(id)
+	if err != nil {
+		return err
+	}
+
+	if err := service.repository.SoftDeletePostById(id); err != nil {
+		return err
+	}
+
+	// If delete is succeed, delete photos
+	for _, path := range coverPaths {
+		service.bucket.Delete(path)
+	}
+
+	return nil
+}
