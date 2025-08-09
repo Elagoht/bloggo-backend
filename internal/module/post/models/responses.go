@@ -57,12 +57,12 @@ type ResponsePostCard struct {
 
 // -- Post Versions List Item -- //
 type PostVersionsCard struct {
-	VersionId string `json:"id"`
-	Author    struct {
+	VersionId     string `json:"id"`
+	VersionAuthor struct {
 		Id     int64   `json:"id"`
 		Name   string  `json:"name"`
 		Avatar *string `json:"avatar"`
-	} `json:"author"`
+	} `json:"versionAuthor"`
 	Title     *string `json:"title"`
 	Status    uint8   `json:"status"`
 	UpdatedAt string  `json:"updatedAt"`

@@ -203,14 +203,27 @@ func (repository *PostRepository) ListPostVersionsGetByPostId(
 
 	result := models.ResponseVersionsOfPost{}
 
+	details := repository.database.QueryRow(
+		QueryPostDetailsForVersionsGetByPostId, id,
+	)
+	if err := details.Scan(
+		&result.CurrentVersionId,
+		&result.CreatedAt,
+		&result.OriginalAuthor.Id,
+		&result.OriginalAuthor.Name,
+		&result.OriginalAuthor.Avatar,
+	); err != nil {
+		return nil, err
+	}
+
 	versions := []models.PostVersionsCard{}
 	for rows.Next() {
 		version := models.PostVersionsCard{}
 		if err := rows.Scan(
 			&version.VersionId,
-			&version.Author.Id,
-			&version.Author.Name,
-			&version.Author.Avatar,
+			&version.VersionAuthor.Id,
+			&version.VersionAuthor.Name,
+			&version.VersionAuthor.Avatar,
 			&version.Title,
 			&version.Status,
 			&version.UpdatedAt,
@@ -220,16 +233,6 @@ func (repository *PostRepository) ListPostVersionsGetByPostId(
 		versions = append(versions, version)
 	}
 	result.Versions = versions
-
-	details := repository.database.QueryRow(QueryPostVersionsGetByPostId, id)
-
-	details.Scan(
-		&result.CurrentVersionId,
-		&result.CreatedAt,
-		&result.OriginalAuthor.Id,
-		&result.OriginalAuthor.Name,
-		&result.OriginalAuthor.Avatar,
-	)
 
 	return &result, nil
 }
