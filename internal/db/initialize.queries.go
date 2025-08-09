@@ -71,7 +71,6 @@ const (
   spot VARCHAR(75),
   category_id INTEGER,
   status INTEGER NOT NULL DEFAULT 0,
-  is_active BOOLEAN NOT NULL DEFAULT FALSE,
   created_by INTEGER NOT NULL,
   status_changed_at TIMESTAMP WITH TIME ZONE NULL,
   status_changed_by INTEGER NULL,

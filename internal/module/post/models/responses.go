@@ -10,7 +10,7 @@ type ResponsePostDetails struct {
 	PostId    int64 `json:"postId"`
 	VersionId int64 `json:"versionId"`
 	Author    struct {
-		Name   string  `json:"author"`
+		Name   string  `json:"name"`
 		Email  string  `json:"email"`
 		Avatar *string `json:"avatar,omitempty"`
 	} `json:"author"`
@@ -24,7 +24,6 @@ type ResponsePostDetails struct {
 	StatusChangedAt  *string `json:"statusChangedAt"`
 	StatusChangedBy  *string `json:"statusChangedBy"`
 	StatusChangeNote *string `json:"statusChangeNote"`
-	IsActive         bool    `json:"isActive"`
 	CreatedBy        string  `json:"createdBy"`
 	CreatedAt        *string `json:"createdAt"`
 	UpdatedAt        *string `json:"updatedAt"`
@@ -39,7 +38,7 @@ type ResponsePostDetails struct {
 type ResponsePostCard struct {
 	PostId int64 `json:"postId"`
 	Author struct {
-		Name   string  `json:"author"`
+		Name   string  `json:"name"`
 		Avatar *string `json:"avatar"`
 	} `json:"author"`
 	Title      *string `json:"title"`
@@ -47,7 +46,6 @@ type ResponsePostCard struct {
 	CoverImage *string `json:"coverImage"`
 	Spot       *string `json:"spot"`
 	Status     uint8   `json:"status"`
-	IsActive   string  `json:"isActive"`
 	CreatedAt  string  `json:"createdAt"`
 	UpdatedAt  string  `json:"updatedAt"`
 	Category   struct {
@@ -55,4 +53,29 @@ type ResponsePostCard struct {
 		Id   *string `json:"id"`
 		Name *string `json:"name"`
 	} `json:"category"`
+}
+
+// -- Post Versions List Item -- //
+type PostVersionsCard struct {
+	VersionId string `json:"id"`
+	Author    struct {
+		Id     int64   `json:"id"`
+		Name   string  `json:"name"`
+		Avatar *string `json:"avatar"`
+	} `json:"author"`
+	Title     *string `json:"title"`
+	Status    uint8   `json:"status"`
+	UpdatedAt string  `json:"updatedAt"`
+}
+
+// -- Post Versions List Item -- //
+type ResponseVersionsOfPost struct {
+	CurrentVersionId int64  `json:"currentVersionId"`
+	CreatedAt        string `json:"createdAt"`
+	OriginalAuthor   struct {
+		Id     int64   `json:"id"`
+		Name   string  `json:"name"`
+		Avatar *string `json:"avatar"`
+	} `json:"originalAuthor"`
+	Versions []PostVersionsCard `json:"versions"`
 }

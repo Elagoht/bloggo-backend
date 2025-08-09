@@ -7,7 +7,7 @@ const (
 		u.name as author, u.email as author_email, u.avatar as author_avatar,
 		pv.title, pv.slug, pv.content, pv.cover_image, pv.description, pv.spot,
 		pv.status, pv.status_changed_at, pv.status_changed_by, pv.status_change_note,
-		pv.is_active, pv.created_by, pv.created_at, pv.updated_at,
+		pv.created_by, pv.created_at, pv.updated_at,
 		c.slug AS category_slug, c.id AS category_id, c.name AS category_name
 	FROM posts p
 	JOIN post_versions pv ON pv.id = p.current_version_id
@@ -22,7 +22,7 @@ const (
 		u.name as author, u.email as author_email, u.avatar as author_avatar,
 		pv.title, pv.slug, pv.content, pv.cover_image, pv.description, pv.spot,
 		pv.status, pv.status_changed_at, pv.status_changed_by, pv.status_change_note,
-		pv.is_active, pv.created_by, pv.created_at, pv.updated_at,
+		pv.created_by, pv.created_at, pv.updated_at,
 		c.slug AS category_slug, c.id AS category_id, c.name AS category_name
 	FROM posts p
 	JOIN post_versions pv ON pv.id = p.current_version_id
@@ -37,7 +37,7 @@ const (
 		u.name as author, u.avatar as author_avatar,
 		pv.title, pv.slug, pv.cover_image, pv.spot,
 		pv.status,
-		pv.is_active, pv.created_at, pv.updated_at,
+		pv.created_at, pv.updated_at,
 		c.slug AS category_slug, c.id AS category_id, c.name AS category_name
 	FROM posts p
 	JOIN post_versions pv ON pv.id = p.current_version_id
@@ -59,6 +59,23 @@ const (
 	UPDATE posts
 	SET current_version_id = ?
 	WHERE id = ? AND deleted_at IS NULL;`
+	QueryPostVersionsGetByPostId = `
+	SELECT
+		pv.id,
+		u.id as author_id, u.name as author_name, u.avatar as author_avatar,
+		pv.title, pv.status, pv.updated_at
+	FROM post_versions pv
+	LEFT JOIN users u
+	ON pv.created_by = u.id
+	WHERE pv.post_id = ?;`
+	QueryPostDetailsForVersionsGetByPostId = `
+	SELECT
+	p.current_version_id, p.created_at,
+	u.id as author_id, u.name  as author_name, u.avatar as author_avatar
+	FROM posts p
+	LEFT JOIN users u
+	ON u.id = p.created_by
+	WHERE p.id = ?;`
 	QueryPostPatch      = ``
 	QueryPostSoftDelete = ``
 )

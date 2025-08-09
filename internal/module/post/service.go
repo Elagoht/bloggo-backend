@@ -78,3 +78,9 @@ func (service *PostService) CreatePostWithFirstVersion(
 		Id: createdId,
 	}, nil
 }
+
+func (service *PostService) ListPostVersionsGetByPostId(
+	id int64,
+) (*models.ResponseVersionsOfPost, error) {
+	return service.repository.ListPostVersionsGetByPostId(id)
+}

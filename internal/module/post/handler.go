@@ -73,3 +73,21 @@ func (handler *PostHandler) CreatePostWithFirstVersion(
 
 	json.NewEncoder(writer).Encode(createdId)
 }
+
+func (handler *PostHandler) ListPostVersionsGetByPostId(
+	writer http.ResponseWriter,
+	request *http.Request,
+) {
+	id, ok := handlers.GetParam[int64](writer, request, "id")
+	if !ok {
+		return
+	}
+
+	versions, err := handler.service.ListPostVersionsGetByPostId(id)
+	if err != nil {
+		apierrors.MapErrors(err, writer, nil)
+		return
+	}
+
+	json.NewEncoder(writer).Encode(versions)
+}
