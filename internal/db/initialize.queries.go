@@ -52,12 +52,10 @@ const (
 	CreatePosts = `CREATE TABLE IF NOT EXISTS posts (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   created_by INTEGER NOT NULL,
-  category_id INTEGER NULL,
   current_version_id INTEGER NULL,
   created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
   deleted_at TIMESTAMP WITH TIME ZONE,
   FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE RESTRICT,
-  FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL,
   FOREIGN KEY (current_version_id) REFERENCES post_versions(id) ON DELETE SET NULL
 );
   CREATE INDEX IF NOT EXISTS idx_posts_deleted_at ON posts(deleted_at);`
@@ -71,6 +69,7 @@ const (
   cover_image VARCHAR(255) NULL,
   description VARCHAR(155) NOT NULL,
   spot VARCHAR(75) NOT NULL,
+  category_id INTEGER NULL,
   status INTEGER NOT NULL DEFAULT 0,
   is_active BOOLEAN NOT NULL DEFAULT 0,
   created_by INTEGER NOT NULL,
@@ -81,7 +80,8 @@ const (
   updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
   FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
-  FOREIGN KEY (status_changed_by) REFERENCES users(id) ON DELETE SET NULL
+  FOREIGN KEY (status_changed_by) REFERENCES users(id) ON DELETE SET NULL,
+  FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
 );
   CREATE INDEX IF NOT EXISTS idx_post_versions_post_id_status
   ON post_versions(post_id, status);

@@ -1,6 +1,7 @@
 package post
 
 import (
+	"bloggo/internal/module/post/models"
 	"bloggo/internal/utils/apierrors"
 	"bloggo/internal/utils/handlers"
 	"encoding/json"
@@ -17,7 +18,7 @@ func NewPostHandler(service PostService) PostHandler {
 	}
 }
 
-func (handler *PostHandler) GetPostList(
+func (handler *PostHandler) ListPosts(
 	writer http.ResponseWriter,
 	request *http.Request,
 ) {
@@ -46,4 +47,25 @@ func (handler *PostHandler) GetPostBySlug(
 	}
 
 	json.NewEncoder(writer).Encode(details)
+}
+
+func (handler *PostHandler) CreatePostWithFirstVersion(
+	writer http.ResponseWriter,
+	request *http.Request,
+) {
+	userId, ok := handlers.GetContextValue[int64](writer, request, handlers.TokenUserId)
+	if !ok {
+		return
+	}
+
+	body, files, ok := handlers.BindAndValidateMultipart[*models.RequestPostUpsert](
+		writer, request, 20<<20,
+	)
+	if !ok {
+		return
+	}
+
+	handler.service.CreatePostWithFirstVersion(body, files["cover"], userId)
+
+	json.NewEncoder(writer).Encode(body)
 }

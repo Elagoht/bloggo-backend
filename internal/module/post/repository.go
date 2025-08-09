@@ -15,7 +15,10 @@ func NewPostRepository(database *sql.DB) PostRepository {
 	}
 }
 
-func (repository *PostRepository) GetPostList() ([]models.ResponsePostCard, error) {
+func (repository *PostRepository) GetPostList() (
+	[]models.ResponsePostCard,
+	error,
+) {
 	rows, err := repository.database.Query(QueryPostGetList)
 	if err != nil {
 		return nil, err
@@ -85,4 +88,20 @@ func (repository *PostRepository) GetPostBySlug(
 	}
 
 	return &post, nil
+}
+
+func (repository *PostRepository) CreatePost(
+	authorId int64,
+) (int64, error) {
+	statement, err := repository.database.Prepare(QueryPostCreate)
+	if err != nil {
+		return 0, err
+	}
+
+	result, err := statement.Exec(authorId)
+	if err != nil {
+		return 0, err
+	}
+
+	return result.LastInsertId()
 }

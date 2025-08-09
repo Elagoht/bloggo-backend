@@ -41,8 +41,9 @@ func (module PostModule) RegisterModule(router *chi.Mux) {
 		func(router chi.Router) {
 			// authority := permission.NewChecker(module.Permissions)
 
-			router.Get("/", module.Handler.GetPostList)
+			router.Get("/", module.Handler.ListPosts)
 			router.Get("/{slug}", module.Handler.GetPostBySlug)
+			router.Post("/", module.Handler.CreatePostWithFirstVersion)
 		},
 	)
 }
