@@ -70,7 +70,6 @@ var (
 		100,
 		10*time.Minute,
 	)
-	globalLimiterOnce sync.Once
 )
 
 func GlobalRateLimiter() func(http.Handler) http.Handler {
