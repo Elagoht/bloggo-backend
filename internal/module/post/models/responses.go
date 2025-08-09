@@ -10,8 +10,8 @@ type ResponsePostDetails struct {
 	PostId    int64 `json:"postId"`
 	VersionId int64 `json:"versionId"`
 	Author    struct {
+		Id     int64   `json:"id"`
 		Name   string  `json:"name"`
-		Email  string  `json:"email"`
 		Avatar *string `json:"avatar,omitempty"`
 	} `json:"author"`
 	Title            *string `json:"title"`
@@ -28,9 +28,9 @@ type ResponsePostDetails struct {
 	CreatedAt        *string `json:"createdAt"`
 	UpdatedAt        *string `json:"updatedAt"`
 	Category         struct {
-		Slug *string `json:"slug"`
 		Id   *string `json:"id"`
 		Name *string `json:"name"`
+		Slug *string `json:"slug"`
 	} `json:"category"`
 }
 
@@ -38,6 +38,7 @@ type ResponsePostDetails struct {
 type ResponsePostCard struct {
 	PostId int64 `json:"postId"`
 	Author struct {
+		Id     int64   `json:"id"`
 		Name   string  `json:"name"`
 		Avatar *string `json:"avatar"`
 	} `json:"author"`
@@ -49,9 +50,9 @@ type ResponsePostCard struct {
 	CreatedAt  string  `json:"createdAt"`
 	UpdatedAt  string  `json:"updatedAt"`
 	Category   struct {
-		Slug *string `json:"slug"`
 		Id   *string `json:"id"`
 		Name *string `json:"name"`
+		Slug *string `json:"slug"`
 	} `json:"category"`
 }
 

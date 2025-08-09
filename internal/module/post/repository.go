@@ -32,6 +32,7 @@ func (repository *PostRepository) GetPostList() (
 
 		err := rows.Scan(
 			&post.PostId,
+			&post.Author.Id,
 			&post.Author.Name,
 			&post.Author.Avatar,
 			&post.Title,
@@ -63,8 +64,8 @@ func (repository *PostRepository) GetPostById(
 	err := row.Scan(
 		&post.PostId,
 		&post.VersionId,
+		&post.Author.Id,
 		&post.Author.Name,
-		&post.Author.Email,
 		&post.Author.Avatar,
 		&post.Title,
 		&post.Slug,
@@ -99,8 +100,8 @@ func (repository *PostRepository) GetPostGetByCurrentVersionSlug(
 	err := row.Scan(
 		&post.PostId,
 		&post.VersionId,
+		&post.Author.Id,
 		&post.Author.Name,
-		&post.Author.Email,
 		&post.Author.Avatar,
 		&post.Title,
 		&post.Slug,

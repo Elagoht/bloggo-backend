@@ -4,7 +4,7 @@ const (
 	QueryPostGetByCurrentVersionSlug = `
 	SELECT
 		p.id as post_id, pv.id as version_id,
-		u.name as author, u.email as author_email, u.avatar as author_avatar,
+		u.id as author_id, u.name as author_name, u.avatar as author_avatar,
 		pv.title, pv.slug, pv.content, pv.cover_image, pv.description, pv.spot,
 		pv.status, pv.status_changed_at, pv.status_changed_by, pv.status_change_note,
 		pv.created_by, pv.created_at, pv.updated_at,
@@ -19,7 +19,7 @@ const (
 	QueryPostGetById = `
 	SELECT
 		p.id as post_id, pv.id as version_id,
-		u.name as author, u.email as author_email, u.avatar as author_avatar,
+		u.id as author_id, u.name as author_name, u.avatar as author_avatar,
 		pv.title, pv.slug, pv.content, pv.cover_image, pv.description, pv.spot,
 		pv.status, pv.status_changed_at, pv.status_changed_by, pv.status_change_note,
 		pv.created_by, pv.created_at, pv.updated_at,
@@ -34,7 +34,7 @@ const (
 	QueryPostGetList = `
 	SELECT
 		p.id as post_id,
-		u.name as author, u.avatar as author_avatar,
+		u.id as author_id, u.name as author_name, u.avatar as author_avatar,
 		pv.title, pv.slug, pv.cover_image, pv.spot,
 		pv.status,
 		pv.created_at, pv.updated_at,
