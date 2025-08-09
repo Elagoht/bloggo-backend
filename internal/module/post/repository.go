@@ -176,7 +176,7 @@ func (repository *PostRepository) CreatePost(
 	}
 
 	// Assign its first version to created post
-	_, err = repository.database.Exec(
+	_, err = transaction.Exec(
 		QueryPostSetCurrentVersion,
 		createdVersionId,
 		createdPostId,
@@ -186,6 +186,7 @@ func (repository *PostRepository) CreatePost(
 		return 0, err
 	}
 
+	// Run transaction
 	err = transaction.Commit()
 	if err != nil {
 		return 0, err
