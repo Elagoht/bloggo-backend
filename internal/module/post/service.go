@@ -2,6 +2,7 @@ package post
 
 import (
 	"bloggo/internal/module/post/models"
+	"mime/multipart"
 )
 
 type PostService struct {
@@ -25,4 +26,19 @@ func (service *PostService) GetPostBySlug(
 	slug string,
 ) (*models.ResponsePostDetails, error) {
 	return service.repository.GetPostBySlug(slug)
+}
+
+func (service *PostService) CreatePostWithFirstVersion(
+	model *models.RequestPostUpsert,
+	cover *multipart.FileHeader,
+	userId int64,
+) (*models.ResponsePostCreated, error) {
+	createdId, err := service.repository.CreatePost(userId)
+	if err != nil {
+		return nil, err
+	}
+
+	return &models.ResponsePostCreated{
+		Id: createdId,
+	}, nil
 }
