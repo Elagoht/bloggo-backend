@@ -24,7 +24,7 @@ func (handler *UserHandler) GetSelf(
 	writer http.ResponseWriter,
 	request *http.Request,
 ) {
-	userId, ok := handlers.GetContextValue[int64](writer, request, "userId")
+	userId, ok := handlers.GetContextValue[int64](writer, request, handlers.TokenUserId)
 	if !ok {
 		return
 	}
@@ -103,7 +103,7 @@ func (handler *UserHandler) UpdateSelfAvatar(
 	writer http.ResponseWriter,
 	request *http.Request,
 ) {
-	userId, ok := handlers.GetContextValue[int64](writer, request, "userId")
+	userId, ok := handlers.GetContextValue[int64](writer, request, handlers.TokenUserId)
 	if !ok {
 		return
 	}
