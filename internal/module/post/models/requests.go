@@ -14,7 +14,7 @@ type RequestPostUpsert struct {
 	CategoryId  *int64                `json:"categoryId"`
 }
 
-// Change  Status With Commit Note
+// -- Change Status With Commit Note -- //
 type RequestPostStatusModerate struct {
 	Id   int64  `json:"versionId" validate:"required"`
 	Note string `json:"note" validate:"max=255,required"`
