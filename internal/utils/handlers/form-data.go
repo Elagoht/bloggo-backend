@@ -15,14 +15,13 @@ import (
 // BindAndValidateMultipart parses multipart/form-data into a struct (T can be struct or *struct),
 // fills *multipart.FileHeader fields, converts basic types (int, bool, float, string, []string),
 // performs validation (bindValidater) and writes errors to the provided writer.
-// Returns the populated body, a map of file headers by form name, and a bool success flag.
+// Returns the populated body and a bool success flag.
 func BindAndValidateMultipart[T any](
 	writer http.ResponseWriter,
 	request *http.Request,
 	maxFileSize int64,
-) (T, map[string]*multipart.FileHeader, bool) {
+) (T, bool) {
 	var body T
-	files := make(map[string]*multipart.FileHeader)
 
 	// Limit request size to avoid huge uploads
 	request.Body = http.MaxBytesReader(writer, request.Body, maxFileSize)
@@ -34,7 +33,7 @@ func BindAndValidateMultipart[T any](
 			apierrors.NewAPIError("Failed to parse multipart form: "+err.Error(), err),
 			http.StatusBadRequest,
 		)
-		return body, nil, false
+		return body, false
 	}
 
 	// Reflect types
@@ -56,7 +55,7 @@ func BindAndValidateMultipart[T any](
 			),
 			http.StatusInternalServerError,
 		)
-		return body, nil, false
+		return body, false
 	}
 
 	// Prepare an addressable value for setting fields.
@@ -108,7 +107,7 @@ func BindAndValidateMultipart[T any](
 					),
 					http.StatusBadRequest,
 				)
-				return body, nil, false
+				return body, false
 			}
 			// Close the temporary multipart.File — FileHeader.Open() can be used later by caller/service.
 			_ = multipartFile.Close()
@@ -120,11 +119,10 @@ func BindAndValidateMultipart[T any](
 					apierrors.NewAPIError("File size exceeds maximum limit", nil),
 					http.StatusRequestEntityTooLarge,
 				)
-				return body, nil, false
+				return body, false
 			}
 
 			fieldValue.Set(reflect.ValueOf(fileHeader))
-			files[formKey] = fileHeader
 			continue
 		}
 
@@ -168,7 +166,7 @@ func BindAndValidateMultipart[T any](
 					apierrors.NewAPIError("Field '"+formKey+"' must be an integer", err),
 					http.StatusUnprocessableEntity,
 				)
-				return body, nil, false
+				return body, false
 			}
 			fieldValue.SetInt(parsed)
 		case
@@ -186,7 +184,7 @@ func BindAndValidateMultipart[T any](
 					),
 					http.StatusUnprocessableEntity,
 				)
-				return body, nil, false
+				return body, false
 			}
 			fieldValue.SetUint(parsed)
 		case reflect.Float32, reflect.Float64:
@@ -198,7 +196,7 @@ func BindAndValidateMultipart[T any](
 					apierrors.NewAPIError("Field '"+formKey+"' must be a float", err),
 					http.StatusUnprocessableEntity,
 				)
-				return body, nil, false
+				return body, false
 			}
 			fieldValue.SetFloat(parsed)
 		case reflect.Bool:
@@ -209,7 +207,7 @@ func BindAndValidateMultipart[T any](
 					apierrors.NewAPIError("Field '"+formKey+"' must be a boolean", err),
 					http.StatusUnprocessableEntity,
 				)
-				return body, nil, false
+				return body, false
 			}
 			fieldValue.SetBool(parsed)
 		default:
@@ -222,10 +220,10 @@ func BindAndValidateMultipart[T any](
 	if err := bindValidater.Struct(body); err != nil {
 		if validationErrors, ok := err.(validator.ValidationErrors); ok {
 			var vErrs []apierrors.ValidationError
-			for _, ve := range validationErrors {
+			for _, validationError := range validationErrors {
 				vErrs = append(vErrs, apierrors.ValidationError{
-					Field:   ve.Field(),
-					Message: getValidationErrorMessage(ve),
+					Field:   validationError.Field(),
+					Message: getValidationErrorMessage(validationError),
 				})
 			}
 			WriteError(
@@ -233,15 +231,15 @@ func BindAndValidateMultipart[T any](
 				apierrors.NewValidationAPIError(vErrs),
 				http.StatusBadRequest,
 			)
-			return body, files, false
+			return body, false
 		}
 		WriteError(
 			writer,
 			apierrors.NewAPIError("Validation failed: "+err.Error(), err),
 			http.StatusBadRequest,
 		)
-		return body, files, false
+		return body, false
 	}
 
-	return body, files, true
+	return body, true
 }
