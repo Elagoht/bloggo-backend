@@ -59,6 +59,7 @@ func (module PostModule) RegisterModule(router *chi.Mux) {
 			router.Get("/{id}/versions", module.Handler.ListPostVersionsGetByPostId)
 			router.Get("/{id}/versions/{versionId}", module.Handler.GetPostVersionById)
 			router.Post("/{id}/versions", module.Handler.CreateVersionFromLatest)
+			router.Patch("/{id}/versions/{versionId}", module.Handler.UpdateUnsubmittedOwnVersion)
 		},
 	)
 }

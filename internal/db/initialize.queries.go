@@ -74,6 +74,7 @@ const (
 	CREATE TABLE IF NOT EXISTS post_versions (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		post_id INTEGER,
+    duplicated_from INTEGER, -- If the initial version, must be null
 		title VARCHAR(250),
 		slug VARCHAR(250),
 		content TEXT,

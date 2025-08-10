@@ -53,7 +53,7 @@ const (
 	WHERE p.deleted_at IS NULL;`
 	QueryPostVersionGetById = `
 	SELECT
-		pv.id,
+		pv.id, pv.duplicated_from,
 		u.id as author_id, u.name as author_name, u.avatar as author_avatar,
 		pv.title, pv.slug, pv.content, pv.cover_image, pv.description, pv.spot,
 		pv.status, pv.status_changed_at, pv.status_changed_by, pv.status_change_note,
@@ -75,10 +75,12 @@ const (
 	QueryPostVersionCreate = `
 	INSERT INTO post_versions (
 		post_id, title, slug, content, cover_image,
-		description, spot, category_id, created_by
+		description, spot, category_id, created_by,
+		duplicated_from
 	) VALUES (
 		?, ?, ?, ?, ?,
-		?, ?, ?, ?
+		?, ?, ?, ?,
+		?
 	);`
 	QueryPostSetCurrentVersion = `
 	UPDATE posts
@@ -105,7 +107,7 @@ const (
 	AND p.deleted_at IS NULL;`
 	QueryGetPostVersionDuplicate = `
 	SELECT
-		post_id, title, slug, content, cover_image,
+		id, post_id, title, slug, content, cover_image,
 		description, spot, category_id, created_by
 	FROM post_versions
 	WHERE post_id = ?;`
@@ -118,4 +120,20 @@ const (
 	SELECT cover_image
 	FROM post_versions
 	WHERE post_id = ?;`
+	QueryGetVersionCreatorAndStatus = `
+	SELECT created_by, status
+	FROM post_versions
+	WHERE id = ?;`
+	QueryPostVersionUpdate = `
+	UPDATE post_versions
+	SET
+		title = COALESCE(?, title),
+		slug = COALESCE(?, slug),
+		content = COALESCE(?, content),
+		cover_image = COALESCE(?, cover_image),
+		description = COALESCE(?, description),
+		spot = COALESCE(?, spot),
+		category_id = COALESCE(?, category_id),
+		updated_at = CURRENT_TIMESTAMP
+	WHERE id = ?;`
 )

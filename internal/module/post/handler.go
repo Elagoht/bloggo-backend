@@ -58,14 +58,19 @@ func (handler *PostHandler) CreatePostWithFirstVersion(
 		return
 	}
 
-	body, files, ok := handlers.BindAndValidateMultipart[*models.RequestPostUpsert](
-		writer, request, 20<<20,
+	body, ok := handlers.BindAndValidateMultipart[*models.RequestPostUpsert](
+		writer,
+		request,
+		10<<20,
 	)
 	if !ok {
 		return
 	}
 
-	createdId, err := handler.service.CreatePostWithFirstVersion(body, files["cover"], userId)
+	createdId, err := handler.service.CreatePostWithFirstVersion(
+		body,
+		userId,
+	)
 	if err != nil {
 		apierrors.MapErrors(err, writer, nil)
 		return
@@ -152,4 +157,55 @@ func (handler *PostHandler) CreateVersionFromLatest(
 	}
 
 	json.NewEncoder(writer).Encode(createdId)
+}
+
+func (handler *PostHandler) UpdateUnsubmittedOwnVersion(
+	writer http.ResponseWriter,
+	request *http.Request,
+) {
+	userId, ok := handlers.GetContextValue[int64](writer, request, handlers.TokenUserId)
+	if !ok {
+		return
+	}
+
+	postId, ok := handlers.GetParam[int64](writer, request, "id")
+	if !ok {
+		return
+	}
+	versionId, ok := handlers.GetParam[int64](writer, request, "versionId")
+	if !ok {
+		return
+	}
+
+	body, ok :=
+		handlers.BindAndValidateMultipart[*models.RequestPostUpsert](
+			writer,
+			request,
+			10<<20,
+		)
+	if !ok {
+		return
+	}
+
+	if err := handler.service.UpdateUnsubmittedOwnVersion(
+		postId,
+		versionId,
+		userId,
+		body,
+	); err != nil {
+		apierrors.MapErrors(err, writer, apierrors.HTTPErrorMapping{
+			// Custom error messages for this endpoint
+			apierrors.ErrPreconditionFailed: {
+				Message: "This version has already been submitted and cannot be edited.",
+				Status:  http.StatusPreconditionFailed,
+			},
+			apierrors.ErrForbidden: {
+				Message: "You can only edit your own versions. Please create a new version.",
+				Status:  http.StatusPreconditionFailed,
+			},
+		})
+		return
+	}
+
+	writer.WriteHeader(http.StatusNoContent)
 }

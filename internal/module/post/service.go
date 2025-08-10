@@ -3,11 +3,11 @@ package post
 import (
 	"bloggo/internal/infrastructure/bucket"
 	"bloggo/internal/module/post/models"
+	"bloggo/internal/utils/apierrors"
 	"bloggo/internal/utils/cryptography"
 	"bloggo/internal/utils/file/transformfile"
 	"bloggo/internal/utils/file/validatefile"
 	"bloggo/internal/utils/schemas/responses"
-	"mime/multipart"
 )
 
 type PostService struct {
@@ -46,18 +46,17 @@ func (service *PostService) GetPostById(
 
 func (service *PostService) CreatePostWithFirstVersion(
 	model *models.RequestPostUpsert,
-	cover *multipart.FileHeader,
 	userId int64,
 ) (*responses.ResponseCreated, error) {
-	coverFile, err := cover.Open()
+	coverFile, err := model.Cover.Open()
 	if err != nil {
 		return nil, err
 	}
 	defer coverFile.Close()
 
-	filepath := cryptography.GenerateUniqueId() + ".webp"
+	filePath := cryptography.GenerateUniqueId() + ".webp"
 
-	if err = service.imageValidator.Validate(coverFile, cover); err != nil {
+	if err = service.imageValidator.Validate(coverFile, model.Cover); err != nil {
 		return nil, err
 	}
 
@@ -66,12 +65,12 @@ func (service *PostService) CreatePostWithFirstVersion(
 		return nil, err
 	}
 
-	service.bucket.Save(transformedFile, filepath)
+	service.bucket.Save(transformedFile, filePath)
 
-	createdId, err := service.repository.CreatePost(model, filepath, userId)
+	createdId, err := service.repository.CreatePost(model, filePath, userId)
 	if err != nil {
 		// If cannot created, delete newly uploaded file
-		service.bucket.Delete(filepath)
+		service.bucket.Delete(filePath)
 		return nil, err
 	}
 
@@ -89,7 +88,7 @@ func (service *PostService) ListPostVersionsGetByPostId(
 func (service *PostService) GetPostVersionById(
 	postId int64,
 	versionId int64,
-) (*models.ResponseVersionOfPost, error) {
+) (*models.ResponseVersionDetailsOfPost, error) {
 	return service.repository.GetPostVersionById(postId, versionId)
 }
 
@@ -126,4 +125,71 @@ func (service *PostService) CreateVersionFromLatest(
 	return &responses.ResponseCreated{
 		Id: createdId,
 	}, nil
+}
+
+func (service *PostService) UpdateUnsubmittedOwnVersion(
+	postId int64,
+	versionId int64,
+	userId int64,
+	model *models.RequestPostUpsert,
+) error {
+	// 1. Check if the owner of version ismn same as requester
+	versionCreator, versionStatus, err :=
+		service.repository.GetVersionCreatorAndStatus(postId)
+	if err != nil {
+		return err
+	}
+
+	// Users can only edit their own versions
+	if versionCreator != userId {
+		return apierrors.ErrForbidden
+	}
+
+	// Only draft (unsubmitted versions can be edited)
+	if versionStatus != models.STATUS_DRAFT {
+		return apierrors.ErrPreconditionFailed
+	}
+
+	// If a new cover photo uploaded, validate, transform and save it
+	var filePath *string
+	if model.Cover != nil {
+		coverFile, err := model.Cover.Open()
+		if err != nil {
+			return err
+		}
+		defer coverFile.Close()
+
+		filepathName := cryptography.GenerateUniqueId() + ".webp"
+		filePath = &filepathName
+
+		if err = service.imageValidator.Validate(
+			coverFile,
+			model.Cover,
+		); err != nil {
+			return err
+		}
+
+		transformedFile, err := service.coverResizer.Transform(coverFile)
+		if err != nil {
+			return err
+		}
+
+		service.bucket.Save(transformedFile, *filePath)
+	}
+
+	if err := service.repository.UpdateVersionById(
+		postId,
+		versionId,
+		userId,
+		model,
+		filePath,
+	); err != nil {
+		// If cannot created, delete newly uploaded file
+		if filePath != nil {
+			service.bucket.Delete(*filePath)
+		}
+		return err
+	}
+
+	return nil
 }

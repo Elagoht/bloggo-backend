@@ -154,6 +154,7 @@ func (repository *PostRepository) CreatePost(
 		model.Spot,
 		model.CategoryId,
 		authorId,
+		nil, // Initial (original) version has not duplicated from any
 	)
 	if err != nil {
 		transaction.Rollback()
@@ -234,12 +235,13 @@ func (repository *PostRepository) ListPostVersionsGetByPostId(
 func (repository *PostRepository) GetPostVersionById(
 	postId int64,
 	versionId int64,
-) (*models.ResponseVersionOfPost, error) {
+) (*models.ResponseVersionDetailsOfPost, error) {
 	row := repository.database.QueryRow(QueryPostVersionGetById, postId, versionId)
 
-	result := models.ResponseVersionOfPost{}
+	result := models.ResponseVersionDetailsOfPost{}
 	if err := row.Scan(
 		&result.VersionId,
+		&result.DuplicatedFrom,
 		&result.VersionAuthor.Id,
 		&result.VersionAuthor.Name,
 		&result.VersionAuthor.Avatar,
@@ -318,6 +320,7 @@ func (repository *PostRepository) CreateVersionFromLatest(
 	copyingRow := transaction.QueryRow(QueryGetPostVersionDuplicate, id)
 	duplicate := models.QueryGetPostVersionDuplicateData{}
 	if err := copyingRow.Scan(
+		&duplicate.VersionId,
 		&duplicate.PostId,
 		&duplicate.Title,
 		&duplicate.Slug,
@@ -343,6 +346,7 @@ func (repository *PostRepository) CreateVersionFromLatest(
 		&duplicate.Spot,
 		&duplicate.CategoryId,
 		authorId,
+		&duplicate.VersionId,
 	)
 	if err != nil {
 		transaction.Rollback()
@@ -357,4 +361,45 @@ func (repository *PostRepository) CreateVersionFromLatest(
 	transaction.Commit()
 
 	return createdId, nil
+}
+
+func (repository *PostRepository) GetVersionCreatorAndStatus(
+	id int64,
+) (int64, int64, error) {
+	row := repository.database.QueryRow(QueryGetVersionCreatorAndStatus, id)
+
+	var creatorId, status int64
+	if err := row.Scan(
+		&creatorId,
+		&status,
+	); err != nil {
+		return 0, 0, err
+	}
+
+	if creatorId == 0 {
+		return 0, 0, apierrors.ErrNotFound
+	}
+
+	return creatorId, status, nil
+}
+
+func (repository *PostRepository) UpdateVersionById(
+	postId int64,
+	versionId int64,
+	userId int64,
+	model *models.RequestPostUpsert,
+	filePath *string,
+) error {
+	_, err := repository.database.Exec(
+		QueryPostVersionUpdate,
+		model.Title,
+		slugify.Slugify(model.Title),
+		model.Content,
+		filePath,
+		model.Description,
+		model.Spot,
+		model.CategoryId,
+		versionId,
+	)
+	return err
 }
