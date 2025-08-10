@@ -37,7 +37,7 @@ type ResponsePostCard struct {
 	Slug       *string `json:"slug"`
 	CoverImage *string `json:"coverImage"`
 	Spot       *string `json:"spot"`
-	Status     uint8   `json:"status"`
+	Status     int64   `json:"status"`
 	CreatedAt  string  `json:"createdAt"`
 	UpdatedAt  string  `json:"updatedAt"`
 	Category   struct {
@@ -56,7 +56,7 @@ type PostVersionsCard struct {
 		Avatar *string `json:"avatar"`
 	} `json:"versionAuthor"`
 	Title     *string `json:"title"`
-	Status    uint8   `json:"status"`
+	Status    int64   `json:"status"`
 	UpdatedAt string  `json:"updatedAt"`
 }
 
@@ -73,13 +73,14 @@ type ResponseVersionsOfPost struct {
 }
 
 // -- Post Specific Version List Item -- //
-type ResponseVersionOfPost struct {
-	VersionId     int64 `json:"versionId"`
-	VersionAuthor struct {
+type ResponseVersionDetailsOfPost struct {
+	VersionId      int64  `json:"versionId"`
+	DuplicatedFrom *int64 `json:"duplicatedFrom"`
+	VersionAuthor  struct {
 		Id     int64   `json:"id"`
 		Name   string  `json:"name"`
 		Avatar *string `json:"avatar,omitempty"`
-	} `json:"ver  sionAuthor"`
+	} `json:"versionAuthor"`
 	Title            *string `json:"title"`
 	Slug             *string `json:"slug"`
 	Content          *string `json:"content"`

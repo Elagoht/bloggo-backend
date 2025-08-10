@@ -1,6 +1,7 @@
 package models
 
 type QueryGetPostVersionDuplicateData struct {
+	VersionId   int64
 	PostId      int64
 	Title       *string
 	Slug        *string

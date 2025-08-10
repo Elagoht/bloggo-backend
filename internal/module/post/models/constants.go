@@ -1,7 +1,7 @@
 package models
 
 const (
-	STATUS_DRAFT uint8 = iota
+	STATUS_DRAFT int64 = iota
 	STATUS_PENDING
 	STATUS_APPROVED
 	STATUS_REJECTED
