@@ -55,9 +55,10 @@ func (module PostModule) RegisterModule(router *chi.Mux) {
 			router.Get("/", module.Handler.ListPosts)
 			router.Get("/{id}", module.Handler.GetPostById)
 			router.Post("/", module.Handler.CreatePostWithFirstVersion)
+			router.Delete("/{id}", module.Handler.DeletePostById)
 			router.Get("/{id}/versions", module.Handler.ListPostVersionsGetByPostId)
 			router.Get("/{id}/versions/{versionId}", module.Handler.GetPostVersionById)
-			router.Delete("/{id}", module.Handler.DeletePostById)
+			router.Post("/{id}/versions", module.Handler.CreateVersionFromLatest)
 		},
 	)
 }

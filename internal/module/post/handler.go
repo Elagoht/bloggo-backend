@@ -130,3 +130,26 @@ func (handler *PostHandler) DeletePostById(
 
 	writer.WriteHeader(http.StatusNoContent)
 }
+
+func (handler *PostHandler) CreateVersionFromLatest(
+	writer http.ResponseWriter,
+	request *http.Request,
+) {
+	userId, ok := handlers.GetContextValue[int64](writer, request, handlers.TokenUserId)
+	if !ok {
+		return
+	}
+
+	postId, ok := handlers.GetParam[int64](writer, request, "id")
+	if !ok {
+		return
+	}
+
+	createdId, err := handler.service.CreateVersionFromLatest(postId, userId)
+	if err != nil {
+		apierrors.MapErrors(err, writer, nil)
+		return
+	}
+
+	json.NewEncoder(writer).Encode(createdId)
+}

@@ -305,3 +305,56 @@ func (repository *PostRepository) SoftDeletePostById(
 
 	return err
 }
+
+func (repository *PostRepository) CreateVersionFromLatest(
+	id int64,
+	authorId int64,
+) (int64, error) {
+	transaction, err := repository.database.Begin()
+	if err != nil {
+		return 0, err
+	}
+
+	copyingRow := transaction.QueryRow(QueryGetPostVersionDuplicate, id)
+	duplicate := models.QueryGetPostVersionDuplicateData{}
+	if err := copyingRow.Scan(
+		&duplicate.PostId,
+		&duplicate.Title,
+		&duplicate.Slug,
+		&duplicate.Content,
+		&duplicate.CoverImage,
+		&duplicate.Description,
+		&duplicate.Spot,
+		&duplicate.CategoryId,
+		&duplicate.CreatedBy,
+	); err != nil {
+		transaction.Rollback()
+		return 0, err
+	}
+
+	result, err := transaction.Exec(
+		QueryPostVersionCreate,
+		id,
+		&duplicate.Title,
+		&duplicate.Slug,
+		&duplicate.Content,
+		&duplicate.CoverImage,
+		&duplicate.Description,
+		&duplicate.Spot,
+		&duplicate.CategoryId,
+		authorId,
+	)
+	if err != nil {
+		transaction.Rollback()
+		return 0, err
+	}
+	createdId, err := result.LastInsertId()
+	if err != nil {
+		transaction.Rollback()
+		return 0, err
+	}
+
+	transaction.Commit()
+
+	return createdId, nil
+}

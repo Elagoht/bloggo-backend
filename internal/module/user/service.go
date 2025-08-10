@@ -8,6 +8,7 @@ import (
 	"bloggo/internal/utils/file/validatefile"
 	"bloggo/internal/utils/filter"
 	"bloggo/internal/utils/pagination"
+	"bloggo/internal/utils/schemas/responses"
 	"fmt"
 	"log"
 	"mime/multipart"
@@ -57,7 +58,7 @@ func (service *UserService) GetUserById(
 
 func (service *UserService) UserCreate(
 	model *models.RequestUserCreate,
-) (*models.ResponseUserCreated, error) {
+) (*responses.ResponseCreated, error) {
 	processed, err := model.HashUserPassphrase()
 	if err != nil {
 		return nil, err
@@ -68,7 +69,7 @@ func (service *UserService) UserCreate(
 		return nil, err
 	}
 
-	return &models.ResponseUserCreated{
+	return &responses.ResponseCreated{
 		Id: id,
 	}, nil
 }

@@ -4,6 +4,7 @@ import (
 	"bloggo/internal/module/category/models"
 	"bloggo/internal/utils/filter"
 	"bloggo/internal/utils/pagination"
+	"bloggo/internal/utils/schemas/responses"
 )
 
 type CategoryService struct {
@@ -18,7 +19,7 @@ func NewCategoryService(repository CategoryRepository) CategoryService {
 
 func (service *CategoryService) CategoryCreate(
 	model *models.RequestCategoryCreate,
-) (*models.ResponseCategoryCreated, error) {
+) (*responses.ResponseCreated, error) {
 	id, err := service.repository.CategoryCreate(
 		models.ToCreateCategoryParams(model),
 	)
@@ -26,7 +27,7 @@ func (service *CategoryService) CategoryCreate(
 		return nil, err
 	}
 
-	return &models.ResponseCategoryCreated{
+	return &responses.ResponseCreated{
 		Id: id,
 	}, nil
 }

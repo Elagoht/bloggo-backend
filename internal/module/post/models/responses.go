@@ -1,10 +1,5 @@
 package models
 
-// -- New Post Created -- //
-type ResponsePostCreated struct {
-	Id int64 `json:"id"`
-}
-
 // -- Post Details -- //
 type ResponsePostDetails struct {
 	PostId    int64 `json:"postId"`
@@ -84,7 +79,7 @@ type ResponseVersionOfPost struct {
 		Id     int64   `json:"id"`
 		Name   string  `json:"name"`
 		Avatar *string `json:"avatar,omitempty"`
-	} `json:"versionAuthor"`
+	} `json:"ver  sionAuthor"`
 	Title            *string `json:"title"`
 	Slug             *string `json:"slug"`
 	Content          *string `json:"content"`

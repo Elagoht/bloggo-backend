@@ -1,10 +1,5 @@
 package models
 
-// -- New Tag Created -- //
-type ResponseTagCreated struct {
-	Id int64 `json:"id"`
-}
-
 // -- Tag Details -- //
 type ResponseTagDetails struct {
 	Id int64 `json:"id"`

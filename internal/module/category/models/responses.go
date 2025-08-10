@@ -1,10 +1,5 @@
 package models
 
-// -- New Category Created -- //
-type ResponseCategoryCreated struct {
-	Id int64 `json:"id"`
-}
-
 // -- Category Details -- //
 type ResponseCategoryDetails struct {
 	Id          int64   `json:"id"`

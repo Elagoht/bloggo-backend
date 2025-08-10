@@ -4,6 +4,7 @@ import (
 	"bloggo/internal/module/tag/models"
 	"bloggo/internal/utils/filter"
 	"bloggo/internal/utils/pagination"
+	"bloggo/internal/utils/schemas/responses"
 )
 
 type TagService struct {
@@ -18,7 +19,7 @@ func NewTagService(repository TagRepository) TagService {
 
 func (service *TagService) TagCreate(
 	model *models.RequestTagCreate,
-) (*models.ResponseTagCreated, error) {
+) (*responses.ResponseCreated, error) {
 	id, err := service.repository.TagCreate(
 		models.ToCreateTagParams(model),
 	)
@@ -26,7 +27,7 @@ func (service *TagService) TagCreate(
 		return nil, err
 	}
 
-	return &models.ResponseTagCreated{
+	return &responses.ResponseCreated{
 		Id: id,
 	}, nil
 }

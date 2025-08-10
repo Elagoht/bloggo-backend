@@ -6,6 +6,7 @@ import (
 	"bloggo/internal/utils/cryptography"
 	"bloggo/internal/utils/file/transformfile"
 	"bloggo/internal/utils/file/validatefile"
+	"bloggo/internal/utils/schemas/responses"
 	"mime/multipart"
 )
 
@@ -47,7 +48,7 @@ func (service *PostService) CreatePostWithFirstVersion(
 	model *models.RequestPostUpsert,
 	cover *multipart.FileHeader,
 	userId int64,
-) (*models.ResponsePostCreated, error) {
+) (*responses.ResponseCreated, error) {
 	coverFile, err := cover.Open()
 	if err != nil {
 		return nil, err
@@ -74,7 +75,7 @@ func (service *PostService) CreatePostWithFirstVersion(
 		return nil, err
 	}
 
-	return &models.ResponsePostCreated{
+	return &responses.ResponseCreated{
 		Id: createdId,
 	}, nil
 }
@@ -111,4 +112,18 @@ func (service *PostService) DeletePostById(
 	}
 
 	return nil
+}
+
+func (service *PostService) CreateVersionFromLatest(
+	id int64,
+	userId int64,
+) (*responses.ResponseCreated, error) {
+	createdId, err := service.repository.CreateVersionFromLatest(id, userId)
+	if err != nil {
+		return nil, err
+	}
+
+	return &responses.ResponseCreated{
+		Id: createdId,
+	}, nil
 }

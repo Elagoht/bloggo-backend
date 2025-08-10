@@ -103,7 +103,12 @@ const (
 	ON u.id = p.created_by
 	WHERE p.id = ?
 	AND p.deleted_at IS NULL;`
-	QueryPostPatch      = ``
+	QueryGetPostVersionDuplicate = `
+	SELECT
+		post_id, title, slug, content, cover_image,
+		description, spot, category_id, created_by
+	FROM post_versions
+	WHERE post_id = ?;`
 	QueryPostSoftDelete = `
 	UPDATE posts
 	SET deleted_at = CURRENT_TIMESTAMP
