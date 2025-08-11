@@ -403,3 +403,33 @@ func (repository *PostRepository) UpdateVersionById(
 	)
 	return err
 }
+
+func (repository *PostRepository) UpdateVersionStatus(
+	versionId int64,
+	status int64,
+	statusChangedBy int64,
+) error {
+	_, err := repository.database.Exec(
+		QueryPostVersionUpdateStatus,
+		status,
+		statusChangedBy,
+		versionId,
+	)
+	return err
+}
+
+func (repository *PostRepository) UpdateVersionStatusWithNote(
+	versionId int64,
+	status int64,
+	statusChangedBy int64,
+	note *string,
+) error {
+	_, err := repository.database.Exec(
+		QueryPostVersionUpdateStatusWithNote,
+		status,
+		statusChangedBy,
+		note,
+		versionId,
+	)
+	return err
+}

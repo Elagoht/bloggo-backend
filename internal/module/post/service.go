@@ -193,3 +193,85 @@ func (service *PostService) UpdateUnsubmittedOwnVersion(
 
 	return nil
 }
+
+func (service *PostService) SubmitVersionForReview(
+	postId int64,
+	versionId int64,
+	userId int64,
+) error {
+	// Check if the owner of version is same as requester
+	versionCreator, versionStatus, err :=
+		service.repository.GetVersionCreatorAndStatus(versionId)
+	if err != nil {
+		return err
+	}
+
+	// Users can only submit their own versions
+	if versionCreator != userId {
+		return apierrors.ErrForbidden
+	}
+
+	// Only draft versions can be submitted
+	if versionStatus != models.STATUS_DRAFT {
+		return apierrors.ErrPreconditionFailed
+	}
+
+	// Update version status to pending (submitted for review)
+	return service.repository.UpdateVersionStatus(
+		versionId,
+		models.STATUS_PENDING,
+		userId,
+	)
+}
+
+func (service *PostService) ApproveVersion(
+	postId int64,
+	versionId int64,
+	userId int64,
+	note *string,
+) error {
+	// Check if version exists and get current status
+	_, versionStatus, err := service.repository.GetVersionCreatorAndStatus(versionId)
+	if err != nil {
+		return err
+	}
+
+	// Only pending versions can be approved, drafts and published cannot be approved
+	if versionStatus == models.STATUS_DRAFT || versionStatus == models.STATUS_PUBLISHED {
+		return apierrors.ErrPreconditionFailed
+	}
+
+	// Update version status to approved
+	return service.repository.UpdateVersionStatusWithNote(
+		versionId,
+		models.STATUS_APPROVED,
+		userId,
+		note,
+	)
+}
+
+func (service *PostService) RejectVersion(
+	postId int64,
+	versionId int64,
+	userId int64,
+	note *string,
+) error {
+	// Check if version exists and get current status
+	_, versionStatus, err := service.repository.GetVersionCreatorAndStatus(versionId)
+	if err != nil {
+		return err
+	}
+
+	// Only pending or approved versions can be rejected, drafts and published cannot be rejected
+	if versionStatus == models.STATUS_DRAFT || versionStatus == models.STATUS_PUBLISHED {
+		return apierrors.ErrPreconditionFailed
+	}
+
+	// Update version status to rejected
+	return service.repository.UpdateVersionStatusWithNote(
+		versionId,
+		models.STATUS_REJECTED,
+		userId,
+		note,
+	)
+}

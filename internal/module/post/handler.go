@@ -209,3 +209,140 @@ func (handler *PostHandler) UpdateUnsubmittedOwnVersion(
 
 	writer.WriteHeader(http.StatusNoContent)
 }
+
+func (handler *PostHandler) SubmitVersionForReview(
+	writer http.ResponseWriter,
+	request *http.Request,
+) {
+	userId, ok := handlers.GetContextValue[int64](writer, request, handlers.TokenUserId)
+	if !ok {
+		return
+	}
+
+	postId, ok := handlers.GetParam[int64](writer, request, "id")
+	if !ok {
+		return
+	}
+	versionId, ok := handlers.GetParam[int64](writer, request, "versionId")
+	if !ok {
+		return
+	}
+
+	if err := handler.service.SubmitVersionForReview(
+		postId,
+		versionId,
+		userId,
+	); err != nil {
+		apierrors.MapErrors(err, writer, apierrors.HTTPErrorMapping{
+			apierrors.ErrPreconditionFailed: {
+				Message: "Only draft versions can be submitted for review.",
+				Status:  http.StatusPreconditionFailed,
+			},
+			apierrors.ErrForbidden: {
+				Message: "You can only submit your own versions for review.",
+				Status:  http.StatusForbidden,
+			},
+		})
+		return
+	}
+
+	writer.WriteHeader(http.StatusNoContent)
+}
+
+func (handler *PostHandler) ApproveVersion(
+	writer http.ResponseWriter,
+	request *http.Request,
+) {
+	userId, ok := handlers.GetContextValue[int64](writer, request, handlers.TokenUserId)
+	if !ok {
+		return
+	}
+
+	postId, ok := handlers.GetParam[int64](writer, request, "id")
+	if !ok {
+		return
+	}
+	versionId, ok := handlers.GetParam[int64](writer, request, "versionId")
+	if !ok {
+		return
+	}
+
+	body, ok := handlers.BindAndValidate[*models.RequestPostStatusModerate](
+		writer,
+		request,
+	)
+	if !ok {
+		return
+	}
+
+	var note *string
+	if body.Note != "" {
+		note = &body.Note
+	}
+
+	if err := handler.service.ApproveVersion(
+		postId,
+		versionId,
+		userId,
+		note,
+	); err != nil {
+		apierrors.MapErrors(err, writer, apierrors.HTTPErrorMapping{
+			apierrors.ErrPreconditionFailed: {
+				Message: "Drafts and published versions cannot be approved.",
+				Status:  http.StatusPreconditionFailed,
+			},
+		})
+		return
+	}
+
+	writer.WriteHeader(http.StatusNoContent)
+}
+
+func (handler *PostHandler) RejectVersion(
+	writer http.ResponseWriter,
+	request *http.Request,
+) {
+	userId, ok := handlers.GetContextValue[int64](writer, request, handlers.TokenUserId)
+	if !ok {
+		return
+	}
+
+	postId, ok := handlers.GetParam[int64](writer, request, "id")
+	if !ok {
+		return
+	}
+	versionId, ok := handlers.GetParam[int64](writer, request, "versionId")
+	if !ok {
+		return
+	}
+
+	body, ok := handlers.BindAndValidate[*models.RequestPostStatusModerate](
+		writer,
+		request,
+	)
+	if !ok {
+		return
+	}
+
+	var note *string
+	if body.Note != "" {
+		note = &body.Note
+	}
+
+	if err := handler.service.RejectVersion(
+		postId,
+		versionId,
+		userId,
+		note,
+	); err != nil {
+		apierrors.MapErrors(err, writer, apierrors.HTTPErrorMapping{
+			apierrors.ErrPreconditionFailed: {
+				Message: "Only pending or approved versions can be rejected. Drafts and published versions cannot be rejected.",
+				Status:  http.StatusPreconditionFailed,
+			},
+		})
+		return
+	}
+
+	writer.WriteHeader(http.StatusNoContent)
+}

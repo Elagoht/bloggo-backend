@@ -136,4 +136,21 @@ const (
 		category_id = COALESCE(?, category_id),
 		updated_at = CURRENT_TIMESTAMP
 	WHERE id = ?;`
+	QueryPostVersionUpdateStatus = `
+	UPDATE post_versions
+	SET
+		status = ?,
+		status_changed_by = ?,
+		status_changed_at = CURRENT_TIMESTAMP,
+		updated_at = CURRENT_TIMESTAMP
+	WHERE id = ?;`
+	QueryPostVersionUpdateStatusWithNote = `
+	UPDATE post_versions
+	SET
+		status = ?,
+		status_changed_by = ?,
+		status_change_note = ?,
+		status_changed_at = CURRENT_TIMESTAMP,
+		updated_at = CURRENT_TIMESTAMP
+	WHERE id = ?;`
 )
