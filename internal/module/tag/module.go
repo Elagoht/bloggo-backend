@@ -2,45 +2,41 @@ package tag
 
 import (
 	"bloggo/internal/config"
+	"bloggo/internal/db"
 	"bloggo/internal/infrastructure/permissions"
 	"bloggo/internal/middleware"
 	"bloggo/internal/utils/permission"
-	"database/sql"
 
 	"github.com/go-chi/chi"
 )
 
 type TagModule struct {
-	Handler     TagHandler
-	Service     TagService
-	Repository  TagRepository
-	Config      *config.Config
-	Permissions permissions.Store
+	Handler    TagHandler
+	Service    TagService
+	Repository TagRepository
 }
 
-func NewModule(
-	database *sql.DB,
-	config *config.Config,
-	permissions permissions.Store,
-) TagModule {
+func NewModule() TagModule {
+	database := db.Get()
 	repository := NewTagRepository(database)
 	service := NewTagService(repository)
 	handler := NewTagHandler(service)
 
 	return TagModule{
-		Handler:     handler,
-		Service:     service,
-		Repository:  repository,
-		Config:      config,
-		Permissions: permissions,
+		Handler:    handler,
+		Service:    service,
+		Repository: repository,
 	}
 }
 
 func (module TagModule) RegisterModule(router *chi.Mux) {
-	router.With(middleware.AuthMiddleware(module.Config)).Route(
+	config := config.Get()
+	permissionStore := permissions.Get()
+
+	router.With(middleware.AuthMiddleware(&config)).Route(
 		"/tags",
 		func(router chi.Router) {
-			authority := permission.NewChecker(module.Permissions)
+			authority := permission.NewChecker(permissionStore)
 
 			router.Get("/", module.Handler.GetCategories)
 			router.Get("/{slug}", authority.Require("tag:manage", module.Handler.GetTagBySlug))

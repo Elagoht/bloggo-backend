@@ -1,6 +1,7 @@
 package permissions
 
 import (
+	"bloggo/internal/db"
 	"database/sql"
 	"sync"
 )
@@ -15,9 +16,10 @@ var (
 	instance Store
 )
 
-func GetStore() Store {
+func Get() Store {
 	once.Do(func() {
 		instance = newMemoryStore()
+		instance.Load(db.Get())
 	})
 	return instance
 }

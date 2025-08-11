@@ -2,45 +2,41 @@ package category
 
 import (
 	"bloggo/internal/config"
+	"bloggo/internal/db"
 	"bloggo/internal/infrastructure/permissions"
 	"bloggo/internal/middleware"
 	"bloggo/internal/utils/permission"
-	"database/sql"
 
 	"github.com/go-chi/chi"
 )
 
 type CategoryModule struct {
-	Handler     CategoryHandler
-	Service     CategoryService
-	Repository  CategoryRepository
-	Config      *config.Config
-	Permissions permissions.Store
+	Handler    CategoryHandler
+	Service    CategoryService
+	Repository CategoryRepository
 }
 
-func NewModule(
-	database *sql.DB,
-	config *config.Config,
-	permissions permissions.Store,
-) CategoryModule {
+func NewModule() CategoryModule {
+	database := db.Get()
 	repository := NewCategoryRepository(database)
 	service := NewCategoryService(repository)
 	handler := NewCategoryHandler(service)
 
 	return CategoryModule{
-		Handler:     handler,
-		Service:     service,
-		Repository:  repository,
-		Config:      config,
-		Permissions: permissions,
+		Handler:    handler,
+		Service:    service,
+		Repository: repository,
 	}
 }
 
 func (module CategoryModule) RegisterModule(router *chi.Mux) {
-	router.With(middleware.AuthMiddleware(module.Config)).Route(
+	config := config.Get()
+	permissionStore := permissions.Get()
+
+	router.With(middleware.AuthMiddleware(&config)).Route(
 		"/categories",
 		func(router chi.Router) {
-			authority := permission.NewChecker(module.Permissions)
+			authority := permission.NewChecker(permissionStore)
 
 			router.Get("/",
 				authority.Require("category:manage", module.Handler.GetCategories),

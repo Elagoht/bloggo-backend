@@ -15,7 +15,7 @@ import (
 )
 
 func main() {
-	// Create singleton application
+	// Get singleton application
 	application := app.GetInstance()
 
 	// Register global middlewares
@@ -28,12 +28,12 @@ func main() {
 
 	// Register modules
 	modules := []module.Module{
-		category.NewModule(application.Database, &application.Config, application.Permissions),
-		tag.NewModule(application.Database, &application.Config, application.Permissions),
-		post.NewModule(application.Database, &application.Config, application.Permissions),
-		user.NewModule(application.Database, &application.Config),
-		session.NewModule(application.Database, &application.Config),
-		storage.NewModule(application.Database, &application.Config, application.Permissions),
+		category.NewModule(),
+		tag.NewModule(),
+		post.NewModule(),
+		user.NewModule(),
+		session.NewModule(),
+		storage.NewModule(),
 		health.NewModule(),
 	}
 	application.RegisterModules(modules)

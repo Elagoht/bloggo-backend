@@ -2,8 +2,8 @@ package session
 
 import (
 	"bloggo/internal/config"
+	"bloggo/internal/db"
 	"bloggo/internal/infrastructure/tokens"
-	"database/sql"
 
 	"github.com/go-chi/chi"
 )
@@ -14,15 +14,14 @@ type SessionModule struct {
 	Repository SessionRepository
 }
 
-func NewModule(
-	database *sql.DB,
-	config *config.Config,
-) SessionModule {
+func NewModule() SessionModule {
+	database := db.Get()
+	config := config.Get()
 	refreshStore := tokens.GetStore()
 
 	repository := NewSessionRepository(database)
-	service := NewSessionService(repository, config, refreshStore)
-	handler := NewSessionHandler(service, config)
+	service := NewSessionService(repository, &config, refreshStore)
+	handler := NewSessionHandler(service, &config)
 
 	return SessionModule{
 		Handler:    handler,

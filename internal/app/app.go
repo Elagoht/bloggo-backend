@@ -1,7 +1,6 @@
 package app
 
 import (
-	"database/sql"
 	"log"
 	"net/http"
 	"strconv"
@@ -16,10 +15,7 @@ import (
 )
 
 type Application struct {
-	Database    *sql.DB
-	Config      config.Config
-	Router      *chi.Mux
-	Permissions permissions.Store
+	Router *chi.Mux
 }
 
 var (
@@ -30,16 +26,14 @@ var (
 // Get singleton instance
 func GetInstance() *Application {
 	once.Do(func() {
-		databaseConnection := db.GetInstance()
-		permissionStore := permissions.GetStore()
+		// Initialize singletons
+		databaseConnection := db.Get()
+		permissionStore := permissions.Get()
 		// Initial cache from database
 		permissionStore.Load(databaseConnection)
 
 		instance = Application{
-			Database:    databaseConnection,
-			Config:      config.Get(),
-			Router:      chi.NewRouter(),
-			Permissions: permissionStore,
+			Router: chi.NewRouter(),
 		}
 	})
 	return &instance
@@ -60,7 +54,8 @@ func (app *Application) RegisterGlobalMiddlewares(
 }
 
 func (app *Application) Bootstrap() {
-	portString := strconv.Itoa(app.Config.Port)
+	config := config.Get()
+	portString := strconv.Itoa(config.Port)
 	// Start the server
 	server := &http.Server{
 		Addr:    ":" + portString,

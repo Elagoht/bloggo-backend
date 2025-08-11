@@ -2,39 +2,31 @@ package storage
 
 import (
 	"bloggo/internal/config"
-	"bloggo/internal/infrastructure/permissions"
 	"bloggo/internal/middleware"
-	"database/sql"
 
 	"github.com/go-chi/chi"
 )
 
 type StorageModule struct {
-	Handler     StorageHandler
-	Config      *config.Config
-	Permissions permissions.Store
+	Handler StorageHandler
 }
 
-func NewModule(
-	database *sql.DB,
-	config *config.Config,
-	permissions permissions.Store,
-) StorageModule {
+func NewModule() StorageModule {
 	handler := NewStorageHandler()
 
 	return StorageModule{
-		Handler:     handler,
-		Config:      config,
-		Permissions: permissions,
+		Handler: handler,
 	}
 }
 
 func (module StorageModule) RegisterModule(router *chi.Mux) {
+	config := config.Get()
+	
 	router.Route("/uploads", func(router chi.Router) {
-		router.With(middleware.AuthMiddleware(module.Config)).Route(
+		router.With(middleware.AuthMiddleware(&config)).Route(
 			"/uploads",
 			func(router chi.Router) {
-				// authority := permission.NewChecker(module.Permissions)
+				// Add authenticated storage routes here if needed
 			},
 		)
 		// Public

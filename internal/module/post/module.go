@@ -2,30 +2,24 @@ package post
 
 import (
 	"bloggo/internal/config"
+	"bloggo/internal/db"
 	"bloggo/internal/infrastructure/bucket"
-	"bloggo/internal/infrastructure/permissions"
 	"bloggo/internal/middleware"
 	"bloggo/internal/utils/file/transformfile"
 	"bloggo/internal/utils/file/validatefile"
-	"database/sql"
 	"log"
 
 	"github.com/go-chi/chi"
 )
 
 type PostModule struct {
-	Handler     PostHandler
-	Service     PostService
-	Repository  PostRepository
-	Config      *config.Config
-	Permissions permissions.Store
+	Handler    PostHandler
+	Service    PostService
+	Repository PostRepository
 }
 
-func NewModule(
-	database *sql.DB,
-	config *config.Config,
-	permissions permissions.Store,
-) PostModule {
+func NewModule() PostModule {
+	database := db.Get()
 	bucket, err := bucket.NewFileSystemBucket("posts/versions/covers")
 	if err != nil {
 		log.Fatalln("Post module cannot created file storage")
@@ -38,20 +32,18 @@ func NewModule(
 	handler := NewPostHandler(service)
 
 	return PostModule{
-		Handler:     handler,
-		Service:     service,
-		Repository:  repository,
-		Config:      config,
-		Permissions: permissions,
+		Handler:    handler,
+		Service:    service,
+		Repository: repository,
 	}
 }
 
 func (module PostModule) RegisterModule(router *chi.Mux) {
-	router.With(middleware.AuthMiddleware(module.Config)).Route(
+	config := config.Get()
+
+	router.With(middleware.AuthMiddleware(&config)).Route(
 		"/posts",
 		func(router chi.Router) {
-			// authority := permission.NewChecker(module.Permissions)
-
 			router.Get("/", module.Handler.ListPosts)
 			router.Get("/{id}", module.Handler.GetPostById)
 			router.Post("/", module.Handler.CreatePostWithFirstVersion)

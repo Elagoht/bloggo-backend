@@ -13,7 +13,7 @@ var (
 	once sync.Once
 )
 
-func GetInstance() *sql.DB {
+func Get() *sql.DB {
 	once.Do(func() {
 		var err error
 		db, err = sql.Open("sqlite3", "bloggo.sqlite")
