@@ -16,7 +16,7 @@ import (
 
 func main() {
 	// Get singleton application
-	application := app.GetInstance()
+	application := app.Get()
 
 	// Register global middlewares
 	middlewares := []func(http.Handler) http.Handler{

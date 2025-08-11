@@ -24,7 +24,7 @@ var (
 )
 
 // Get singleton instance
-func GetInstance() *Application {
+func Get() *Application {
 	once.Do(func() {
 		// Initialize singletons
 		databaseConnection := db.Get()
