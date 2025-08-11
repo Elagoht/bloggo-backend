@@ -337,7 +337,7 @@ func (handler *PostHandler) RejectVersion(
 	); err != nil {
 		apierrors.MapErrors(err, writer, apierrors.HTTPErrorMapping{
 			apierrors.ErrPreconditionFailed: {
-				Message: "Only pending or approved versions can be rejected. Drafts and published versions cannot be rejected.",
+				Message: "Drafts and published versions cannot be rejected.",
 				Status:  http.StatusPreconditionFailed,
 			},
 		})
