@@ -40,6 +40,7 @@ func (repository *PostRepository) GetPostList() (
 			&post.CoverImage,
 			&post.Spot,
 			&post.Status,
+			&post.ReadCount,
 			&post.CreatedAt,
 			&post.UpdatedAt,
 			&post.Category.Slug,
@@ -74,6 +75,7 @@ func (repository *PostRepository) GetPostById(
 		&post.Description,
 		&post.Spot,
 		&post.Status,
+		&post.ReadCount,
 		&post.CreatedAt,
 		&post.UpdatedAt,
 		&post.Category.Slug,
@@ -106,6 +108,7 @@ func (repository *PostRepository) GetPostGetByCurrentVersionSlug(
 		&post.Description,
 		&post.Spot,
 		&post.Status,
+		&post.ReadCount,
 		&post.CreatedAt,
 		&post.UpdatedAt,
 		&post.Category.Slug,
@@ -511,5 +514,10 @@ func (repository *PostRepository) IsVersionCurrentlyPublished(versionId int64) (
 
 func (repository *PostRepository) SetPostCurrentVersionToNull(versionId int64) error {
 	_, err := repository.database.Exec(QuerySetPostCurrentVersionToNull, versionId)
+	return err
+}
+
+func (repository *PostRepository) IncrementReadCount(postId int64) error {
+	_, err := repository.database.Exec(QueryIncrementReadCount, postId)
 	return err
 }

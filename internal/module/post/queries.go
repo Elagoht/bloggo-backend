@@ -6,7 +6,7 @@ const (
 		p.id as post_id, pv.id as version_id,
 		u.id as author_id, u.name as author_name, u.avatar as author_avatar,
 		pv.title, pv.slug, pv.content, pv.cover_image, pv.description, pv.spot,
-		pv.status, pv.created_at, pv.updated_at,
+		pv.status, p.read_count, pv.created_at, pv.updated_at,
 		c.slug AS category_slug, c.id AS category_id, c.name AS category_name
 	FROM posts p
 	JOIN post_versions pv
@@ -23,7 +23,7 @@ const (
 		p.id as post_id, pv.id as version_id,
 		u.id as author_id, u.name as author_name, u.avatar as author_avatar,
 		pv.title, pv.slug, pv.content, pv.cover_image, pv.description, pv.spot,
-		pv.status, pv.created_at, pv.updated_at,
+		pv.status, p.read_count, pv.created_at, pv.updated_at,
 		c.slug AS category_slug, c.id AS category_id, c.name AS category_name
 	FROM posts p
 	JOIN post_versions pv
@@ -40,7 +40,7 @@ const (
 		p.id as post_id,
 		u.id as author_id, u.name as author_name, u.avatar as author_avatar,
 		pv.title, pv.slug, pv.cover_image, pv.spot,
-		pv.status,
+		pv.status, p.read_count,
 		pv.created_at, pv.updated_at,
 		c.slug AS category_slug, c.id AS category_id, c.name AS category_name
 	FROM posts p
@@ -179,5 +179,10 @@ const (
 	UPDATE posts
 	SET current_version_id = NULL
 	WHERE current_version_id = ?
+	AND deleted_at IS NULL;`
+	QueryIncrementReadCount = `
+	UPDATE posts
+	SET read_count = read_count + 1
+	WHERE id = ?
 	AND deleted_at IS NULL;`
 )

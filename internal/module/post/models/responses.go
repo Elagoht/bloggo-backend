@@ -16,6 +16,7 @@ type ResponsePostDetails struct {
 	Description *string `json:"description"`
 	Spot        *string `json:"spot"`
 	Status      int64   `json:"status"`
+	ReadCount   int64   `json:"readCount"`
 	CreatedAt   *string `json:"createdAt"`
 	UpdatedAt   *string `json:"updatedAt"`
 	Category    struct {
@@ -38,6 +39,7 @@ type ResponsePostCard struct {
 	CoverImage *string `json:"coverImage"`
 	Spot       *string `json:"spot"`
 	Status     int64   `json:"status"`
+	ReadCount  int64   `json:"readCount"`
 	CreatedAt  string  `json:"createdAt"`
 	UpdatedAt  string  `json:"updatedAt"`
 	Category   struct {
