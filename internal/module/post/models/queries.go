@@ -10,5 +10,6 @@ type QueryGetPostVersionDuplicateData struct {
 	Description *string
 	Spot        *string
 	CategoryId  *int64
+	ReadTime    *int
 	CreatedBy   int64
 }

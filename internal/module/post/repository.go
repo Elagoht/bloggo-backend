@@ -122,6 +122,7 @@ func (repository *PostRepository) GetPostGetByCurrentVersionSlug(
 func (repository *PostRepository) CreatePost(
 	model *models.RequestPostUpsert,
 	coverPath string,
+	readTime int,
 	authorId int64,
 ) (int64, error) {
 	transaction, err := repository.database.Begin()
@@ -153,6 +154,7 @@ func (repository *PostRepository) CreatePost(
 		model.Description,
 		model.Spot,
 		model.CategoryId,
+		readTime,
 		authorId,
 		nil, // Initial (original) version has not duplicated from any
 	)
@@ -329,6 +331,7 @@ func (repository *PostRepository) CreateVersionFromLatest(
 		&duplicate.Description,
 		&duplicate.Spot,
 		&duplicate.CategoryId,
+		&duplicate.ReadTime,
 		&duplicate.CreatedBy,
 	); err != nil {
 		transaction.Rollback()
@@ -345,6 +348,7 @@ func (repository *PostRepository) CreateVersionFromLatest(
 		&duplicate.Description,
 		&duplicate.Spot,
 		&duplicate.CategoryId,
+		&duplicate.ReadTime,
 		authorId,
 		&duplicate.VersionId,
 	)
@@ -389,6 +393,7 @@ func (repository *PostRepository) UpdateVersionById(
 	userId int64,
 	model *models.RequestPostUpsert,
 	filePath *string,
+	readTime *int,
 ) error {
 	_, err := repository.database.Exec(
 		QueryPostVersionUpdate,
@@ -399,6 +404,7 @@ func (repository *PostRepository) UpdateVersionById(
 		model.Description,
 		model.Spot,
 		model.CategoryId,
+		readTime,
 		versionId,
 	)
 	return err

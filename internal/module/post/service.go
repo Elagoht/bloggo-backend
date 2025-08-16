@@ -8,6 +8,7 @@ import (
 	"bloggo/internal/utils/cryptography"
 	"bloggo/internal/utils/file/transformfile"
 	"bloggo/internal/utils/file/validatefile"
+	"bloggo/internal/utils/readtime"
 	"bloggo/internal/utils/schemas/responses"
 )
 
@@ -71,7 +72,14 @@ func (service *PostService) CreatePostWithFirstVersion(
 
 	service.bucket.Save(transformedFile, filePath)
 
-	createdId, err := service.repository.CreatePost(model, filePath, userId)
+	// Calculate read time
+	content := ""
+	if model.Content != nil {
+		content = *model.Content
+	}
+	estimatedReadTime := readtime.EstimateReadTime(content)
+
+	createdId, err := service.repository.CreatePost(model, filePath, estimatedReadTime, userId)
 	if err != nil {
 		// If cannot created, delete newly uploaded file
 		service.bucket.Delete(filePath)
@@ -181,12 +189,20 @@ func (service *PostService) UpdateUnsubmittedOwnVersion(
 		service.bucket.Save(transformedFile, *filePath)
 	}
 
+	// Calculate read time if content is being updated
+	var readTime *int
+	if model.Content != nil {
+		calculatedReadTime := readtime.EstimateReadTime(*model.Content)
+		readTime = &calculatedReadTime
+	}
+
 	if err := service.repository.UpdateVersionById(
 		postId,
 		versionId,
 		userId,
 		model,
 		filePath,
+		readTime,
 	); err != nil {
 		// If cannot created, delete newly uploaded file
 		if filePath != nil {

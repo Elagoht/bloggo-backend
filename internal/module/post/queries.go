@@ -75,11 +75,11 @@ const (
 	QueryPostVersionCreate = `
 	INSERT INTO post_versions (
 		post_id, title, slug, content, cover_image,
-		description, spot, category_id, created_by,
+		description, spot, category_id, read_time, created_by,
 		duplicated_from
 	) VALUES (
 		?, ?, ?, ?, ?,
-		?, ?, ?, ?,
+		?, ?, ?, ?, ?,
 		?
 	);`
 	QueryPostSetCurrentVersion = `
@@ -108,7 +108,7 @@ const (
 	QueryGetPostVersionDuplicate = `
 	SELECT
 		id, post_id, title, slug, content, cover_image,
-		description, spot, category_id, created_by
+		description, spot, category_id, read_time, created_by
 	FROM post_versions
 	WHERE post_id = ?;`
 	QueryPostSoftDelete = `
@@ -134,6 +134,7 @@ const (
 		description = COALESCE(?, description),
 		spot = COALESCE(?, spot),
 		category_id = COALESCE(?, category_id),
+		read_time = COALESCE(?, read_time),
 		updated_at = CURRENT_TIMESTAMP
 	WHERE id = ?;`
 	QueryPostVersionUpdateStatus = `

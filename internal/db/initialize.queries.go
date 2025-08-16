@@ -82,6 +82,7 @@ const (
 		description VARCHAR(155),
 		spot VARCHAR(75),
 		category_id INTEGER,
+		read_time INTEGER, -- Estimated read time in minutes
 		status INTEGER NOT NULL DEFAULT 0,
 		created_by INTEGER NOT NULL,
 		status_changed_at TIMESTAMP WITH TIME ZONE NULL,
