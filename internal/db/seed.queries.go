@@ -67,7 +67,7 @@ var (
 			"post:create", "post:edit", "post:edit_own", "post:delete", "post:delete_own", "post:publish", "post:view", "post:schedule", "statistics:view-all", "statistics:view-self", "schedule:create", "schedule:update", "schedule:delete", "schedule:view",
 		},
 		"author": {
-			"post:create", "post:edit_own", "post:delete_own", "post:view", "statistics:view-self",
+			"post:create", "post:edit_own", "post:delete_own", "post:view", "statistics:view-all", "statistics:view-self",
 		},
 	}
 	SeedQueries = []string{
