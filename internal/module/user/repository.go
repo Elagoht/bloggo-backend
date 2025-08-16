@@ -138,3 +138,29 @@ func (repository *UserRepository) UpdateAvatarById(
 
 	return nil
 }
+
+func (repository *UserRepository) UpdateUserById(
+	userId int64,
+	model *models.RequestUserUpdate,
+) error {
+	_, err := repository.database.Exec(
+		QueryUserUpdateById,
+		model.Name,
+		model.Email,
+		userId,
+	)
+	return err
+}
+
+func (repository *UserRepository) AssignRole(
+	userId int64,
+	roleId int64,
+) error {
+	_, err := repository.database.Exec(QueryUserAssignRole, roleId, userId)
+	return err
+}
+
+func (repository *UserRepository) DeleteUser(userId int64) error {
+	_, err := repository.database.Exec(QueryUserDelete, userId)
+	return err
+}

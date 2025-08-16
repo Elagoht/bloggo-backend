@@ -17,11 +17,27 @@ const (
 	QueryUserCreate = `
 	INSERT INTO users (name, email, avatar, passphrase_hash, role_id)
 	VALUES (?, ?, ?, ?, ?);`
-	QueryUserUpdateById       = ``
+	QueryUserUpdateById = `
+	UPDATE users
+	SET 
+		name = COALESCE(?, name),
+		email = COALESCE(?, email),
+		updated_at = CURRENT_TIMESTAMP
+	WHERE id = ? AND deleted_at IS NULL;`
 	QueryUserUpdateAvatarById = `
 	UPDATE users
 	SET avatar = ?
 	WHERE id = ? AND deleted_at IS NULL;`
-	QueryUserAssignRole = ``
-	QueryUserDelete     = ``
+	QueryUserAssignRole = `
+	UPDATE users
+	SET 
+		role_id = ?,
+		updated_at = CURRENT_TIMESTAMP
+	WHERE id = ? AND deleted_at IS NULL;`
+	QueryUserDelete = `
+	UPDATE users
+	SET 
+		deleted_at = CURRENT_TIMESTAMP,
+		updated_at = CURRENT_TIMESTAMP
+	WHERE id = ? AND deleted_at IS NULL;`
 )

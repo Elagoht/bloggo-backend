@@ -118,6 +118,24 @@ func (service *UserService) UpdateAvatarById(
 	return nil
 }
 
+func (service *UserService) UpdateUserById(
+	userId int64,
+	model *models.RequestUserUpdate,
+) error {
+	return service.repository.UpdateUserById(userId, model)
+}
+
+func (service *UserService) AssignRole(
+	userId int64,
+	model *models.RequestUserAssignRole,
+) error {
+	return service.repository.AssignRole(userId, model.RoleId)
+}
+
+func (service *UserService) DeleteUser(userId int64) error {
+	return service.repository.DeleteUser(userId)
+}
+
 func (service *UserService) createUserRelatedUUID(
 	userId int64,
 ) string {

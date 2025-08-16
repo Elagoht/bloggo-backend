@@ -122,3 +122,67 @@ func (handler *UserHandler) UpdateSelfAvatar(
 
 	writer.WriteHeader(http.StatusNoContent)
 }
+
+func (handler *UserHandler) UpdateUserById(
+	writer http.ResponseWriter,
+	request *http.Request,
+) {
+	id, ok := handlers.GetParam[int64](writer, request, "id")
+	if !ok {
+		return
+	}
+
+	body, ok := handlers.BindAndValidate[*models.RequestUserUpdate](writer, request)
+	if !ok {
+		return
+	}
+
+	err := handler.service.UpdateUserById(id, body)
+	if err != nil {
+		apierrors.MapErrors(err, writer, nil)
+		return
+	}
+
+	writer.WriteHeader(http.StatusNoContent)
+}
+
+func (handler *UserHandler) AssignRole(
+	writer http.ResponseWriter,
+	request *http.Request,
+) {
+	id, ok := handlers.GetParam[int64](writer, request, "id")
+	if !ok {
+		return
+	}
+
+	body, ok := handlers.BindAndValidate[*models.RequestUserAssignRole](writer, request)
+	if !ok {
+		return
+	}
+
+	err := handler.service.AssignRole(id, body)
+	if err != nil {
+		apierrors.MapErrors(err, writer, nil)
+		return
+	}
+
+	writer.WriteHeader(http.StatusNoContent)
+}
+
+func (handler *UserHandler) DeleteUser(
+	writer http.ResponseWriter,
+	request *http.Request,
+) {
+	id, ok := handlers.GetParam[int64](writer, request, "id")
+	if !ok {
+		return
+	}
+
+	err := handler.service.DeleteUser(id)
+	if err != nil {
+		apierrors.MapErrors(err, writer, nil)
+		return
+	}
+
+	writer.WriteHeader(http.StatusNoContent)
+}
