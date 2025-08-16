@@ -9,7 +9,6 @@ const (
 		JOIN post_versions pv ON pv.id = p.current_version_id
 		WHERE pv.category_id = c.id
 		AND p.deleted_at IS NULL
-		AND pv.deleted_at IS NULL
 		AND pv.status = 5
 	) AS blogCount
 	FROM categories c
@@ -22,7 +21,6 @@ const (
 		JOIN post_versions pv ON pv.id = p.current_version_id
 		WHERE pv.category_id = c.id
 		AND p.deleted_at IS NULL
-		AND pv.deleted_at IS NULL
 		AND pv.status = 5
 	) AS blogCount
 	FROM categories c
