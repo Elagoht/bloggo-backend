@@ -151,6 +151,21 @@ const (
 		FOREIGN KEY (user_id) REFERENCES users(id)
 		ON DELETE SET NULL
 	);`
+	// REMOVAL REQUESTS
+	QueryCreateTableRemovalRequests = `
+	CREATE TABLE IF NOT EXISTS removal_requests (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		post_version_id INTEGER NOT NULL,
+		requested_by INTEGER NOT NULL,
+		note TEXT,
+		status INTEGER NOT NULL DEFAULT 0,
+		decided_by INTEGER,
+		decided_at TIMESTAMP WITH TIME ZONE,
+		created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+		FOREIGN KEY (post_version_id) REFERENCES post_versions(id) ON DELETE CASCADE,
+		FOREIGN KEY (requested_by) REFERENCES users(id) ON DELETE CASCADE,
+		FOREIGN KEY (decided_by) REFERENCES users(id) ON DELETE SET NULL
+	);`
 )
 
 var InitializeQueries = []string{
@@ -165,4 +180,5 @@ var InitializeQueries = []string{
 	QueryCreateTablePostTags,
 	QueryCreateTableViews,
 	QueryCreateTableAuditLogs,
+	QueryCreateTableRemovalRequests,
 }

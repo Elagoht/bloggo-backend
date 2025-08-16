@@ -169,4 +169,14 @@ const (
 	WHERE cover_image = ?
 	AND id != ?
 	AND deleted_at IS NULL;`
+	QueryCheckIfVersionIsCurrentlyPublished = `
+	SELECT COUNT(*)
+	FROM posts
+	WHERE current_version_id = ?
+	AND deleted_at IS NULL;`
+	QuerySetPostCurrentVersionToNull = `
+	UPDATE posts
+	SET current_version_id = NULL
+	WHERE current_version_id = ?
+	AND deleted_at IS NULL;`
 )

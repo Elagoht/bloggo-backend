@@ -490,3 +490,20 @@ func (repository *PostRepository) IsImageReferencedByOtherVersions(
 
 	return count > 0, nil
 }
+
+func (repository *PostRepository) IsVersionCurrentlyPublished(versionId int64) (bool, error) {
+	row := repository.database.QueryRow(QueryCheckIfVersionIsCurrentlyPublished, versionId)
+	
+	var count int64
+	err := row.Scan(&count)
+	if err != nil {
+		return false, err
+	}
+	
+	return count > 0, nil
+}
+
+func (repository *PostRepository) SetPostCurrentVersionToNull(versionId int64) error {
+	_, err := repository.database.Exec(QuerySetPostCurrentVersionToNull, versionId)
+	return err
+}

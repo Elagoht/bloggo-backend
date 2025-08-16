@@ -318,6 +318,19 @@ func (service *PostService) DeleteVersionById(
 		return err
 	}
 
+	// Check if this version is currently published
+	isCurrentlyPublished, err := service.repository.IsVersionCurrentlyPublished(versionId)
+	if err != nil {
+		return err
+	}
+
+	// If it's currently published, set the post's current_version_id to NULL
+	if isCurrentlyPublished {
+		if err := service.repository.SetPostCurrentVersionToNull(versionId); err != nil {
+			return err
+		}
+	}
+
 	// Perform soft delete
 	if err := service.repository.SoftDeleteVersionById(versionId); err != nil {
 		return err
