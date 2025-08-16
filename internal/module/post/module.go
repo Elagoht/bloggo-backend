@@ -4,6 +4,7 @@ import (
 	"bloggo/internal/config"
 	"bloggo/internal/db"
 	"bloggo/internal/infrastructure/bucket"
+	"bloggo/internal/infrastructure/permissions"
 	"bloggo/internal/middleware"
 	"bloggo/internal/utils/file/transformfile"
 	"bloggo/internal/utils/file/validatefile"
@@ -26,9 +27,10 @@ func NewModule() PostModule {
 	}
 	imageValidator := validatefile.NewImageValidator(10 << 20) // 5MB
 	coverResizer := transformfile.NewImageTransformer(1280, 720)
+	permissionStore := permissions.Get()
 
 	repository := NewPostRepository(database)
-	service := NewPostService(repository, bucket, imageValidator, coverResizer)
+	service := NewPostService(repository, bucket, imageValidator, coverResizer, permissionStore)
 	handler := NewPostHandler(service)
 
 	return PostModule{
@@ -55,6 +57,7 @@ func (module PostModule) RegisterModule(router *chi.Mux) {
 			router.Post("/{id}/versions/{versionId}/submit", module.Handler.SubmitVersionForReview)
 			router.Post("/{id}/versions/{versionId}/approve", module.Handler.ApproveVersion)
 			router.Post("/{id}/versions/{versionId}/reject", module.Handler.RejectVersion)
+			router.Delete("/{id}/versions/{versionId}", module.Handler.DeleteVersionById)
 		},
 	)
 }

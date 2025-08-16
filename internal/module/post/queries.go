@@ -153,4 +153,20 @@ const (
 		status_changed_at = CURRENT_TIMESTAMP,
 		updated_at = CURRENT_TIMESTAMP
 	WHERE id = ?;`
+	QueryGetVersionCoverImage = `
+	SELECT cover_image
+	FROM post_versions
+	WHERE id = ?
+	AND deleted_at IS NULL;`
+	QuerySoftDeleteVersion = `
+	UPDATE post_versions
+	SET deleted_at = CURRENT_TIMESTAMP
+	WHERE id = ?
+	AND deleted_at IS NULL;`
+	QueryCheckImageReferences = `
+	SELECT COUNT(*)
+	FROM post_versions
+	WHERE cover_image = ?
+	AND id != ?
+	AND deleted_at IS NULL;`
 )

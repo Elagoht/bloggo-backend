@@ -2,6 +2,7 @@ package post
 
 import (
 	"bloggo/internal/infrastructure/bucket"
+	"bloggo/internal/infrastructure/permissions"
 	"bloggo/internal/module/post/models"
 	"bloggo/internal/utils/apierrors"
 	"bloggo/internal/utils/cryptography"
@@ -15,6 +16,7 @@ type PostService struct {
 	bucket         bucket.Bucket
 	imageValidator validatefile.FileValidator
 	coverResizer   transformfile.FileTransformer
+	permissions    permissions.Store
 }
 
 func NewPostService(
@@ -22,12 +24,14 @@ func NewPostService(
 	bucket bucket.Bucket,
 	imageValidator validatefile.FileValidator,
 	coverResizer transformfile.FileTransformer,
+	permissions permissions.Store,
 ) PostService {
 	return PostService{
 		repository,
 		bucket,
 		imageValidator,
 		coverResizer,
+		permissions,
 	}
 }
 
@@ -274,4 +278,68 @@ func (service *PostService) RejectVersion(
 		userId,
 		note,
 	)
+}
+
+func (service *PostService) DeleteVersionById(
+	postId int64,
+	versionId int64,
+	userId int64,
+	roleId int64,
+) error {
+	// Get version details including creator and status
+	versionCreator, versionStatus, err := service.repository.GetVersionCreatorAndStatus(versionId)
+	if err != nil {
+		return err
+	}
+
+	// Check if user has editor permissions (can delete any version)
+	hasEditorPermission := service.permissions.HasPermission(roleId, "post:delete")
+
+	// Check if user owns the version (can delete own versions with restrictions)
+	isOwner := versionCreator == userId
+
+	if !hasEditorPermission && !isOwner {
+		return apierrors.ErrForbidden
+	}
+
+	// If user is owner but not editor, check status restrictions
+	if isOwner && !hasEditorPermission {
+		// Authors can only delete draft, pending, or rejected versions
+		if versionStatus != models.STATUS_DRAFT &&
+			versionStatus != models.STATUS_PENDING &&
+			versionStatus != models.STATUS_REJECTED {
+			return apierrors.ErrPreconditionFailed
+		}
+	}
+
+	// Get the cover image path before deletion
+	coverImagePath, err := service.repository.GetVersionCoverImage(versionId)
+	if err != nil {
+		return err
+	}
+
+	// Perform soft delete
+	if err := service.repository.SoftDeleteVersionById(versionId); err != nil {
+		return err
+	}
+
+	// Check if the cover image is still referenced by other versions
+	if coverImagePath != nil {
+		isImageStillReferenced, err :=
+			service.repository.IsImageReferencedByOtherVersions(
+				*coverImagePath,
+				versionId,
+			)
+		if err != nil {
+			// Log error but don't fail the deletion
+			return nil
+		}
+
+		// If image is not referenced by any other version, delete it from storage
+		if !isImageStillReferenced {
+			service.bucket.Delete(*coverImagePath)
+		}
+	}
+
+	return nil
 }

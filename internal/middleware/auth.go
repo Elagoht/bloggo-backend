@@ -105,7 +105,7 @@ func AuthMiddleware(
 			// Set userRole in the request context as int64
 			newContext := context.WithValue(
 				request.Context(),
-				handlers.TokenUserRoleId,
+				handlers.TokenRoleId,
 				int64(rid),
 			)
 			newContext = context.WithValue(newContext, handlers.TokenUserId, int64(uid))

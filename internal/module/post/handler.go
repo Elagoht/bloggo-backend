@@ -346,3 +346,48 @@ func (handler *PostHandler) RejectVersion(
 
 	writer.WriteHeader(http.StatusNoContent)
 }
+
+func (handler *PostHandler) DeleteVersionById(
+	writer http.ResponseWriter,
+	request *http.Request,
+) {
+	userId, ok := handlers.GetContextValue[int64](writer, request, handlers.TokenUserId)
+	if !ok {
+		return
+	}
+
+	roleId, ok := handlers.GetContextValue[int64](writer, request, handlers.TokenRoleId)
+	if !ok {
+		return
+	}
+
+	postId, ok := handlers.GetParam[int64](writer, request, "id")
+	if !ok {
+		return
+	}
+	versionId, ok := handlers.GetParam[int64](writer, request, "versionId")
+	if !ok {
+		return
+	}
+
+	if err := handler.service.DeleteVersionById(
+		postId,
+		versionId,
+		userId,
+		roleId,
+	); err != nil {
+		apierrors.MapErrors(err, writer, apierrors.HTTPErrorMapping{
+			apierrors.ErrPreconditionFailed: {
+				Message: "Only draft, pending, or rejected versions can be deleted by authors.",
+				Status:  http.StatusPreconditionFailed,
+			},
+			apierrors.ErrForbidden: {
+				Message: "You can only delete your own versions unless you have editor permissions.",
+				Status:  http.StatusForbidden,
+			},
+		})
+		return
+	}
+
+	writer.WriteHeader(http.StatusNoContent)
+}

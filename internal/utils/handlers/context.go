@@ -10,8 +10,8 @@ import (
 type JWTContext string
 
 const (
-	TokenUserId     JWTContext = "userId"
-	TokenUserRoleId JWTContext = "userRole"
+	TokenUserId JWTContext = "userId"
+	TokenRoleId JWTContext = "userRole"
 )
 
 // GetContextValue retrieves a value from the request context and converts it to the specified type.

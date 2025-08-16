@@ -433,3 +433,60 @@ func (repository *PostRepository) UpdateVersionStatusWithNote(
 	)
 	return err
 }
+
+func (repository *PostRepository) GetVersionCoverImage(
+	versionId int64,
+) (*string, error) {
+	row := repository.database.QueryRow(QueryGetVersionCoverImage, versionId)
+
+	var coverImage sql.NullString
+	if err := row.Scan(&coverImage); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, apierrors.ErrNotFound
+		}
+		return nil, err
+	}
+
+	if coverImage.Valid {
+		return &coverImage.String, nil
+	}
+	return nil, nil
+}
+
+func (repository *PostRepository) SoftDeleteVersionById(
+	versionId int64,
+) error {
+	result, err := repository.database.Exec(QuerySoftDeleteVersion, versionId)
+	if err != nil {
+		return err
+	}
+
+	affected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if affected < 1 {
+		return apierrors.ErrNotFound
+	}
+
+	return nil
+}
+
+func (repository *PostRepository) IsImageReferencedByOtherVersions(
+	imagePath string,
+	excludeVersionId int64,
+) (bool, error) {
+	row := repository.database.QueryRow(
+		QueryCheckImageReferences,
+		imagePath,
+		excludeVersionId,
+	)
+
+	var count int64
+	if err := row.Scan(&count); err != nil {
+		return false, err
+	}
+
+	return count > 0, nil
+}
