@@ -24,14 +24,24 @@ func (handler *CategoryHandler) CategoryCreate(
 	writer http.ResponseWriter,
 	request *http.Request,
 ) {
+	roleId, ok := handlers.GetContextValue[int64](writer, request, handlers.TokenRoleId)
+	if !ok {
+		return
+	}
+
 	body, ok := handlers.BindAndValidate[models.RequestCategoryCreate](writer, request)
 	if !ok {
 		return
 	}
 
-	response, err := handler.service.CategoryCreate(&body)
+	response, err := handler.service.CategoryCreate(&body, roleId)
 	if err != nil {
-		apierrors.MapErrors(err, writer, nil)
+		apierrors.MapErrors(err, writer, apierrors.HTTPErrorMapping{
+			apierrors.ErrForbidden: {
+				Message: "Only editors and admins can manage categories.",
+				Status:  http.StatusForbidden,
+			},
+		})
 		return
 	}
 
@@ -86,6 +96,11 @@ func (handler *CategoryHandler) CategoryUpdate(
 	writer http.ResponseWriter,
 	request *http.Request,
 ) {
+	roleId, ok := handlers.GetContextValue[int64](writer, request, handlers.TokenRoleId)
+	if !ok {
+		return
+	}
+
 	slug, ok := handlers.GetParam[string](writer, request, "slug")
 	if !ok {
 		return
@@ -96,9 +111,14 @@ func (handler *CategoryHandler) CategoryUpdate(
 		return
 	}
 
-	err := handler.service.CategoryUpdate(slug, &body)
+	err := handler.service.CategoryUpdate(slug, &body, roleId)
 	if err != nil {
-		apierrors.MapErrors(err, writer, nil)
+		apierrors.MapErrors(err, writer, apierrors.HTTPErrorMapping{
+			apierrors.ErrForbidden: {
+				Message: "Only editors and admins can manage categories.",
+				Status:  http.StatusForbidden,
+			},
+		})
 		return
 	}
 
@@ -109,14 +129,24 @@ func (handler *CategoryHandler) CategoryDelete(
 	writer http.ResponseWriter,
 	request *http.Request,
 ) {
+	roleId, ok := handlers.GetContextValue[int64](writer, request, handlers.TokenRoleId)
+	if !ok {
+		return
+	}
+
 	slug, ok := handlers.GetParam[string](writer, request, "slug")
 	if !ok {
 		return
 	}
 
-	err := handler.service.CategoryDelete(slug)
+	err := handler.service.CategoryDelete(slug, roleId)
 	if err != nil {
-		apierrors.MapErrors(err, writer, nil)
+		apierrors.MapErrors(err, writer, apierrors.HTTPErrorMapping{
+			apierrors.ErrForbidden: {
+				Message: "Only editors and admins can manage categories.",
+				Status:  http.StatusForbidden,
+			},
+		})
 		return
 	}
 
