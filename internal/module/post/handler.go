@@ -391,3 +391,24 @@ func (handler *PostHandler) DeleteVersionById(
 
 	writer.WriteHeader(http.StatusNoContent)
 }
+
+func (handler *PostHandler) TrackView(
+	writer http.ResponseWriter,
+	request *http.Request,
+) {
+	body, ok := handlers.BindAndValidate[*models.RequestTrackView](
+		writer,
+		request,
+	)
+	if !ok {
+		return
+	}
+
+	err := handler.service.TrackView(body)
+	if err != nil {
+		apierrors.MapErrors(err, writer, nil)
+		return
+	}
+
+	writer.WriteHeader(http.StatusNoContent)
+}

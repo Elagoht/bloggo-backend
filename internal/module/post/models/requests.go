@@ -19,3 +19,9 @@ type RequestPostStatusModerate struct {
 	Id   int64  `json:"versionId" validate:"required"`
 	Note string `json:"note" validate:"max=255,required"`
 }
+
+// -- Track Post View -- //
+type RequestTrackView struct {
+	PostId    int64  `json:"postId" validate:"required"`
+	UserAgent string `json:"userAgent" validate:"required"`
+}

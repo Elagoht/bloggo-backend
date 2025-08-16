@@ -372,3 +372,7 @@ func (service *PostService) DeleteVersionById(
 
 	return nil
 }
+
+func (service *PostService) TrackView(model *models.RequestTrackView) error {
+	return service.repository.TrackView(model.PostId, model.UserAgent)
+}

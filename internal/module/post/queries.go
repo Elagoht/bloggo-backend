@@ -185,4 +185,7 @@ const (
 	SET read_count = read_count + 1
 	WHERE id = ?
 	AND deleted_at IS NULL;`
+	QueryInsertPostView = `
+	INSERT INTO post_views (post_id, user_agent)
+	VALUES (?, ?);`
 )

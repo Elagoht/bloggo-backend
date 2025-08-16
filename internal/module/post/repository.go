@@ -521,3 +521,26 @@ func (repository *PostRepository) IncrementReadCount(postId int64) error {
 	_, err := repository.database.Exec(QueryIncrementReadCount, postId)
 	return err
 }
+
+func (repository *PostRepository) TrackView(postId int64, userAgent string) error {
+	transaction, err := repository.database.Begin()
+	if err != nil {
+		return err
+	}
+
+	// Insert view record
+	_, err = transaction.Exec(QueryInsertPostView, postId, userAgent)
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
+
+	// Increment read count
+	_, err = transaction.Exec(QueryIncrementReadCount, postId)
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
+
+	return transaction.Commit()
+}
