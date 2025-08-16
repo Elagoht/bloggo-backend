@@ -1,4 +1,4 @@
-<div style="text-align:center">
+<div align="center">
   <img src="./bloggo.webp" width="196" heigth="196" />
 
 # Bloggo: Blog CMS
