@@ -5,7 +5,6 @@ import (
 	"bloggo/internal/db"
 	"bloggo/internal/infrastructure/permissions"
 	"bloggo/internal/middleware"
-	"bloggo/internal/utils/permission"
 
 	"github.com/go-chi/chi"
 )
@@ -18,8 +17,10 @@ type TagModule struct {
 
 func NewModule() TagModule {
 	database := db.Get()
+	permissionStore := permissions.Get()
+
 	repository := NewTagRepository(database)
-	service := NewTagService(repository)
+	service := NewTagService(repository, permissionStore)
 	handler := NewTagHandler(service)
 
 	return TagModule{
@@ -31,18 +32,31 @@ func NewModule() TagModule {
 
 func (module TagModule) RegisterModule(router *chi.Mux) {
 	config := config.Get()
-	permissionStore := permissions.Get()
 
 	router.With(middleware.AuthMiddleware(&config)).Route(
 		"/tags",
 		func(router chi.Router) {
-			authority := permission.NewChecker(permissionStore)
-
+			// Public routes
 			router.Get("/", module.Handler.GetCategories)
-			router.Get("/{slug}", authority.Require("tag:manage", module.Handler.GetTagBySlug))
-			router.Post("/", authority.Require("tag:manage", module.Handler.TagCreate))
-			router.Patch("/{slug}", authority.Require("tag:manage", module.Handler.TagUpdate))
-			router.Delete("/{slug}", authority.Require("tag:manage", module.Handler.TagDelete))
+			router.Get("/{slug}", module.Handler.GetTagBySlug)
+
+			// Editor-only routes
+			router.Post("/", module.Handler.TagCreate)
+			router.Patch("/{slug}", module.Handler.TagUpdate)
+			router.Delete("/{slug}", module.Handler.TagDelete)
+		},
+	)
+
+	// Post-tag relationship routes
+	router.With(middleware.AuthMiddleware(&config)).Route(
+		"/posts/{postId}/tags",
+		func(router chi.Router) {
+			// Public route to view post tags
+			router.Get("/", module.Handler.GetPostTags)
+
+			// Editor-only routes for managing post tags
+			router.Post("/", module.Handler.AssignTagsToPost)
+			router.Delete("/{tagId}", module.Handler.RemoveTagFromPost)
 		},
 	)
 }

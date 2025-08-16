@@ -24,14 +24,24 @@ func (handler *TagHandler) TagCreate(
 	writer http.ResponseWriter,
 	request *http.Request,
 ) {
+	roleId, ok := handlers.GetContextValue[int64](writer, request, handlers.TokenRoleId)
+	if !ok {
+		return
+	}
+
 	body, ok := handlers.BindAndValidate[models.RequestTagCreate](writer, request)
 	if !ok {
 		return
 	}
 
-	response, err := handler.service.TagCreate(&body)
+	response, err := handler.service.TagCreate(&body, roleId)
 	if err != nil {
-		apierrors.MapErrors(err, writer, nil)
+		apierrors.MapErrors(err, writer, apierrors.HTTPErrorMapping{
+			apierrors.ErrForbidden: {
+				Message: "Only editors and admins can manage tags.",
+				Status:  http.StatusForbidden,
+			},
+		})
 		return
 	}
 
@@ -86,6 +96,11 @@ func (handler *TagHandler) TagUpdate(
 	writer http.ResponseWriter,
 	request *http.Request,
 ) {
+	roleId, ok := handlers.GetContextValue[int64](writer, request, handlers.TokenRoleId)
+	if !ok {
+		return
+	}
+
 	slug, ok := handlers.GetParam[string](writer, request, "slug")
 	if !ok {
 		return
@@ -96,9 +111,14 @@ func (handler *TagHandler) TagUpdate(
 		return
 	}
 
-	err := handler.service.TagUpdate(slug, &body)
+	err := handler.service.TagUpdate(slug, &body, roleId)
 	if err != nil {
-		apierrors.MapErrors(err, writer, nil)
+		apierrors.MapErrors(err, writer, apierrors.HTTPErrorMapping{
+			apierrors.ErrForbidden: {
+				Message: "Only editors and admins can manage tags.",
+				Status:  http.StatusForbidden,
+			},
+		})
 		return
 	}
 
@@ -109,14 +129,109 @@ func (handler *TagHandler) TagDelete(
 	writer http.ResponseWriter,
 	request *http.Request,
 ) {
+	roleId, ok := handlers.GetContextValue[int64](writer, request, handlers.TokenRoleId)
+	if !ok {
+		return
+	}
+
 	slug, ok := handlers.GetParam[string](writer, request, "slug")
 	if !ok {
 		return
 	}
 
-	err := handler.service.TagDelete(slug)
+	err := handler.service.TagDelete(slug, roleId)
+	if err != nil {
+		apierrors.MapErrors(err, writer, apierrors.HTTPErrorMapping{
+			apierrors.ErrForbidden: {
+				Message: "Only editors and admins can manage tags.",
+				Status:  http.StatusForbidden,
+			},
+		})
+		return
+	}
+
+	writer.WriteHeader(http.StatusNoContent)
+}
+
+// Post-Tag Relationship Handlers
+func (handler *TagHandler) GetPostTags(
+	writer http.ResponseWriter,
+	request *http.Request,
+) {
+	postId, ok := handlers.GetParam[int64](writer, request, "postId")
+	if !ok {
+		return
+	}
+
+	response, err := handler.service.GetPostTags(postId)
 	if err != nil {
 		apierrors.MapErrors(err, writer, nil)
+		return
+	}
+
+	json.NewEncoder(writer).Encode(response)
+}
+
+func (handler *TagHandler) AssignTagsToPost(
+	writer http.ResponseWriter,
+	request *http.Request,
+) {
+	roleId, ok := handlers.GetContextValue[int64](writer, request, handlers.TokenRoleId)
+	if !ok {
+		return
+	}
+
+	postId, ok := handlers.GetParam[int64](writer, request, "postId")
+	if !ok {
+		return
+	}
+
+	body, ok := handlers.BindAndValidate[models.RequestAssignTagsToPost](writer, request)
+	if !ok {
+		return
+	}
+
+	err := handler.service.AssignTagsToPost(postId, body.TagIds, roleId)
+	if err != nil {
+		apierrors.MapErrors(err, writer, apierrors.HTTPErrorMapping{
+			apierrors.ErrForbidden: {
+				Message: "Only editors and admins can manage tags.",
+				Status:  http.StatusForbidden,
+			},
+		})
+		return
+	}
+
+	writer.WriteHeader(http.StatusNoContent)
+}
+
+func (handler *TagHandler) RemoveTagFromPost(
+	writer http.ResponseWriter,
+	request *http.Request,
+) {
+	roleId, ok := handlers.GetContextValue[int64](writer, request, handlers.TokenRoleId)
+	if !ok {
+		return
+	}
+
+	postId, ok := handlers.GetParam[int64](writer, request, "postId")
+	if !ok {
+		return
+	}
+
+	tagId, ok := handlers.GetParam[int64](writer, request, "tagId")
+	if !ok {
+		return
+	}
+
+	err := handler.service.RemoveTagFromPost(postId, tagId, roleId)
+	if err != nil {
+		apierrors.MapErrors(err, writer, apierrors.HTTPErrorMapping{
+			apierrors.ErrForbidden: {
+				Message: "Only editors and admins can manage tags.",
+				Status:  http.StatusForbidden,
+			},
+		})
 		return
 	}
 
