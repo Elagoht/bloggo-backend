@@ -16,17 +16,29 @@ func (handler *StorageHandler) ServeUserAvatars(
 	writer http.ResponseWriter,
 	request *http.Request,
 ) {
+	handler.serveImage(writer, request, "uploads", "users", "avatars")
+}
+
+func (handler *StorageHandler) ServePostCovers(
+	writer http.ResponseWriter,
+	request *http.Request,
+) {
+	handler.serveImage(writer, request, "uploads", "posts", "versions", "covers")
+}
+
+func (handler *StorageHandler) serveImage(
+	writer http.ResponseWriter,
+	request *http.Request,
+	pathComponents ...string,
+) {
 	imageId, ok := handlers.GetParam[string](writer, request, "imageId")
 	if !ok {
 		return
 	}
 
-	avatarPath := filepath.Join(
-		"uploads",
-		"users",
-		"avatars",
-		imageId+".webp",
-	)
+	// Build path with imageId and .webp extension
+	fullPath := append(pathComponents, imageId+".webp")
+	imagePath := filepath.Join(fullPath...)
 
 	// Add caching headers
 	writer.Header().Set("Cache-Control", "public, max-age=86400") // Cache for 1 day
@@ -34,5 +46,5 @@ func (handler *StorageHandler) ServeUserAvatars(
 	writer.Header().Set("Content-Type", "image/webp")
 
 	// Serve the file
-	http.ServeFile(writer, request, avatarPath)
+	http.ServeFile(writer, request, imagePath)
 }
