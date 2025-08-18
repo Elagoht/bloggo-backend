@@ -47,4 +47,8 @@ const (
 		deleted_at = CURRENT_TIMESTAMP,
 		updated_at = CURRENT_TIMESTAMP
 	WHERE slug = ? AND deleted_at IS NULL;`
+	QueryCategoryCount = `
+	SELECT COUNT(*)
+	FROM categories c
+	WHERE c.deleted_at IS NULL%s;`
 )

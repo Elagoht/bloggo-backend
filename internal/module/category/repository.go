@@ -115,6 +115,28 @@ func (repository *CategoryRepository) GetCategories(
 	return categories, nil
 }
 
+func (repository *CategoryRepository) GetCategoriesCount(
+	search *filter.SearchOptions,
+) (int64, error) {
+	// Handle search by name
+	searchClause, searchArgs := filter.BuildSearchClause(search, []string{"name"})
+
+	// Generate query
+	query, allArgs := handlers.BuildModifiedSQL(
+		QueryCategoryCount,
+		[]string{searchClause},
+		[][]any{searchArgs},
+	)
+
+	var count int64
+	err := repository.database.QueryRow(query, allArgs...).Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
 func (repository *CategoryRepository) CategoryUpdate(
 	slug string,
 	model *models.QueryParamsCategoryUpdate,

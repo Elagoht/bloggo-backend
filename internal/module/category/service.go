@@ -52,8 +52,36 @@ func (service *CategoryService) GetCategoryBySlug(
 func (service *CategoryService) GetCategories(
 	pagination *pagination.PaginationOptions,
 	search *filter.SearchOptions,
-) ([]models.ResponseCategoryCard, error) {
-	return service.repository.GetCategories(pagination, search)
+) (*responses.PaginatedResponse[models.ResponseCategoryCard], error) {
+	// Get the categories data
+	categories, err := service.repository.GetCategories(pagination, search)
+	if err != nil {
+		return nil, err
+	}
+
+	// Get the total count with same filters
+	total, err := service.repository.GetCategoriesCount(search)
+	if err != nil {
+		return nil, err
+	}
+
+	// Set default values for page and take if they're nil
+	page := 1
+	if pagination.Page != nil {
+		page = *pagination.Page
+	}
+
+	take := 10 // default take value
+	if pagination.Take != nil {
+		take = *pagination.Take
+	}
+
+	return &responses.PaginatedResponse[models.ResponseCategoryCard]{
+		Data:  categories,
+		Page:  page,
+		Take:  take,
+		Total: total,
+	}, nil
 }
 
 func (service *CategoryService) CategoryUpdate(
