@@ -69,6 +69,29 @@ func (repository *UserRepository) GetUsers(
 	return categories, nil
 }
 
+func (repository *UserRepository) GetUsersCount(
+	search *filter.SearchOptions,
+) (int64, error) {
+	// Handle search by name and email
+	searchClause, searchArgs := filter.BuildSearchClause(search, []string{"name", "email"})
+
+	// Generate query
+	query, allArgs := handlers.BuildModifiedSQL(
+		QueryUserCount,
+		[]string{searchClause},
+		[][]any{searchArgs},
+	)
+
+	// Execute query
+	var count int64
+	err := repository.database.QueryRow(query, allArgs...).Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
 func (repository *UserRepository) GetUserById(
 	id int64,
 ) (*models.ResponseUserDetails, error) {

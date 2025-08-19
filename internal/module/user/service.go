@@ -38,8 +38,37 @@ func NewUserService(
 func (service *UserService) GetUsers(
 	paginate *pagination.PaginationOptions,
 	search *filter.SearchOptions,
-) ([]models.ResponseUserCard, error) {
-	return service.repository.GetUsers(paginate, search)
+) (*responses.PaginatedResponse[models.ResponseUserCard], error) {
+	// Get the users data
+	users, err := service.repository.GetUsers(paginate, search)
+	if err != nil {
+		return nil, err
+	}
+
+	// Get the total count with same filters
+	total, err := service.repository.GetUsersCount(search)
+	if err != nil {
+		return nil, err
+	}
+
+	// Get page number (default to 1)
+	page := 1
+	if paginate.Page != nil {
+		page = *paginate.Page
+	}
+
+	// Get take value (default to 10)
+	take := 10
+	if paginate.Take != nil {
+		take = *paginate.Take
+	}
+
+	return &responses.PaginatedResponse[models.ResponseUserCard]{
+		Data:  users,
+		Page:  page,
+		Take:  take,
+		Total: total,
+	}, nil
 }
 
 func (service *UserService) GetUserById(

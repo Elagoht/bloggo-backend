@@ -8,6 +8,10 @@ const (
 	FROM users
 	LEFT JOIN roles ON users.role_id = roles.id
 	WHERE users.deleted_at IS NULL%s;`
+	QueryUserCount = `
+	SELECT COUNT(*)
+	FROM users
+	WHERE users.deleted_at IS NULL%s;`
 	QueryUserGetById = `SELECT users.id, users.name, users.email, users.avatar, users.created_at, users.last_login, users.role_id, roles.name AS role_name,
   (SELECT COUNT(*) FROM posts WHERE created_by = users.id AND deleted_at IS NULL) AS writtenPostCount,
   (SELECT COUNT(*) FROM posts WHERE created_by = users.id AND deleted_at IS NULL AND current_version_id IS NOT NULL) AS publishedPostCount
