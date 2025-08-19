@@ -172,6 +172,10 @@ func (service *UserService) DeleteUser(userId int64) error {
 	return service.repository.DeleteUser(userId)
 }
 
+func (service *UserService) UpdateLastLogin(userId int64) error {
+	return service.repository.UpdateLastLogin(userId)
+}
+
 func (service *UserService) createUserRelatedUUID(
 	userId int64,
 ) string {

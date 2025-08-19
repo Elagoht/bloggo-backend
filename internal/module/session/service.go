@@ -8,22 +8,28 @@ import (
 	"bloggo/internal/utils/cryptography"
 )
 
+type UserService interface {
+	UpdateLastLogin(userId int64) error
+}
+
 type SessionService struct {
 	repository   SessionRepository
 	config       *config.Config
 	refreshStore tokens.Store
+	userService  UserService
 }
 
 func NewSessionService(
 	repository SessionRepository,
 	config *config.Config,
 	refreshStore tokens.Store,
-
+	userService UserService,
 ) SessionService {
 	return SessionService{
 		repository,
 		config,
 		refreshStore,
+		userService,
 	}
 }
 
@@ -73,6 +79,13 @@ func (service *SessionService) CreateSession(
 		details.UserId,
 		service.config.RefreshTokenDuration,
 	)
+
+	// Update last login timestamp
+	err = service.userService.UpdateLastLogin(details.UserId)
+	if err != nil {
+		// Log the error but don't fail the login process
+		// This is not critical for authentication to succeed
+	}
 
 	sessionData := &models.ResponseSession{
 		AccessToken: accessToken,

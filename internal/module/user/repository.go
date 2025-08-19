@@ -187,3 +187,8 @@ func (repository *UserRepository) DeleteUser(userId int64) error {
 	_, err := repository.database.Exec(QueryUserDelete, userId)
 	return err
 }
+
+func (repository *UserRepository) UpdateLastLogin(userId int64) error {
+	_, err := repository.database.Exec(QueryUserUpdateLastLogin, userId)
+	return err
+}
