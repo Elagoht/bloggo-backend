@@ -176,6 +176,23 @@ func (service *UserService) UpdateLastLogin(userId int64) error {
 	return service.repository.UpdateLastLogin(userId)
 }
 
+func (service *UserService) DeleteAvatarById(userId int64) error {
+	// Delete all avatar files for this user
+	if err := service.bucket.DeleteMatching(
+		fmt.Sprintf("%d_*.webp", userId),
+		"", // No files to protect
+	); err != nil {
+		return fmt.Errorf("failed to delete avatar files: %w", err)
+	}
+
+	// Update database to remove avatar reference
+	if err := service.repository.UpdateAvatarById(userId, ""); err != nil {
+		return fmt.Errorf("failed to update avatar in database: %w", err)
+	}
+
+	return nil
+}
+
 func (service *UserService) createUserRelatedUUID(
 	userId int64,
 ) string {

@@ -53,5 +53,6 @@ func (module UserModule) RegisterModule(router *chi.Mux) {
 			router.Delete("/{id}", module.Handler.DeleteUser)
 			router.Get("/me", module.Handler.GetSelf)
 			router.Patch("/me/avatar", module.Handler.UpdateSelfAvatar)
+			router.Delete("/me/avatar", module.Handler.DeleteSelfAvatar)
 		})
 }
