@@ -45,6 +45,13 @@ func (service *UserService) GetUsers(
 		return nil, err
 	}
 
+	// Add avatar prefix to each user
+	for i := range users {
+		if users[i].Avatar != "" {
+			users[i].Avatar = fmt.Sprintf("/uploads/avatar/%s", users[i].Avatar)
+		}
+	}
+
 	// Get the total count with same filters
 	total, err := service.repository.GetUsersCount(search)
 	if err != nil {
