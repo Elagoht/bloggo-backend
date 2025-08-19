@@ -146,6 +146,30 @@ func (handler *UserHandler) UpdateUserById(
 	writer.WriteHeader(http.StatusNoContent)
 }
 
+func (handler *UserHandler) UpdateUserAvatar(
+	writer http.ResponseWriter,
+	request *http.Request,
+) {
+	id, ok := handlers.GetParam[int64](writer, request, "id")
+	if !ok {
+		return
+	}
+
+	file, fileHeader, ok := handlers.GetFormFile(writer, request, "avatar", 10<<20)
+	if !ok {
+		return
+	}
+	defer file.Close()
+
+	err := handler.service.UpdateAvatarById(id, file, fileHeader)
+	if err != nil {
+		apierrors.MapErrors(err, writer, nil)
+		return
+	}
+
+	writer.WriteHeader(http.StatusNoContent)
+}
+
 func (handler *UserHandler) AssignRole(
 	writer http.ResponseWriter,
 	request *http.Request,
