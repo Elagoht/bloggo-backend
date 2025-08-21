@@ -123,6 +123,24 @@ func (handler *UserHandler) UpdateSelfAvatar(
 	writer.WriteHeader(http.StatusNoContent)
 }
 
+func (handler *UserHandler) DeleteUserAvatar(
+	writer http.ResponseWriter,
+	request *http.Request,
+) {
+	id, ok := handlers.GetParam[int64](writer, request, "id")
+	if !ok {
+		return
+	}
+
+	err := handler.service.DeleteAvatarById(id)
+	if err != nil {
+		apierrors.MapErrors(err, writer, nil)
+		return
+	}
+
+	writer.WriteHeader(http.StatusNoContent)
+}
+
 func (handler *UserHandler) DeleteSelfAvatar(
 	writer http.ResponseWriter,
 	request *http.Request,
