@@ -48,7 +48,7 @@ const (
 	GetRolesSQL = `
   SELECT id, name
   FROM roles;`
-	// Default admin user seed
+	// Default Admin user seed
 	DefaultAdminName       = "Root User"
 	DefaultAdminEmail      = "root@admin.dev"
 	DefaultAdminPassphrase = "ChangeMeNow123!"
@@ -60,13 +60,13 @@ const (
 
 var (
 	RolePermissionsMatrix = map[string][]string{
-		"admin": {
+		"Admin": {
 			"post:create", "post:edit", "post:edit_own", "post:delete", "post:delete_own", "post:publish", "post:view", "post:schedule", "tag:manage", "category:manage", "user:view", "user:create", "user:update", "user:delete", "user:change_passphrase", "statistics:view-all", "statistics:view-self", "role:assign", "auditlog:view", "schedule:create", "schedule:update", "schedule:delete", "schedule:view",
 		},
-		"editor": {
+		"Editor": {
 			"post:create", "post:edit", "post:edit_own", "post:delete", "post:delete_own", "post:publish", "post:view", "post:schedule", "statistics:view-all", "statistics:view-self", "schedule:create", "schedule:update", "schedule:delete", "schedule:view",
 		},
-		"author": {
+		"Author": {
 			"post:create", "post:edit_own", "post:delete_own", "post:view", "statistics:view-all", "statistics:view-self",
 		},
 	}

@@ -73,13 +73,13 @@ func SeedDatabase(database *sql.DB) {
 	}
 
 	// -- Admin User Seeding -- //
-	adminRoleID, ok := roleIDs["admin"]
+	adminRoleID, ok := roleIDs["Admin"]
 	if !ok {
-		log.Printf("Admin role not found, cannot create default admin user.")
+		log.Printf("Admin role not found, cannot create default Admin user.")
 	} else {
 		hashedPass, err := cryptography.HashPassphrase(DefaultAdminPassphrase)
 		if err != nil {
-			log.Printf("Failed to hash admin passphrase: %v", err)
+			log.Printf("Failed to hash Admin passphrase: %v", err)
 		} else {
 			_, err := database.Exec(
 				InsertUserSQL,
@@ -89,7 +89,7 @@ func SeedDatabase(database *sql.DB) {
 				adminRoleID,
 			)
 			if err != nil {
-				log.Printf("Failed to insert default admin user: %v", err)
+				log.Printf("Failed to insert default Admin user: %v", err)
 			}
 		}
 	}
