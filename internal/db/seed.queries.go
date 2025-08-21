@@ -16,25 +16,30 @@ const (
     ('post:edit'),
     ('post:edit_own'),
     ('post:delete'),
-    ('post:delete_own'),
     ('post:publish'),
     ('post:view'),
-    ('post:schedule'),
-    ('tag:manage'),
-    ('category:manage'),
+    ('post:list'),
+    ('tag:list'),
+    ('tag:view'),
+    ('tag:create'),
+    ('tag:update'),
+    ('tag:delete'),
+    ('category:list'),
+    ('category:view'),
+    ('category:create'),
+    ('category:update'),
+    ('category:delete'),
+    ('user:list'),
     ('user:view'),
-    ('user:create'),
+    ('user:register'),
     ('user:update'),
     ('user:delete'),
     ('user:change_passphrase'),
-    ('statistics:view-all'),
+    ('user:assign_role'),
+    ('statistics:view-total'),
+    ('statistics:view-others'),
     ('statistics:view-self'),
-    ('role:assign'),
-    ('auditlog:view'),
-    ('schedule:create'),
-    ('schedule:update'),
-    ('schedule:delete'),
-    ('schedule:view')
+    ('auditlog:view')
 	ON CONFLICT(name)
   DO NOTHING;`
 	InsertPermissionToRoleSQL = `
@@ -60,14 +65,26 @@ const (
 
 var (
 	RolePermissionsMatrix = map[string][]string{
-		"Admin": {
-			"post:create", "post:edit", "post:edit_own", "post:delete", "post:delete_own", "post:publish", "post:view", "post:schedule", "tag:manage", "category:manage", "user:view", "user:create", "user:update", "user:delete", "user:change_passphrase", "statistics:view-all", "statistics:view-self", "role:assign", "auditlog:view", "schedule:create", "schedule:update", "schedule:delete", "schedule:view",
+		"Author": {
+			"post:create", "post:edit_own", "post:view", "post:list",
+			"tag:list", "tag:view",
+			"category:list", "category:view",
+			"statistics:view-self",
 		},
 		"Editor": {
-			"post:create", "post:edit", "post:edit_own", "post:delete", "post:delete_own", "post:publish", "post:view", "post:schedule", "statistics:view-all", "statistics:view-self", "schedule:create", "schedule:update", "schedule:delete", "schedule:view", "user:view",
+			"post:create", "post:edit", "post:edit_own", "post:delete", "post:publish", "post:view", "post:list",
+			"tag:list", "tag:view", "tag:create", "tag:update", "tag:delete",
+			"category:list", "category:view", "category:create", "category:update", "category:delete",
+			"user:list", "user:view",
+			"statistics:view-self", "statistics:view-others",
 		},
-		"Author": {
-			"post:create", "post:edit_own", "post:delete_own", "post:view", "statistics:view-all", "statistics:view-self",
+		"Admin": {
+			"post:create", "post:edit", "post:edit_own", "post:delete", "post:publish", "post:view", "post:list",
+			"tag:list", "tag:view", "tag:create", "tag:update", "tag:delete",
+			"category:list", "category:view", "category:create", "category:update", "category:delete",
+			"user:list", "user:view", "user:register", "user:update", "user:delete", "user:change_passphrase", "user:assign_role",
+			"statistics:view-self", "statistics:view-others", "statistics:view-total",
+			"auditlog:view",
 		},
 	}
 	SeedQueries = []string{
