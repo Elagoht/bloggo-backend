@@ -25,8 +25,8 @@ func (service *TagService) TagCreate(
 	model *models.RequestTagCreate,
 	userRoleId int64,
 ) (*responses.ResponseCreated, error) {
-	// Check if user has permission to manage tags (editors/admins)
-	hasPermission := service.permissions.HasPermission(userRoleId, "tag:manage")
+	// Check if user has permission to create tags
+	hasPermission := service.permissions.HasPermission(userRoleId, "tag:create")
 	if !hasPermission {
 		return nil, apierrors.ErrForbidden
 	}
@@ -61,8 +61,8 @@ func (service *TagService) TagUpdate(
 	model *models.RequestTagUpdate,
 	userRoleId int64,
 ) error {
-	// Check if user has permission to manage tags (editors/admins)
-	hasPermission := service.permissions.HasPermission(userRoleId, "tag:manage")
+	// Check if user has permission to update tags
+	hasPermission := service.permissions.HasPermission(userRoleId, "tag:update")
 	if !hasPermission {
 		return apierrors.ErrForbidden
 	}
@@ -77,8 +77,8 @@ func (service *TagService) TagDelete(
 	slug string,
 	userRoleId int64,
 ) error {
-	// Check if user has permission to manage tags (editors/admins)
-	hasPermission := service.permissions.HasPermission(userRoleId, "tag:manage")
+	// Check if user has permission to delete tags
+	hasPermission := service.permissions.HasPermission(userRoleId, "tag:delete")
 	if !hasPermission {
 		return apierrors.ErrForbidden
 	}
@@ -104,8 +104,8 @@ func (service *TagService) AssignTagsToPost(
 	tagIds []int64,
 	userRoleId int64,
 ) error {
-	// Check if user has permission to manage tags (editors/admins)
-	hasPermission := service.permissions.HasPermission(userRoleId, "tag:manage")
+	// Check if user has permission to update tags
+	hasPermission := service.permissions.HasPermission(userRoleId, "tag:update")
 	if !hasPermission {
 		return apierrors.ErrForbidden
 	}
@@ -118,8 +118,8 @@ func (service *TagService) RemoveTagFromPost(
 	tagId int64,
 	userRoleId int64,
 ) error {
-	// Check if user has permission to manage tags (editors/admins)
-	hasPermission := service.permissions.HasPermission(userRoleId, "tag:manage")
+	// Check if user has permission to update tags
+	hasPermission := service.permissions.HasPermission(userRoleId, "tag:update")
 	if !hasPermission {
 		return apierrors.ErrForbidden
 	}

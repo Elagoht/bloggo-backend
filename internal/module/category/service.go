@@ -25,8 +25,8 @@ func (service *CategoryService) CategoryCreate(
 	model *models.RequestCategoryCreate,
 	userRoleId int64,
 ) (*responses.ResponseCreated, error) {
-	// Check if user has permission to manage categories (editors/admins)
-	hasPermission := service.permissions.HasPermission(userRoleId, "category:manage")
+	// Check if user has permission to create categories
+	hasPermission := service.permissions.HasPermission(userRoleId, "category:create")
 	if !hasPermission {
 		return nil, apierrors.ErrForbidden
 	}
@@ -89,8 +89,8 @@ func (service *CategoryService) CategoryUpdate(
 	model *models.RequestCategoryUpdate,
 	userRoleId int64,
 ) error {
-	// Check if user has permission to manage categories (editors/admins)
-	hasPermission := service.permissions.HasPermission(userRoleId, "category:manage")
+	// Check if user has permission to update categories
+	hasPermission := service.permissions.HasPermission(userRoleId, "category:update")
 	if !hasPermission {
 		return apierrors.ErrForbidden
 	}
@@ -105,8 +105,8 @@ func (service *CategoryService) CategoryDelete(
 	slug string,
 	userRoleId int64,
 ) error {
-	// Check if user has permission to manage categories (editors/admins)
-	hasPermission := service.permissions.HasPermission(userRoleId, "category:manage")
+	// Check if user has permission to delete categories
+	hasPermission := service.permissions.HasPermission(userRoleId, "category:delete")
 	if !hasPermission {
 		return apierrors.ErrForbidden
 	}
