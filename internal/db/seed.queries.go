@@ -64,7 +64,7 @@ var (
 			"post:create", "post:edit", "post:edit_own", "post:delete", "post:delete_own", "post:publish", "post:view", "post:schedule", "tag:manage", "category:manage", "user:view", "user:create", "user:update", "user:delete", "user:change_passphrase", "statistics:view-all", "statistics:view-self", "role:assign", "auditlog:view", "schedule:create", "schedule:update", "schedule:delete", "schedule:view",
 		},
 		"Editor": {
-			"post:create", "post:edit", "post:edit_own", "post:delete", "post:delete_own", "post:publish", "post:view", "post:schedule", "statistics:view-all", "statistics:view-self", "schedule:create", "schedule:update", "schedule:delete", "schedule:view",
+			"post:create", "post:edit", "post:edit_own", "post:delete", "post:delete_own", "post:publish", "post:view", "post:schedule", "statistics:view-all", "statistics:view-self", "schedule:create", "schedule:update", "schedule:delete", "schedule:view", "user:view",
 		},
 		"Author": {
 			"post:create", "post:edit_own", "post:delete_own", "post:view", "statistics:view-all", "statistics:view-self",
