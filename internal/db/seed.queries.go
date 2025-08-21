@@ -4,9 +4,9 @@ const (
 	SeedRolesSQL = `
 	INSERT INTO roles (name)
   VALUES
-    ('author'),
-    ('editor'),
-    ('admin')
+    ('Author'),
+    ('Editor'),
+    ('Admin')
 	ON CONFLICT(name) DO NOTHING;
 `
 	SeedPermissionsSQL = `
