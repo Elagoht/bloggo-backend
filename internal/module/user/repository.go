@@ -192,3 +192,11 @@ func (repository *UserRepository) UpdateLastLogin(userId int64) error {
 	_, err := repository.database.Exec(QueryUserUpdateLastLogin, userId)
 	return err
 }
+
+func (repository *UserRepository) UpdatePasswordById(
+	userId int64,
+	hashedPassword string,
+) error {
+	_, err := repository.database.Exec(QueryUserUpdatePasswordById, hashedPassword, userId)
+	return err
+}

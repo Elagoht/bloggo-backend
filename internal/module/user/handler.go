@@ -211,6 +211,29 @@ func (handler *UserHandler) AssignRole(
 	writer.WriteHeader(http.StatusNoContent)
 }
 
+func (handler *UserHandler) ChangePassword(
+	writer http.ResponseWriter,
+	request *http.Request,
+) {
+	id, ok := handlers.GetParam[int64](writer, request, "id")
+	if !ok {
+		return
+	}
+
+	body, ok := handlers.BindAndValidate[*models.RequestUserChangePassword](writer, request)
+	if !ok {
+		return
+	}
+
+	err := handler.service.ChangePassword(id, body)
+	if err != nil {
+		apierrors.MapErrors(err, writer, nil)
+		return
+	}
+
+	writer.WriteHeader(http.StatusNoContent)
+}
+
 func (handler *UserHandler) DeleteUser(
 	writer http.ResponseWriter,
 	request *http.Request,

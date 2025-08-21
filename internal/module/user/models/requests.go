@@ -19,3 +19,8 @@ type RequestUserUpdate struct {
 type RequestUserAssignRole struct {
 	RoleId int64 `json:"roleId" validate:"required"`
 }
+
+// -- Change Password -- //
+type RequestUserChangePassword struct {
+	NewPassword string `json:"newPassword" validate:"required,min=12,max=100"`
+}

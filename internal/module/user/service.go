@@ -176,6 +176,18 @@ func (service *UserService) UpdateLastLogin(userId int64) error {
 	return service.repository.UpdateLastLogin(userId)
 }
 
+func (service *UserService) ChangePassword(
+	userId int64,
+	model *models.RequestUserChangePassword,
+) error {
+	hashedPassword, err := model.HashNewPassword()
+	if err != nil {
+		return err
+	}
+
+	return service.repository.UpdatePasswordById(userId, hashedPassword)
+}
+
 func (service *UserService) DeleteAvatarById(userId int64) error {
 	// Delete all avatar files for this user
 	if err := service.bucket.DeleteMatching(

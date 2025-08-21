@@ -23,7 +23,7 @@ const (
 	VALUES (?, ?, ?, ?, ?);`
 	QueryUserUpdateById = `
 	UPDATE users
-	SET 
+	SET
 		name = COALESCE(?, name),
 		email = COALESCE(?, email),
 		updated_at = CURRENT_TIMESTAMP
@@ -34,20 +34,26 @@ const (
 	WHERE id = ? AND deleted_at IS NULL;`
 	QueryUserAssignRole = `
 	UPDATE users
-	SET 
+	SET
 		role_id = ?,
 		updated_at = CURRENT_TIMESTAMP
 	WHERE id = ? AND deleted_at IS NULL;`
 	QueryUserDelete = `
 	UPDATE users
-	SET 
+	SET
 		deleted_at = CURRENT_TIMESTAMP,
 		updated_at = CURRENT_TIMESTAMP
 	WHERE id = ? AND deleted_at IS NULL;`
 	QueryUserUpdateLastLogin = `
 	UPDATE users
-	SET 
+	SET
 		last_login = CURRENT_TIMESTAMP,
+		updated_at = CURRENT_TIMESTAMP
+	WHERE id = ? AND deleted_at IS NULL;`
+	QueryUserUpdatePasswordById = `
+	UPDATE users
+	SET
+		passphrase_hash = ?,
 		updated_at = CURRENT_TIMESTAMP
 	WHERE id = ? AND deleted_at IS NULL;`
 )

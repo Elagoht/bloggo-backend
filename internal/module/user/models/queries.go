@@ -25,3 +25,12 @@ func (model *RequestUserCreate) HashUserPassphrase() (*UserCreateParams, error) 
 		RoleId:         model.RoleId,
 	}, nil
 }
+
+// -- Change Password -- //
+func (model *RequestUserChangePassword) HashNewPassword() (string, error) {
+	hashedPassphrase, err := cryptography.HashPassphrase(model.NewPassword)
+	if err != nil {
+		return "", err
+	}
+	return hashedPassphrase, nil
+}
