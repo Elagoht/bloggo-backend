@@ -20,7 +20,7 @@ type RemovalRequestModule struct {
 func NewModule() RemovalRequestModule {
 	database := db.Get()
 	permissionStore := permissions.Get()
-	
+
 	// Use the same bucket as posts for cover image cleanup
 	bucketInstance, err := bucket.NewFileSystemBucket("posts/versions/covers")
 	if err != nil {
@@ -46,19 +46,19 @@ func (module RemovalRequestModule) RegisterModule(router *chi.Mux) {
 		func(router chi.Router) {
 			// Create removal request
 			router.Post("/", module.Handler.CreateRemovalRequest)
-			
+
 			// Get all removal requests (admin/editor only)
 			router.Get("/", module.Handler.GetRemovalRequestList)
-			
+
 			// Get user's own removal requests
 			router.Get("/mine", module.Handler.GetUserRemovalRequests)
-			
+
 			// Get specific removal request
 			router.Get("/{id}", module.Handler.GetRemovalRequestById)
-			
+
 			// Approve removal request (admin/editor only)
 			router.Post("/{id}/approve", module.Handler.ApproveRemovalRequest)
-			
+
 			// Reject removal request (admin/editor only)
 			router.Post("/{id}/reject", module.Handler.RejectRemovalRequest)
 		},

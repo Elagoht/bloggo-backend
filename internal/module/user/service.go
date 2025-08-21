@@ -47,8 +47,9 @@ func (service *UserService) GetUsers(
 
 	// Add avatar prefix to each user
 	for index := range users {
-		if users[index].Avatar != "" {
-			users[index].Avatar = fmt.Sprintf("/uploads/avatar/%s", users[index].Avatar)
+		if users[index].Avatar != nil && *users[index].Avatar != "" {
+			avatarPath := fmt.Sprintf("/uploads/avatar/%s", *users[index].Avatar)
+			users[index].Avatar = &avatarPath
 		}
 	}
 
