@@ -21,6 +21,10 @@ const (
   ) AS blogCount
 	FROM tags t
 	WHERE t.deleted_at IS NULL%s;`
+	QueryTagGetCategoriesCount = `
+	SELECT COUNT(*)
+	FROM tags t
+	WHERE t.deleted_at IS NULL%s;`
 	QueryTagCreate = `
 	INSERT INTO tags (
 		name,

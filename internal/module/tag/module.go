@@ -37,7 +37,7 @@ func (module TagModule) RegisterModule(router *chi.Mux) {
 		"/tags",
 		func(router chi.Router) {
 			// Public routes
-			router.Get("/", module.Handler.GetCategories)
+			router.Get("/", module.Handler.GetTags)
 			router.Get("/{slug}", module.Handler.GetTagBySlug)
 
 			// Editor-only routes

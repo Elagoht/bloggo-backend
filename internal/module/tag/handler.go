@@ -67,7 +67,7 @@ func (handler *TagHandler) GetTagBySlug(
 	json.NewEncoder(writer).Encode(details)
 }
 
-func (handler *TagHandler) GetCategories(
+func (handler *TagHandler) GetTags(
 	writer http.ResponseWriter,
 	request *http.Request,
 ) {
@@ -83,13 +83,13 @@ func (handler *TagHandler) GetCategories(
 		return
 	}
 
-	categories, err := handler.service.GetCategories(paginate, search)
+	tags, err := handler.service.GetTags(paginate, search)
 	if err != nil {
 		apierrors.MapErrors(err, writer, nil)
 		return
 	}
 
-	json.NewEncoder(writer).Encode(categories)
+	json.NewEncoder(writer).Encode(tags)
 }
 
 func (handler *TagHandler) TagUpdate(

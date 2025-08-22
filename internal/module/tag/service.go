@@ -49,11 +49,30 @@ func (service *TagService) GetTagBySlug(
 	return service.repository.GetTagBySlug(slug)
 }
 
-func (service *TagService) GetCategories(
+func (service *TagService) GetTags(
 	pagination *pagination.PaginationOptions,
 	search *filter.SearchOptions,
-) ([]models.ResponseTagCard, error) {
-	return service.repository.GetCategories(pagination, search)
+) (*responses.PaginatedResponse[models.ResponseTagCard], error) {
+	tags, total, err := service.repository.GetTags(pagination, search)
+	if err != nil {
+		return nil, err
+	}
+
+	page := 1
+	take := 10
+	if pagination.Page != nil {
+		page = *pagination.Page
+	}
+	if pagination.Take != nil {
+		take = *pagination.Take
+	}
+
+	return &responses.PaginatedResponse[models.ResponseTagCard]{
+		Data:  tags,
+		Page:  page,
+		Take:  take,
+		Total: total,
+	}, nil
 }
 
 func (service *TagService) TagUpdate(

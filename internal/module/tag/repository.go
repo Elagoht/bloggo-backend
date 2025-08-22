@@ -64,15 +64,21 @@ func (repository *TagRepository) GetTagBySlug(
 	return &category, nil
 }
 
-func (repository *TagRepository) GetCategories(
+func (repository *TagRepository) GetTags(
 	paginate *pagination.PaginationOptions,
 	search *filter.SearchOptions,
-) ([]models.ResponseTagCard, error) {
+) ([]models.ResponseTagCard, int64, error) {
 	// Handle pagination and order params
 	orderByClause, limitClause, offsetClause, args := paginate.BuildPaginationClauses()
 
 	// Handle search by name
 	searchClause, searchArgs := filter.BuildSearchClause(search, []string{"name"})
+
+	// Get total count
+	total, err := repository.getTagsCount(search)
+	if err != nil {
+		return nil, 0, err
+	}
 
 	// Merge them and generate query
 	query, allArgs := handlers.BuildModifiedSQL(
@@ -84,7 +90,7 @@ func (repository *TagRepository) GetCategories(
 	// Run query
 	rows, err := repository.database.Query(query, allArgs...)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	defer rows.Close()
 
@@ -98,16 +104,16 @@ func (repository *TagRepository) GetCategories(
 			&category.BlogCount,
 		)
 		if err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 		categories = append(categories, category)
 	}
 
 	if err = rows.Err(); err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
-	return categories, nil
+	return categories, total, nil
 }
 
 func (repository *TagRepository) TagUpdate(
@@ -269,4 +275,22 @@ func (repository *TagRepository) checkTagExists(tagId int64) (bool, error) {
 	}
 
 	return count > 0, nil
+}
+
+func (repository *TagRepository) getTagsCount(search *filter.SearchOptions) (int64, error) {
+	searchClause, searchArgs := filter.BuildSearchClause(search, []string{"name"})
+	
+	countQuery, countArgs := handlers.BuildModifiedSQL(
+		QueryTagGetCategoriesCount,
+		[]string{searchClause},
+		[][]any{searchArgs},
+	)
+	
+	var total int64
+	err := repository.database.QueryRow(countQuery, countArgs...).Scan(&total)
+	if err != nil {
+		return 0, err
+	}
+	
+	return total, nil
 }
