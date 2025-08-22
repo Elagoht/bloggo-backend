@@ -92,6 +92,19 @@ func (handler *TagHandler) GetTags(
 	json.NewEncoder(writer).Encode(tags)
 }
 
+func (handler *TagHandler) GetTagList(
+	writer http.ResponseWriter,
+	request *http.Request,
+) {
+	tags, err := handler.service.GetTagList()
+	if err != nil {
+		apierrors.MapErrors(err, writer, nil)
+		return
+	}
+
+	json.NewEncoder(writer).Encode(tags)
+}
+
 func (handler *TagHandler) TagUpdate(
 	writer http.ResponseWriter,
 	request *http.Request,

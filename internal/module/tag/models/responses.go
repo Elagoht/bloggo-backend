@@ -23,6 +23,12 @@ type ResponseTagCard struct {
 	BlogCount int `json:"blogCount"`
 }
 
+// -- Tag List Item -- //
+type ResponseTagListItem struct {
+	Id   int64  `json:"id"`
+	Name string `json:"name"`
+}
+
 // -- Post Tags -- //
 type ResponsePostTags struct {
 	PostId int64             `json:"postId"`

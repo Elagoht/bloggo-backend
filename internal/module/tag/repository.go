@@ -277,6 +277,33 @@ func (repository *TagRepository) checkTagExists(tagId int64) (bool, error) {
 	return count > 0, nil
 }
 
+func (repository *TagRepository) GetTagList() ([]models.ResponseTagListItem, error) {
+	rows, err := repository.database.Query(QueryTagList)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	tags := []models.ResponseTagListItem{}
+	for rows.Next() {
+		var tag models.ResponseTagListItem
+		err := rows.Scan(
+			&tag.Id,
+			&tag.Name,
+		)
+		if err != nil {
+			return nil, err
+		}
+		tags = append(tags, tag)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return tags, nil
+}
+
 func (repository *TagRepository) getTagsCount(search *filter.SearchOptions) (int64, error) {
 	searchClause, searchArgs := filter.BuildSearchClause(search, []string{"name"})
 	

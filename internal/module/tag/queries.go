@@ -73,4 +73,9 @@ const (
 	SELECT COUNT(*)
 	FROM tags
 	WHERE id = ? AND deleted_at IS NULL;`
+	QueryTagList = `
+	SELECT t.id, t.name
+	FROM tags t
+	WHERE t.deleted_at IS NULL
+	ORDER BY t.name;`
 )

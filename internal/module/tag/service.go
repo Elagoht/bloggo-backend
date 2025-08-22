@@ -75,6 +75,10 @@ func (service *TagService) GetTags(
 	}, nil
 }
 
+func (service *TagService) GetTagList() ([]models.ResponseTagListItem, error) {
+	return service.repository.GetTagList()
+}
+
 func (service *TagService) TagUpdate(
 	slug string,
 	model *models.RequestTagUpdate,
