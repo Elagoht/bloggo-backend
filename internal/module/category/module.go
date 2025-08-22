@@ -36,6 +36,7 @@ func (module CategoryModule) RegisterModule(router *chi.Mux) {
 		"/categories",
 		func(router chi.Router) {
 			router.Get("/", module.Handler.GetCategories)
+			router.Get("/list", module.Handler.GetCategoryList)
 			router.Get("/{slug}", module.Handler.GetCategoryBySlug)
 			router.Post("/", module.Handler.CategoryCreate)
 			router.Patch("/{slug}", module.Handler.CategoryUpdate)

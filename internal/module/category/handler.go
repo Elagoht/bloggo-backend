@@ -92,6 +92,19 @@ func (handler *CategoryHandler) GetCategories(
 	json.NewEncoder(writer).Encode(categories)
 }
 
+func (handler *CategoryHandler) GetCategoryList(
+	writer http.ResponseWriter,
+	request *http.Request,
+) {
+	categories, err := handler.service.GetCategoryList()
+	if err != nil {
+		apierrors.MapErrors(err, writer, nil)
+		return
+	}
+
+	json.NewEncoder(writer).Encode(categories)
+}
+
 func (handler *CategoryHandler) CategoryUpdate(
 	writer http.ResponseWriter,
 	request *http.Request,

@@ -193,3 +193,30 @@ func (repository *CategoryRepository) CategoryDelete(
 
 	return nil
 }
+
+func (repository *CategoryRepository) GetCategoryList() ([]models.ResponseCategoryListItem, error) {
+	rows, err := repository.database.Query(QueryCategoryList)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	categories := []models.ResponseCategoryListItem{}
+	for rows.Next() {
+		var category models.ResponseCategoryListItem
+		err := rows.Scan(
+			&category.Id,
+			&category.Name,
+		)
+		if err != nil {
+			return nil, err
+		}
+		categories = append(categories, category)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return categories, nil
+}

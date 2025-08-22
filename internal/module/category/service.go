@@ -84,6 +84,10 @@ func (service *CategoryService) GetCategories(
 	}, nil
 }
 
+func (service *CategoryService) GetCategoryList() ([]models.ResponseCategoryListItem, error) {
+	return service.repository.GetCategoryList()
+}
+
 func (service *CategoryService) CategoryUpdate(
 	slug string,
 	model *models.RequestCategoryUpdate,

@@ -20,3 +20,9 @@ type ResponseCategoryCard struct {
 	Slug      string `json:"slug"`
 	BlogCount int    `json:"blogCount"`
 }
+
+// -- Category List Item -- //
+type ResponseCategoryListItem struct {
+	Id   int64  `json:"id"`
+	Name string `json:"name"`
+}

@@ -51,4 +51,9 @@ const (
 	SELECT COUNT(*)
 	FROM categories c
 	WHERE c.deleted_at IS NULL%s;`
+	QueryCategoryList = `
+	SELECT c.id, c.name
+	FROM categories c
+	WHERE c.deleted_at IS NULL
+	ORDER BY c.name;`
 )
