@@ -53,24 +53,29 @@ func (service *PostService) CreatePostWithFirstVersion(
 	model *models.RequestPostUpsert,
 	userId int64,
 ) (*responses.ResponseCreated, error) {
-	coverFile, err := model.Cover.Open()
-	if err != nil {
-		return nil, err
+	var filePath string
+
+	// Handle cover file if provided
+	if model.Cover != nil {
+		coverFile, err := model.Cover.Open()
+		if err != nil {
+			return nil, err
+		}
+		defer coverFile.Close()
+
+		filePath = cryptography.GenerateUniqueId() + ".webp"
+
+		if err = service.imageValidator.Validate(coverFile, model.Cover); err != nil {
+			return nil, err
+		}
+
+		transformedFile, err := service.coverResizer.Transform(coverFile)
+		if err != nil {
+			return nil, err
+		}
+
+		service.bucket.Save(transformedFile, filePath)
 	}
-	defer coverFile.Close()
-
-	filePath := cryptography.GenerateUniqueId() + ".webp"
-
-	if err = service.imageValidator.Validate(coverFile, model.Cover); err != nil {
-		return nil, err
-	}
-
-	transformedFile, err := service.coverResizer.Transform(coverFile)
-	if err != nil {
-		return nil, err
-	}
-
-	service.bucket.Save(transformedFile, filePath)
 
 	// Calculate read time
 	content := ""
@@ -81,8 +86,10 @@ func (service *PostService) CreatePostWithFirstVersion(
 
 	createdId, err := service.repository.CreatePost(model, filePath, estimatedReadTime, userId)
 	if err != nil {
-		// If cannot created, delete newly uploaded file
-		service.bucket.Delete(filePath)
+		// If cannot created and file was uploaded, delete it
+		if filePath != "" {
+			service.bucket.Delete(filePath)
+		}
 		return nil, err
 	}
 
