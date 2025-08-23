@@ -3,8 +3,11 @@ package post
 import (
 	"bloggo/internal/module/post/models"
 	"bloggo/internal/utils/apierrors"
+	"bloggo/internal/utils/schemas/responses"
 	"bloggo/internal/utils/slugify"
 	"database/sql"
+	"fmt"
+	"strings"
 )
 
 type PostRepository struct {
@@ -54,6 +57,132 @@ func (repository *PostRepository) GetPostList() (
 	}
 
 	return posts, nil
+}
+
+func (repository *PostRepository) GetPostListPaginated(
+	filters *models.RequestPostFilters,
+) (*responses.PaginatedResponse[models.ResponsePostCard], error) {
+	var whereClauses []string
+	var args []interface{}
+
+	// Add search filter
+	if filters.Q != nil && strings.TrimSpace(*filters.Q) != "" {
+		whereClauses = append(whereClauses, "(pv.title LIKE ? OR pv.spot LIKE ? OR pv.content LIKE ?)")
+		searchTerm := "%" + *filters.Q + "%"
+		args = append(args, searchTerm, searchTerm, searchTerm)
+	}
+
+	// Add status filter
+	if filters.Status != nil {
+		whereClauses = append(whereClauses, "pv.status = ?")
+		args = append(args, *filters.Status)
+	}
+
+	// Add category filter
+	if filters.CategoryId != nil {
+		whereClauses = append(whereClauses, "pv.category_id = ?")
+		args = append(args, *filters.CategoryId)
+	}
+
+	// Add author filter
+	if filters.AuthorId != nil {
+		whereClauses = append(whereClauses, "p.created_by = ?")
+		args = append(args, *filters.AuthorId)
+	}
+
+	// Build WHERE clause
+	whereClause := ""
+	if len(whereClauses) > 0 {
+		whereClause = " AND " + strings.Join(whereClauses, " AND ")
+	}
+
+	// Build ORDER BY clause
+	orderClause := ""
+	if filters.Order != nil {
+		direction := "ASC"
+		if filters.Dir != nil && strings.ToUpper(*filters.Dir) == "DESC" {
+			direction = "DESC"
+		}
+		orderClause = fmt.Sprintf(" ORDER BY %s %s", *filters.Order, direction)
+	} else {
+		orderClause = " ORDER BY pv.updated_at DESC"
+	}
+
+	// Set pagination defaults
+	page := 1
+	take := 10
+	if filters.Page != nil {
+		page = *filters.Page
+	}
+	if filters.Take != nil {
+		take = *filters.Take
+	}
+
+	// Calculate offset
+	offset := (page - 1) * take
+
+	// Build final query using the existing QueryPostGetList
+	finalQuery := fmt.Sprintf(QueryPostGetList, whereClause+orderClause+" LIMIT ? OFFSET ?")
+
+	// Build count query
+	countQuery := fmt.Sprintf(`
+	SELECT COUNT(*)
+	FROM posts p
+	JOIN post_versions pv ON pv.id = p.current_version_id
+	LEFT JOIN categories c ON c.id = pv.category_id
+	LEFT JOIN users u ON u.id = p.created_by
+	WHERE p.deleted_at IS NULL%s`, whereClause)
+
+	// Add pagination args
+	queryArgs := append(args, take, offset)
+
+	// Get total count
+	var total int64
+	err := repository.database.QueryRow(countQuery, args...).Scan(&total)
+	if err != nil {
+		return nil, err
+	}
+
+	// Get data
+	rows, err := repository.database.Query(finalQuery, queryArgs...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	posts := []models.ResponsePostCard{}
+	for rows.Next() {
+		var post models.ResponsePostCard
+
+		err := rows.Scan(
+			&post.PostId,
+			&post.Author.Id,
+			&post.Author.Name,
+			&post.Author.Avatar,
+			&post.Title,
+			&post.Slug,
+			&post.CoverImage,
+			&post.Spot,
+			&post.Status,
+			&post.ReadCount,
+			&post.CreatedAt,
+			&post.UpdatedAt,
+			&post.Category.Slug,
+			&post.Category.Id,
+			&post.Category.Name,
+		)
+		if err != nil {
+			return nil, err
+		}
+		posts = append(posts, post)
+	}
+
+	return &responses.PaginatedResponse[models.ResponsePostCard]{
+		Data:  posts,
+		Page:  page,
+		Take:  take,
+		Total: total,
+	}, nil
 }
 
 func (repository *PostRepository) GetPostById(
@@ -502,13 +631,13 @@ func (repository *PostRepository) IsImageReferencedByOtherVersions(
 
 func (repository *PostRepository) IsVersionCurrentlyPublished(versionId int64) (bool, error) {
 	row := repository.database.QueryRow(QueryCheckIfVersionIsCurrentlyPublished, versionId)
-	
+
 	var count int64
 	err := row.Scan(&count)
 	if err != nil {
 		return false, err
 	}
-	
+
 	return count > 0, nil
 }
 

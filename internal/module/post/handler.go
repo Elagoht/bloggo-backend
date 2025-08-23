@@ -3,7 +3,9 @@ package post
 import (
 	"bloggo/internal/module/post/models"
 	"bloggo/internal/utils/apierrors"
+	"bloggo/internal/utils/filter"
 	"bloggo/internal/utils/handlers"
+	"bloggo/internal/utils/pagination"
 	"encoding/json"
 	"net/http"
 )
@@ -22,7 +24,53 @@ func (handler *PostHandler) ListPosts(
 	writer http.ResponseWriter,
 	request *http.Request,
 ) {
-	details, err := handler.service.GetPostList()
+	// Get pagination options
+	paginationOptions, ok := pagination.GetPaginationOptions(
+		writer,
+		request,
+		[]string{"title", "created_at", "updated_at", "read_count"},
+	)
+	if !ok {
+		return
+	}
+
+	// Get search options
+	searchOptions, ok := filter.GetSearchOptions(writer, request)
+	if !ok {
+		return
+	}
+
+	// Get additional filters
+	status, okStatus := handlers.GetQuery[int](writer, request, "status")
+	categoryId, okCategoryId := handlers.GetQuery[int64](writer, request, "categoryId")
+	authorId, okAuthorId := handlers.GetQuery[int64](writer, request, "authorId")
+
+	var statusPtr *int
+	var categoryIdPtr *int64
+	var authorIdPtr *int64
+
+	if okStatus {
+		statusPtr = &status
+	}
+	if okCategoryId {
+		categoryIdPtr = &categoryId
+	}
+	if okAuthorId {
+		authorIdPtr = &authorId
+	}
+
+	filters := &models.RequestPostFilters{
+		Page:       paginationOptions.Page,
+		Take:       paginationOptions.Take,
+		Order:      paginationOptions.OrderBy,
+		Dir:        paginationOptions.Direction,
+		Q:          searchOptions.Q,
+		Status:     statusPtr,
+		CategoryId: categoryIdPtr,
+		AuthorId:   authorIdPtr,
+	}
+
+	details, err := handler.service.GetPostListPaginated(filters)
 	if err != nil {
 		apierrors.MapErrors(err, writer, nil)
 		return

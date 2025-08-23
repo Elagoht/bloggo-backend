@@ -43,6 +43,12 @@ func (service *PostService) GetPostList() (
 	return service.repository.GetPostList()
 }
 
+func (service *PostService) GetPostListPaginated(
+	filters *models.RequestPostFilters,
+) (*responses.PaginatedResponse[models.ResponsePostCard], error) {
+	return service.repository.GetPostListPaginated(filters)
+}
+
 func (service *PostService) GetPostById(
 	id int64,
 ) (*models.ResponsePostDetails, error) {

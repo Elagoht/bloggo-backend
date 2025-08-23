@@ -25,3 +25,15 @@ type RequestTrackView struct {
 	PostId    int64  `json:"postId" validate:"required"`
 	UserAgent string `json:"userAgent" validate:"required"`
 }
+
+// -- List Posts With Filters -- //
+type RequestPostFilters struct {
+	Page       *int    `form:"page" validate:"omitempty,min=1"`
+	Take       *int    `form:"take" validate:"omitempty,min=1,max=100"`
+	Order      *string `form:"order" validate:"omitempty,oneof=title created_at updated_at read_count"`
+	Dir        *string `form:"dir" validate:"omitempty,oneof=asc desc"`
+	Q          *string `form:"q" validate:"omitempty,max=100"`
+	Status     *int    `form:"status" validate:"omitempty,min=0,max=5"`
+	CategoryId *int64  `form:"categoryId"`
+	AuthorId   *int64  `form:"authorId"`
+}

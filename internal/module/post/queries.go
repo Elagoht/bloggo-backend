@@ -50,7 +50,7 @@ const (
 	ON c.id = pv.category_id
 	LEFT JOIN users u
 	ON u.id = p.created_by
-	WHERE p.deleted_at IS NULL;`
+	WHERE p.deleted_at IS NULL %s;`
 	QueryPostVersionGetById = `
 	SELECT
 		pv.id, pv.duplicated_from,
