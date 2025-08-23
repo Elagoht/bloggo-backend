@@ -4,7 +4,7 @@ const (
 	QueryUserGetUserCards = `
 	SELECT users.id, users.name, users.email, users.avatar, users.role_id, roles.name AS role_name,
   (SELECT COUNT(*) FROM posts WHERE created_by = users.id AND deleted_at IS NULL) AS writtenPostCount,
-  (SELECT COUNT(*) FROM posts WHERE created_by = users.id AND deleted_at IS NULL AND current_version_id IS NOT NULL) AS publishedPostCount
+  (SELECT COUNT(*) FROM posts p JOIN post_versions pv ON p.current_version_id = pv.id WHERE p.created_by = users.id AND p.deleted_at IS NULL AND pv.status = 5) AS publishedPostCount
 	FROM users
 	LEFT JOIN roles ON users.role_id = roles.id
 	WHERE users.deleted_at IS NULL%s;`
@@ -14,7 +14,7 @@ const (
 	WHERE users.deleted_at IS NULL%s;`
 	QueryUserGetById = `SELECT users.id, users.name, users.email, users.avatar, users.created_at, users.last_login, users.role_id, roles.name AS role_name,
   (SELECT COUNT(*) FROM posts WHERE created_by = users.id AND deleted_at IS NULL) AS writtenPostCount,
-  (SELECT COUNT(*) FROM posts WHERE created_by = users.id AND deleted_at IS NULL AND current_version_id IS NOT NULL) AS publishedPostCount
+  (SELECT COUNT(*) FROM posts p JOIN post_versions pv ON p.current_version_id = pv.id WHERE p.created_by = users.id AND p.deleted_at IS NULL AND pv.status = 5) AS publishedPostCount
 	FROM users
 	LEFT JOIN roles ON users.role_id = roles.id
 	WHERE users.id = ? AND users.deleted_at IS NULL;`
