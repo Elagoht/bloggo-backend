@@ -103,7 +103,23 @@ func (repository *PostRepository) GetPostListPaginated(
 		if filters.Dir != nil && strings.ToUpper(*filters.Dir) == "DESC" {
 			direction = "DESC"
 		}
-		orderClause = fmt.Sprintf(" ORDER BY %s %s", *filters.Order, direction)
+
+		// Map order fields to their proper table prefixes
+		var orderField string
+		switch *filters.Order {
+		case "title":
+			orderField = "pv.title"
+		case "created_at":
+			orderField = "pv.created_at"
+		case "updated_at":
+			orderField = "pv.updated_at"
+		case "read_count":
+			orderField = "p.read_count"
+		default:
+			orderField = "pv.updated_at" // default fallback
+		}
+
+		orderClause = fmt.Sprintf(" ORDER BY %s %s", orderField, direction)
 	} else {
 		orderClause = " ORDER BY pv.updated_at DESC"
 	}
