@@ -97,6 +97,24 @@ func (handler *PostHandler) GetPostById(
 	json.NewEncoder(writer).Encode(details)
 }
 
+func (handler *PostHandler) GetPostBySlug(
+	writer http.ResponseWriter,
+	request *http.Request,
+) {
+	slug, ok := handlers.GetParam[string](writer, request, "slug")
+	if !ok {
+		return
+	}
+
+	details, err := handler.service.GetPostBySlug(slug)
+	if err != nil {
+		apierrors.MapErrors(err, writer, nil)
+		return
+	}
+
+	json.NewEncoder(writer).Encode(details)
+}
+
 func (handler *PostHandler) CreatePostWithFirstVersion(
 	writer http.ResponseWriter,
 	request *http.Request,

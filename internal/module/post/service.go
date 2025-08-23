@@ -10,6 +10,7 @@ import (
 	"bloggo/internal/utils/file/validatefile"
 	"bloggo/internal/utils/readtime"
 	"bloggo/internal/utils/schemas/responses"
+	"fmt"
 )
 
 type PostService struct {
@@ -46,13 +47,54 @@ func (service *PostService) GetPostList() (
 func (service *PostService) GetPostListPaginated(
 	filters *models.RequestPostFilters,
 ) (*responses.PaginatedResponse[models.ResponsePostCard], error) {
-	return service.repository.GetPostListPaginated(filters)
+	response, err := service.repository.GetPostListPaginated(filters)
+	if err != nil {
+		return nil, err
+	}
+
+	// Add avatar URL prefix to each post author if avatar exists
+	for i := range response.Data {
+		if response.Data[i].Author.Avatar != nil && *response.Data[i].Author.Avatar != "" {
+			avatarPath := fmt.Sprintf("/uploads/avatar/%s", *response.Data[i].Author.Avatar)
+			response.Data[i].Author.Avatar = &avatarPath
+		}
+	}
+
+	return response, nil
 }
 
 func (service *PostService) GetPostById(
 	id int64,
 ) (*models.ResponsePostDetails, error) {
-	return service.repository.GetPostById(id)
+	post, err := service.repository.GetPostById(id)
+	if err != nil {
+		return nil, err
+	}
+
+	// Add avatar URL prefix if avatar exists
+	if post.Author.Avatar != nil && *post.Author.Avatar != "" {
+		avatarPath := fmt.Sprintf("/uploads/avatar/%s", *post.Author.Avatar)
+		post.Author.Avatar = &avatarPath
+	}
+
+	return post, nil
+}
+
+func (service *PostService) GetPostBySlug(
+	slug string,
+) (*models.ResponsePostDetails, error) {
+	post, err := service.repository.GetPostGetByCurrentVersionSlug(slug)
+	if err != nil {
+		return nil, err
+	}
+
+	// Add avatar URL prefix if avatar exists
+	if post.Author.Avatar != nil && *post.Author.Avatar != "" {
+		avatarPath := fmt.Sprintf("/uploads/avatar/%s", *post.Author.Avatar)
+		post.Author.Avatar = &avatarPath
+	}
+
+	return post, nil
 }
 
 func (service *PostService) CreatePostWithFirstVersion(
@@ -107,14 +149,44 @@ func (service *PostService) CreatePostWithFirstVersion(
 func (service *PostService) ListPostVersionsGetByPostId(
 	id int64,
 ) (*models.ResponseVersionsOfPost, error) {
-	return service.repository.ListPostVersionsGetByPostId(id)
+	response, err := service.repository.ListPostVersionsGetByPostId(id)
+	if err != nil {
+		return nil, err
+	}
+
+	// Add avatar URL prefix to original author if avatar exists
+	if response.OriginalAuthor.Avatar != nil && *response.OriginalAuthor.Avatar != "" {
+		avatarPath := fmt.Sprintf("/uploads/avatar/%s", *response.OriginalAuthor.Avatar)
+		response.OriginalAuthor.Avatar = &avatarPath
+	}
+
+	// Add avatar URL prefix to each version author if avatar exists
+	for i := range response.Versions {
+		if response.Versions[i].VersionAuthor.Avatar != nil && *response.Versions[i].VersionAuthor.Avatar != "" {
+			avatarPath := fmt.Sprintf("/uploads/avatar/%s", *response.Versions[i].VersionAuthor.Avatar)
+			response.Versions[i].VersionAuthor.Avatar = &avatarPath
+		}
+	}
+
+	return response, nil
 }
 
 func (service *PostService) GetPostVersionById(
 	postId int64,
 	versionId int64,
 ) (*models.ResponseVersionDetailsOfPost, error) {
-	return service.repository.GetPostVersionById(postId, versionId)
+	version, err := service.repository.GetPostVersionById(postId, versionId)
+	if err != nil {
+		return nil, err
+	}
+
+	// Add avatar URL prefix if avatar exists
+	if version.VersionAuthor.Avatar != nil && *version.VersionAuthor.Avatar != "" {
+		avatarPath := fmt.Sprintf("/uploads/avatar/%s", *version.VersionAuthor.Avatar)
+		version.VersionAuthor.Avatar = &avatarPath
+	}
+
+	return version, nil
 }
 
 func (service *PostService) DeletePostById(
