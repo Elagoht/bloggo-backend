@@ -91,6 +91,7 @@ const (
 		status_change_note TEXT,
 		created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
 		updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+		deleted_at TIMESTAMP WITH TIME ZONE,
 		FOREIGN KEY (post_id) REFERENCES posts(id)
 		ON DELETE CASCADE,
 		FOREIGN KEY (created_by) REFERENCES users(id)
@@ -104,7 +105,9 @@ const (
   ON post_versions(post_id, status);
 	CREATE UNIQUE INDEX IF NOT EXISTS idx_post_versions_slug_status
   ON post_versions(slug, status)
-	WHERE status = 5; `
+	WHERE status = 5;
+	CREATE INDEX IF NOT EXISTS idx_post_versions_deleted_at
+  ON post_versions(deleted_at); `
 	// TAGS
 	QueryCreateTableTags = `
 	CREATE TABLE IF NOT EXISTS tags (

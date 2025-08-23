@@ -95,7 +95,8 @@ const (
 	FROM post_versions pv
 	LEFT JOIN users u
 	ON pv.created_by = u.id
-	WHERE pv.post_id = ?;`
+	WHERE pv.post_id = ?
+	AND pv.deleted_at IS NULL;`
 	QueryPostDetailsForVersionsGetByPostId = `
 	SELECT
 	p.current_version_id, p.created_at,
@@ -110,7 +111,8 @@ const (
 		id, post_id, title, slug, content, cover_image,
 		description, spot, category_id, read_time, created_by
 	FROM post_versions
-	WHERE post_id = ?;`
+	WHERE post_id = ?
+	AND deleted_at IS NULL;`
 	QueryPostSoftDelete = `
 	UPDATE posts
 	SET deleted_at = CURRENT_TIMESTAMP
@@ -123,7 +125,8 @@ const (
 	QueryGetVersionCreatorAndStatus = `
 	SELECT created_by, status
 	FROM post_versions
-	WHERE id = ?;`
+	WHERE id = ?
+	AND deleted_at IS NULL;`
 	QueryPostVersionUpdate = `
 	UPDATE post_versions
 	SET
