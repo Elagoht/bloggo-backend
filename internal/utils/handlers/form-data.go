@@ -210,6 +210,76 @@ func BindAndValidateMultipart[T any](
 				return body, false
 			}
 			fieldValue.SetBool(parsed)
+		case reflect.Ptr:
+			// Handle pointer fields (like *int64, *string, etc.)
+			elemType := fieldValue.Type().Elem()
+			switch elemType.Kind() {
+			case reflect.String:
+				strPtr := &val
+				fieldValue.Set(reflect.ValueOf(strPtr))
+			case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+				bits := elemType.Bits()
+				parsed, err := strconv.ParseInt(val, 10, bits)
+				if err != nil {
+					WriteError(
+						writer,
+						apierrors.NewAPIError("Field '"+formKey+"' must be an integer", err),
+						http.StatusUnprocessableEntity,
+					)
+					return body, false
+				}
+				// Create a new pointer to the parsed value
+				ptrValue := reflect.New(elemType)
+				ptrValue.Elem().SetInt(parsed)
+				fieldValue.Set(ptrValue)
+			case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+				bits := elemType.Bits()
+				parsed, err := strconv.ParseUint(val, 10, bits)
+				if err != nil {
+					WriteError(
+						writer,
+						apierrors.NewAPIError("Field '"+formKey+"' must be an unsigned integer", err),
+						http.StatusUnprocessableEntity,
+					)
+					return body, false
+				}
+				// Create a new pointer to the parsed value
+				ptrValue := reflect.New(elemType)
+				ptrValue.Elem().SetUint(parsed)
+				fieldValue.Set(ptrValue)
+			case reflect.Float32, reflect.Float64:
+				bits := elemType.Bits()
+				parsed, err := strconv.ParseFloat(val, bits)
+				if err != nil {
+					WriteError(
+						writer,
+						apierrors.NewAPIError("Field '"+formKey+"' must be a float", err),
+						http.StatusUnprocessableEntity,
+					)
+					return body, false
+				}
+				// Create a new pointer to the parsed value
+				ptrValue := reflect.New(elemType)
+				ptrValue.Elem().SetFloat(parsed)
+				fieldValue.Set(ptrValue)
+			case reflect.Bool:
+				parsed, err := strconv.ParseBool(val)
+				if err != nil {
+					WriteError(
+						writer,
+						apierrors.NewAPIError("Field '"+formKey+"' must be a boolean", err),
+						http.StatusUnprocessableEntity,
+					)
+					return body, false
+				}
+				// Create a new pointer to the parsed value
+				ptrValue := reflect.New(elemType)
+				ptrValue.Elem().SetBool(parsed)
+				fieldValue.Set(ptrValue)
+			default:
+				// unsupported pointer type: ignore
+				continue
+			}
 		default:
 			// unsupported kind: ignore (validator can catch if needed)
 			continue
