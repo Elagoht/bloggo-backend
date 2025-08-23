@@ -65,8 +65,8 @@ func (service *UserService) GetUsers(
 		page = *paginate.Page
 	}
 
-	// Get take value (default to 10)
-	take := 10
+	// Get take value (default to 12)
+	take := 12
 	if paginate.Take != nil {
 		take = *paginate.Take
 	}

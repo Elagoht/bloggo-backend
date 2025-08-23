@@ -59,7 +59,7 @@ func (service *TagService) GetTags(
 	}
 
 	page := 1
-	take := 10
+	take := 12
 	if pagination.Page != nil {
 		page = *pagination.Page
 	}

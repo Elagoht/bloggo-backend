@@ -34,7 +34,7 @@ func (handler *StatisticsHandler) GetAllStatistics(
 
 	// Check if userId query parameter is provided
 	userIdParam := request.URL.Query().Get("userId")
-	
+
 	if userIdParam == "" {
 		// No userId param - return all statistics
 		response, err := handler.service.GetAllStatistics(roleId)
@@ -198,7 +198,7 @@ func (handler *StatisticsHandler) GetMostViewedBlogs(
 	}
 
 	// Get limit from query parameter
-	limit := 10 // default
+	limit := 12 // default
 	if limitStr := request.URL.Query().Get("limit"); limitStr != "" {
 		if parsedLimit, err := strconv.Atoi(limitStr); err == nil {
 			limit = parsedLimit
@@ -252,7 +252,7 @@ func (handler *StatisticsHandler) GetLongestBlogs(
 	}
 
 	// Get limit from query parameter
-	limit := 10 // default
+	limit := 12 // default
 	if limitStr := request.URL.Query().Get("limit"); limitStr != "" {
 		if parsedLimit, err := strconv.Atoi(limitStr); err == nil {
 			limit = parsedLimit
@@ -329,7 +329,7 @@ func (handler *StatisticsHandler) GetTopUserAgents(
 	}
 
 	// Get limit from query parameter
-	limit := 10 // default
+	limit := 12 // default
 	if limitStr := request.URL.Query().Get("limit"); limitStr != "" {
 		if parsedLimit, err := strconv.Atoi(limitStr); err == nil {
 			limit = parsedLimit

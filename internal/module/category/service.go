@@ -71,7 +71,7 @@ func (service *CategoryService) GetCategories(
 		page = *pagination.Page
 	}
 
-	take := 10 // default take value
+	take := 12 // default take value
 	if pagination.Take != nil {
 		take = *pagination.Take
 	}

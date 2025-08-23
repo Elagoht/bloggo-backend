@@ -7,8 +7,8 @@ import (
 	"bloggo/internal/utils/slugify"
 	"database/sql"
 	"fmt"
-	"strings"
 	"path/filepath"
+	"strings"
 )
 
 type PostRepository struct {
@@ -21,7 +21,7 @@ func formatCoverImagePath(filename *string) *string {
 	if filename == nil || *filename == "" {
 		return nil
 	}
-	
+
 	// Remove extension and format as API path
 	nameWithoutExt := strings.TrimSuffix(*filename, filepath.Ext(*filename))
 	formatted := "/uploads/cover/" + nameWithoutExt
@@ -68,10 +68,10 @@ func (repository *PostRepository) GetPostList() (
 		if err != nil {
 			return nil, err
 		}
-		
+
 		// Format cover image path
 		post.CoverImage = formatCoverImagePath(rawCoverImage)
-		
+
 		posts = append(posts, post)
 	}
 
@@ -145,7 +145,7 @@ func (repository *PostRepository) GetPostListPaginated(
 
 	// Set pagination defaults
 	page := 1
-	take := 10
+	take := 12
 	if filters.Page != nil {
 		page = *filters.Page
 	}
@@ -210,10 +210,10 @@ func (repository *PostRepository) GetPostListPaginated(
 		if err != nil {
 			return nil, err
 		}
-		
+
 		// Format cover image path
 		post.CoverImage = formatCoverImagePath(rawCoverImage)
-		
+
 		posts = append(posts, post)
 	}
 
