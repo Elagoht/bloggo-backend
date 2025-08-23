@@ -21,7 +21,7 @@ func NewModule() StorageModule {
 
 func (module StorageModule) RegisterModule(router *chi.Mux) {
 	config := config.Get()
-	
+
 	router.Route("/uploads", func(router chi.Router) {
 		router.With(middleware.AuthMiddleware(&config)).Route(
 			"/uploads",

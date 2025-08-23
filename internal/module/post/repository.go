@@ -8,10 +8,24 @@ import (
 	"database/sql"
 	"fmt"
 	"strings"
+	"path/filepath"
 )
 
 type PostRepository struct {
 	database *sql.DB
+}
+
+// formatCoverImagePath converts database cover image filename to API path format
+// Input: "abc123.webp" -> Output: "/uploads/cover/abc123"
+func formatCoverImagePath(filename *string) *string {
+	if filename == nil || *filename == "" {
+		return nil
+	}
+	
+	// Remove extension and format as API path
+	nameWithoutExt := strings.TrimSuffix(*filename, filepath.Ext(*filename))
+	formatted := "/uploads/cover/" + nameWithoutExt
+	return &formatted
 }
 
 func NewPostRepository(database *sql.DB) PostRepository {
@@ -32,6 +46,7 @@ func (repository *PostRepository) GetPostList() (
 	posts := []models.ResponsePostCard{}
 	for rows.Next() {
 		var post models.ResponsePostCard
+		var rawCoverImage *string
 
 		err := rows.Scan(
 			&post.PostId,
@@ -40,7 +55,7 @@ func (repository *PostRepository) GetPostList() (
 			&post.Author.Avatar,
 			&post.Title,
 			&post.Slug,
-			&post.CoverImage,
+			&rawCoverImage,
 			&post.Spot,
 			&post.Status,
 			&post.ReadCount,
@@ -53,6 +68,10 @@ func (repository *PostRepository) GetPostList() (
 		if err != nil {
 			return nil, err
 		}
+		
+		// Format cover image path
+		post.CoverImage = formatCoverImagePath(rawCoverImage)
+		
 		posts = append(posts, post)
 	}
 
@@ -169,6 +188,7 @@ func (repository *PostRepository) GetPostListPaginated(
 	posts := []models.ResponsePostCard{}
 	for rows.Next() {
 		var post models.ResponsePostCard
+		var rawCoverImage *string
 
 		err := rows.Scan(
 			&post.PostId,
@@ -177,7 +197,7 @@ func (repository *PostRepository) GetPostListPaginated(
 			&post.Author.Avatar,
 			&post.Title,
 			&post.Slug,
-			&post.CoverImage,
+			&rawCoverImage,
 			&post.Spot,
 			&post.Status,
 			&post.ReadCount,
@@ -190,6 +210,10 @@ func (repository *PostRepository) GetPostListPaginated(
 		if err != nil {
 			return nil, err
 		}
+		
+		// Format cover image path
+		post.CoverImage = formatCoverImagePath(rawCoverImage)
+		
 		posts = append(posts, post)
 	}
 
@@ -207,6 +231,7 @@ func (repository *PostRepository) GetPostById(
 	row := repository.database.QueryRow(QueryPostGetById, id)
 
 	var post models.ResponsePostDetails
+	var rawCoverImage *string
 	err := row.Scan(
 		&post.PostId,
 		&post.VersionId,
@@ -216,7 +241,7 @@ func (repository *PostRepository) GetPostById(
 		&post.Title,
 		&post.Slug,
 		&post.Content,
-		&post.CoverImage,
+		&rawCoverImage,
 		&post.Description,
 		&post.Spot,
 		&post.Status,
@@ -230,6 +255,9 @@ func (repository *PostRepository) GetPostById(
 	if err != nil {
 		return nil, err
 	}
+
+	// Format cover image path
+	post.CoverImage = formatCoverImagePath(rawCoverImage)
 
 	return &post, nil
 }
@@ -240,6 +268,7 @@ func (repository *PostRepository) GetPostGetByCurrentVersionSlug(
 	row := repository.database.QueryRow(QueryPostGetByCurrentVersionSlug, slug)
 
 	var post models.ResponsePostDetails
+	var rawCoverImage *string
 	err := row.Scan(
 		&post.PostId,
 		&post.VersionId,
@@ -249,7 +278,7 @@ func (repository *PostRepository) GetPostGetByCurrentVersionSlug(
 		&post.Title,
 		&post.Slug,
 		&post.Content,
-		&post.CoverImage,
+		&rawCoverImage,
 		&post.Description,
 		&post.Spot,
 		&post.Status,
@@ -263,6 +292,9 @@ func (repository *PostRepository) GetPostGetByCurrentVersionSlug(
 	if err != nil {
 		return nil, err
 	}
+
+	// Format cover image path
+	post.CoverImage = formatCoverImagePath(rawCoverImage)
 
 	return &post, nil
 }
@@ -389,6 +421,7 @@ func (repository *PostRepository) GetPostVersionById(
 	row := repository.database.QueryRow(QueryPostVersionGetById, postId, versionId)
 
 	result := models.ResponseVersionDetailsOfPost{}
+	var rawCoverImage *string
 	if err := row.Scan(
 		&result.VersionId,
 		&result.DuplicatedFrom,
@@ -398,7 +431,7 @@ func (repository *PostRepository) GetPostVersionById(
 		&result.Title,
 		&result.Slug,
 		&result.Content,
-		&result.CoverImage,
+		&rawCoverImage,
 		&result.Description,
 		&result.Spot,
 		&result.Status,
@@ -413,6 +446,9 @@ func (repository *PostRepository) GetPostVersionById(
 	); err != nil {
 		return nil, err
 	}
+
+	// Format cover image path
+	result.CoverImage = formatCoverImagePath(rawCoverImage)
 
 	return &result, nil
 }
