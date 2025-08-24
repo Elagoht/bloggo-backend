@@ -13,10 +13,7 @@ const (
 	INSERT INTO permissions (name)
   VALUES
     ('post:create'),
-    ('post:edit'),
-    ('post:edit_own'),
     ('post:delete'),
-    ('post:publish'),
     ('post:view'),
     ('post:list'),
     ('tag:list'),
@@ -66,20 +63,20 @@ const (
 var (
 	RolePermissionsMatrix = map[string][]string{
 		"Author": {
-			"post:create", "post:edit_own", "post:view", "post:list",
+			"post:create", "post:view", "post:list",
 			"tag:list", "tag:view",
 			"category:list", "category:view",
 			"statistics:view-self",
 		},
 		"Editor": {
-			"post:create", "post:edit", "post:edit_own", "post:delete", "post:publish", "post:view", "post:list",
+			"post:create", "post:delete", "post:publish", "post:view", "post:list",
 			"tag:list", "tag:view", "tag:create", "tag:update", "tag:delete",
 			"category:list", "category:view", "category:create", "category:update", "category:delete",
 			"user:list", "user:view",
 			"statistics:view-self", "statistics:view-others",
 		},
 		"Admin": {
-			"post:create", "post:edit", "post:edit_own", "post:delete", "post:publish", "post:view", "post:list",
+			"post:create", "post:delete", "post:publish", "post:view", "post:list",
 			"tag:list", "tag:view", "tag:create", "tag:update", "tag:delete",
 			"category:list", "category:view", "category:create", "category:update", "category:delete",
 			"user:list", "user:view", "user:register", "user:update", "user:delete", "user:change_passphrase", "user:assign_role",
