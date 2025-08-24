@@ -225,6 +225,29 @@ func (handler *PostHandler) CreateVersionFromLatest(
 	json.NewEncoder(writer).Encode(createdId)
 }
 
+func (handler *PostHandler) CreateVersionFromSpecificVersion(
+	writer http.ResponseWriter,
+	request *http.Request,
+) {
+	userId, ok := handlers.GetContextValue[int64](writer, request, handlers.TokenUserId)
+	if !ok {
+		return
+	}
+
+	versionId, ok := handlers.GetParam[int64](writer, request, "versionId")
+	if !ok {
+		return
+	}
+
+	createdId, err := handler.service.CreateVersionFromSpecificVersion(versionId, userId)
+	if err != nil {
+		apierrors.MapErrors(err, writer, nil)
+		return
+	}
+
+	json.NewEncoder(writer).Encode(createdId)
+}
+
 func (handler *PostHandler) UpdateUnsubmittedOwnVersion(
 	writer http.ResponseWriter,
 	request *http.Request,

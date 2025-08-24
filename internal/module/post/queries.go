@@ -113,6 +113,13 @@ const (
 	FROM post_versions
 	WHERE post_id = ?
 	AND deleted_at IS NULL;`
+	QueryGetSpecificVersionForDuplicate = `
+	SELECT
+		id, post_id, title, slug, content, cover_image,
+		description, spot, category_id, read_time, created_by
+	FROM post_versions
+	WHERE id = ?
+	AND deleted_at IS NULL;`
 	QueryPostSoftDelete = `
 	UPDATE posts
 	SET deleted_at = CURRENT_TIMESTAMP

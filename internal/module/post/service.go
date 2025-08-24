@@ -224,6 +224,20 @@ func (service *PostService) CreateVersionFromLatest(
 	}, nil
 }
 
+func (service *PostService) CreateVersionFromSpecificVersion(
+	versionId int64,
+	userId int64,
+) (*responses.ResponseCreated, error) {
+	createdId, err := service.repository.CreateVersionFromSpecificVersion(versionId, userId)
+	if err != nil {
+		return nil, err
+	}
+
+	return &responses.ResponseCreated{
+		Id: createdId,
+	}, nil
+}
+
 func (service *PostService) UpdateUnsubmittedOwnVersion(
 	postId int64,
 	versionId int64,
@@ -232,7 +246,7 @@ func (service *PostService) UpdateUnsubmittedOwnVersion(
 ) error {
 	// 1. Check if the owner of version ismn same as requester
 	versionCreator, versionStatus, err :=
-		service.repository.GetVersionCreatorAndStatus(postId)
+		service.repository.GetVersionCreatorAndStatus(versionId)
 	if err != nil {
 		return err
 	}
