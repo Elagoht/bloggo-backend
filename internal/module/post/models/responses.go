@@ -57,9 +57,15 @@ type PostVersionsCard struct {
 		Name   string  `json:"name"`
 		Avatar *string `json:"avatar"`
 	} `json:"versionAuthor"`
-	Title     *string `json:"title"`
-	Status    int64   `json:"status"`
-	UpdatedAt string  `json:"updatedAt"`
+	Title      *string `json:"title"`
+	CoverImage *string `json:"coverImage"`
+	Status     int64   `json:"status"`
+	UpdatedAt  string  `json:"updatedAt"`
+	Category   struct {
+		Id   *string `json:"id"`
+		Name *string `json:"name"`
+		Slug *string `json:"slug"`
+	} `json:"category"`
 }
 
 // -- Post Versions List Item -- //

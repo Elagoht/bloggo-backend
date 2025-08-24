@@ -396,17 +396,26 @@ func (repository *PostRepository) ListPostVersionsGetByPostId(
 	versions := []models.PostVersionsCard{}
 	for rows.Next() {
 		version := models.PostVersionsCard{}
+		var rawCoverImage *string
 		if err := rows.Scan(
 			&version.VersionId,
 			&version.VersionAuthor.Id,
 			&version.VersionAuthor.Name,
 			&version.VersionAuthor.Avatar,
 			&version.Title,
+			&rawCoverImage,
 			&version.Status,
 			&version.UpdatedAt,
+			&version.Category.Id,
+			&version.Category.Name,
+			&version.Category.Slug,
 		); err != nil {
 			return nil, err
 		}
+		
+		// Process cover image
+		version.CoverImage = formatCoverImagePath(rawCoverImage)
+		
 		versions = append(versions, version)
 	}
 	result.Versions = versions

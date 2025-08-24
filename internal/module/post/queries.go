@@ -92,10 +92,11 @@ const (
 	SELECT
 		pv.id,
 		u.id as author_id, u.name as author_name, u.avatar as author_avatar,
-		pv.title, pv.status, pv.updated_at
+		pv.title, pv.cover_image, pv.status, pv.updated_at,
+		c.id as category_id, c.name as category_name, c.slug as category_slug
 	FROM post_versions pv
-	LEFT JOIN users u
-	ON pv.created_by = u.id
+	LEFT JOIN users u ON pv.created_by = u.id
+	LEFT JOIN categories c ON pv.category_id = c.id
 	WHERE pv.post_id = ?
 	AND pv.deleted_at IS NULL;`
 	QueryPostDetailsForVersionsGetByPostId = `
