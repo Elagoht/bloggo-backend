@@ -61,14 +61,15 @@ const (
 		c.slug AS category_slug, c.id AS category_id, c.name AS category_name
 	FROM posts p
 	JOIN post_versions pv
-	ON pv.id = p.current_version_id
+	ON pv.post_id = p.id
 	LEFT JOIN categories c
 	ON c.id = pv.category_id
 	LEFT JOIN users u
-	ON u.id = p.created_by
+	ON u.id = pv.created_by
 	WHERE p.id = ?
 	AND pv.id = ?
-	AND p.deleted_at IS NULL;`
+	AND p.deleted_at IS NULL
+	AND pv.deleted_at IS NULL;`
 	QueryPostCreate = `
 	INSERT INTO posts (created_by)
 	VALUES (?);`
