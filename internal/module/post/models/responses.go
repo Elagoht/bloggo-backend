@@ -97,7 +97,11 @@ type ResponseVersionDetailsOfPost struct {
 	Spot             *string `json:"spot"`
 	Status           int64   `json:"status"`
 	StatusChangedAt  *string `json:"statusChangedAt"`
-	StatusChangedBy  *string `json:"statusChangedBy"`
+	StatusChangedBy  *struct {
+		Id     int64   `json:"id"`
+		Name   string  `json:"name"`
+		Avatar *string `json:"avatar"`
+	} `json:"statusChangedBy"`
 	StatusChangeNote *string `json:"statusChangeNote"`
 	CreatedAt        *string `json:"createdAt"`
 	UpdatedAt        *string `json:"updatedAt"`

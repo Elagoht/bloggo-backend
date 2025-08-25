@@ -431,6 +431,9 @@ func (repository *PostRepository) GetPostVersionById(
 
 	result := models.ResponseVersionDetailsOfPost{}
 	var rawCoverImage *string
+	var statusChangedById *int64
+	var statusChangedByName *string
+	var statusChangedByAvatar *string
 	if err := row.Scan(
 		&result.VersionId,
 		&result.DuplicatedFrom,
@@ -445,15 +448,30 @@ func (repository *PostRepository) GetPostVersionById(
 		&result.Spot,
 		&result.Status,
 		&result.StatusChangedAt,
-		&result.StatusChangedBy,
 		&result.StatusChangeNote,
 		&result.CreatedAt,
 		&result.UpdatedAt,
 		&result.Category.Id,
 		&result.Category.Name,
 		&result.Category.Slug,
+		&statusChangedById,
+		&statusChangedByName,
+		&statusChangedByAvatar,
 	); err != nil {
 		return nil, err
+	}
+
+	// Build StatusChangedBy user object if data exists
+	if statusChangedById != nil && statusChangedByName != nil {
+		result.StatusChangedBy = &struct {
+			Id     int64   `json:"id"`
+			Name   string  `json:"name"`
+			Avatar *string `json:"avatar"`
+		}{
+			Id:     *statusChangedById,
+			Name:   *statusChangedByName,
+			Avatar: statusChangedByAvatar,
+		}
 	}
 
 	// Format cover image path

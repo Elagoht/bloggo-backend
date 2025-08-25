@@ -56,9 +56,10 @@ const (
 		pv.id, pv.duplicated_from,
 		u.id as author_id, u.name as author_name, u.avatar as author_avatar,
 		pv.title, pv.slug, pv.content, pv.cover_image, pv.description, pv.spot,
-		pv.status, pv.status_changed_at, pv.status_changed_by, pv.status_change_note,
+		pv.status, pv.status_changed_at, pv.status_change_note,
 		pv.created_at, pv.updated_at,
-		c.id AS category_id, c.name AS category_name, c.slug AS category_slug
+		c.id AS category_id, c.name AS category_name, c.slug AS category_slug,
+		scb.id as status_changed_by_id, scb.name as status_changed_by_name, scb.avatar as status_changed_by_avatar
 	FROM posts p
 	JOIN post_versions pv
 	ON pv.post_id = p.id
@@ -66,6 +67,8 @@ const (
 	ON c.id = pv.category_id
 	LEFT JOIN users u
 	ON u.id = pv.created_by
+	LEFT JOIN users scb
+	ON scb.id = pv.status_changed_by
 	WHERE p.id = ?
 	AND pv.id = ?
 	AND p.deleted_at IS NULL
