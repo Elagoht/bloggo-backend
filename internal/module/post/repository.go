@@ -412,10 +412,10 @@ func (repository *PostRepository) ListPostVersionsGetByPostId(
 		); err != nil {
 			return nil, err
 		}
-		
+
 		// Process cover image
 		version.CoverImage = formatCoverImagePath(rawCoverImage)
-		
+
 		versions = append(versions, version)
 	}
 	result.Versions = versions

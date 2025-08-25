@@ -58,7 +58,7 @@ const (
 		pv.title, pv.slug, pv.content, pv.cover_image, pv.description, pv.spot,
 		pv.status, pv.status_changed_at, pv.status_changed_by, pv.status_change_note,
 		pv.created_at, pv.updated_at,
-		c.slug AS category_slug, c.id AS category_id, c.name AS category_name
+		c.id AS category_id, c.name AS category_name, c.slug AS category_slug
 	FROM posts p
 	JOIN post_versions pv
 	ON pv.post_id = p.id
