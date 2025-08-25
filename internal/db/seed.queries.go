@@ -14,6 +14,7 @@ const (
   VALUES
     ('post:create'),
     ('post:delete'),
+		('post:publish'),
     ('post:view'),
     ('post:list'),
     ('tag:list'),
