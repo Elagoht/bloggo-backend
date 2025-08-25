@@ -769,6 +769,11 @@ func (repository *PostRepository) IncrementReadCount(postId int64) error {
 	return err
 }
 
+func (repository *PostRepository) SetCurrentVersionForPost(postId int64, versionId int64) error {
+	_, err := repository.database.Exec(QueryPostSetCurrentVersion, versionId, postId)
+	return err
+}
+
 func (repository *PostRepository) TrackView(postId int64, userAgent string) error {
 	transaction, err := repository.database.Begin()
 	if err != nil {

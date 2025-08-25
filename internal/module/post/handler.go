@@ -481,6 +481,51 @@ func (handler *PostHandler) DeleteVersionById(
 	writer.WriteHeader(http.StatusNoContent)
 }
 
+func (handler *PostHandler) PublishVersion(
+	writer http.ResponseWriter,
+	request *http.Request,
+) {
+	userId, ok := handlers.GetContextValue[int64](writer, request, handlers.TokenUserId)
+	if !ok {
+		return
+	}
+
+	roleId, ok := handlers.GetContextValue[int64](writer, request, handlers.TokenRoleId)
+	if !ok {
+		return
+	}
+
+	postId, ok := handlers.GetParam[int64](writer, request, "id")
+	if !ok {
+		return
+	}
+	versionId, ok := handlers.GetParam[int64](writer, request, "versionId")
+	if !ok {
+		return
+	}
+
+	if err := handler.service.PublishVersion(
+		postId,
+		versionId,
+		userId,
+		roleId,
+	); err != nil {
+		apierrors.MapErrors(err, writer, apierrors.HTTPErrorMapping{
+			apierrors.ErrPreconditionFailed: {
+				Message: "Only approved versions can be published.",
+				Status:  http.StatusPreconditionFailed,
+			},
+			apierrors.ErrForbidden: {
+				Message: "You don't have permission to publish versions.",
+				Status:  http.StatusForbidden,
+			},
+		})
+		return
+	}
+
+	writer.WriteHeader(http.StatusNoContent)
+}
+
 func (handler *PostHandler) TrackView(
 	writer http.ResponseWriter,
 	request *http.Request,

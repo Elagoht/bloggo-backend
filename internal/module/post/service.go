@@ -472,6 +472,42 @@ func (service *PostService) DeleteVersionById(
 	return nil
 }
 
+func (service *PostService) PublishVersion(
+	postId int64,
+	versionId int64,
+	userId int64,
+	roleId int64,
+) error {
+	// Check if user has publish permission
+	hasPublishPermission := service.permissions.HasPermission(roleId, "post:publish")
+	if !hasPublishPermission {
+		return apierrors.ErrForbidden
+	}
+
+	// Check if version exists and get current status
+	_, versionStatus, err := service.repository.GetVersionCreatorAndStatus(versionId)
+	if err != nil {
+		return err
+	}
+
+	// Only approved versions can be published
+	if versionStatus != models.STATUS_APPROVED {
+		return apierrors.ErrPreconditionFailed
+	}
+
+	// Update version status to published
+	if err := service.repository.UpdateVersionStatus(
+		versionId,
+		models.STATUS_PUBLISHED,
+		userId,
+	); err != nil {
+		return err
+	}
+
+	// Set this version as the current published version for the post
+	return service.repository.SetCurrentVersionForPost(postId, versionId)
+}
+
 func (service *PostService) TrackView(model *models.RequestTrackView) error {
 	return service.repository.TrackView(model.PostId, model.UserAgent)
 }
