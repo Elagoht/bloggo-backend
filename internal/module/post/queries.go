@@ -192,6 +192,16 @@ const (
 	SET current_version_id = NULL
 	WHERE current_version_id = ?
 	AND deleted_at IS NULL;`
+	QueryGetPublishedVersionBySlug = `
+	SELECT id, post_id
+	FROM post_versions
+	WHERE slug = ? AND status = 5 AND deleted_at IS NULL`
+	QueryUnpublishVersionBySlug = `
+	UPDATE post_versions
+	SET status = 2, updated_at = CURRENT_TIMESTAMP
+	WHERE slug = ? AND status = 5 AND deleted_at IS NULL`
+	QueryGetVersionSlug = `
+	SELECT slug FROM post_versions WHERE id = ? AND deleted_at IS NULL`
 	QueryIncrementReadCount = `
 	UPDATE posts
 	SET read_count = read_count + 1

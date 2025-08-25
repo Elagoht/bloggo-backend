@@ -774,6 +774,41 @@ func (repository *PostRepository) SetCurrentVersionForPost(postId int64, version
 	return err
 }
 
+func (repository *PostRepository) GetPublishedVersionBySlug(slug string) (*struct {
+	Id     int64
+	PostId int64
+}, error) {
+	row := repository.database.QueryRow(QueryGetPublishedVersionBySlug, slug)
+
+	var result struct {
+		Id     int64
+		PostId int64
+	}
+	err := row.Scan(&result.Id, &result.PostId)
+	if err != nil {
+		return nil, err
+	}
+
+	return &result, nil
+}
+
+func (repository *PostRepository) UnpublishVersionBySlug(slug string) error {
+	_, err := repository.database.Exec(QueryUnpublishVersionBySlug, slug)
+	return err
+}
+
+func (repository *PostRepository) GetVersionSlug(versionId int64) (string, error) {
+	row := repository.database.QueryRow(QueryGetVersionSlug, versionId)
+
+	var slug string
+	err := row.Scan(&slug)
+	if err != nil {
+		return "", err
+	}
+
+	return slug, nil
+}
+
 func (repository *PostRepository) TrackView(postId int64, userAgent string) error {
 	transaction, err := repository.database.Begin()
 	if err != nil {

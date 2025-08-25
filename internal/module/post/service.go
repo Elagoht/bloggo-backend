@@ -495,6 +495,26 @@ func (service *PostService) PublishVersion(
 		return apierrors.ErrPreconditionFailed
 	}
 
+	// Get the slug of the version being published
+	slug, err := service.repository.GetVersionSlug(versionId)
+	if err != nil {
+		return err
+	}
+
+	// Check if there's already a published version with the same slug
+	existingPublished, err := service.repository.GetPublishedVersionBySlug(slug)
+	if err == nil && existingPublished != nil {
+		// Unpublish the existing version (set it back to approved status)
+		if err := service.repository.UnpublishVersionBySlug(slug); err != nil {
+			return err
+		}
+
+		// Clear the current_version_id from the post that was using the old published version
+		if err := service.repository.SetPostCurrentVersionToNull(existingPublished.Id); err != nil {
+			return err
+		}
+	}
+
 	// Update version status to published
 	if err := service.repository.UpdateVersionStatus(
 		versionId,
