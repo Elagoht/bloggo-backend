@@ -114,13 +114,14 @@ func (handler *UserHandler) UpdateSelfAvatar(
 	}
 	defer file.Close()
 
-	err := handler.service.UpdateAvatarById(userId, file, fileHeader)
+	avatarPath, err := handler.service.UpdateAvatarById(userId, file, fileHeader)
 	if err != nil {
 		apierrors.MapErrors(err, writer, nil)
 		return
 	}
 
-	writer.WriteHeader(http.StatusNoContent)
+	response := models.ResponseAvatarUpdate{Avatar: avatarPath}
+	json.NewEncoder(writer).Encode(response)
 }
 
 func (handler *UserHandler) DeleteUserAvatar(
@@ -197,13 +198,14 @@ func (handler *UserHandler) UpdateUserAvatar(
 	}
 	defer file.Close()
 
-	err := handler.service.UpdateAvatarById(id, file, fileHeader)
+	avatarPath, err := handler.service.UpdateAvatarById(id, file, fileHeader)
 	if err != nil {
 		apierrors.MapErrors(err, writer, nil)
 		return
 	}
 
-	writer.WriteHeader(http.StatusNoContent)
+	response := models.ResponseAvatarUpdate{Avatar: avatarPath}
+	json.NewEncoder(writer).Encode(response)
 }
 
 func (handler *UserHandler) AssignRole(

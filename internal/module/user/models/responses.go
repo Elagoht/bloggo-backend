@@ -25,3 +25,8 @@ type ResponseUserDetails struct {
 	WrittenPostCount   int64   `json:"writtenPostCount"`
 	PublishedPostCount int64   `json:"publishedPostCount"`
 }
+
+// -- Avatar Update Response -- //
+type ResponseAvatarUpdate struct {
+	Avatar string `json:"avatar"`
+}

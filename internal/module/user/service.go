@@ -115,16 +115,16 @@ func (service *UserService) UpdateAvatarById(
 	userId int64,
 	file multipart.File,
 	header *multipart.FileHeader,
-) error {
+) (string, error) {
 	// Check if file is an image
 	if err := service.imageValidator.Validate(file, header); err != nil {
-		return err
+		return "", err
 	}
 
 	// Resize and format image as webp
 	converted, err := service.avatarResizer.Transform(file)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	// Create a unique name but related to user via a seperator.
@@ -133,7 +133,7 @@ func (service *UserService) UpdateAvatarById(
 
 	// Save new avatar
 	if err := service.bucket.Save(converted, fileName); err != nil {
-		return fmt.Errorf("failed to save avatar: %w", err)
+		return "", fmt.Errorf("failed to save avatar: %w", err)
 	}
 
 	// Delete old avatar
@@ -141,7 +141,7 @@ func (service *UserService) UpdateAvatarById(
 		fmt.Sprintf("%d_*.webp", userId),
 		fileName, // Protect new image by blacklisting it
 	); err != nil {
-		return fmt.Errorf("failed to delete old avatars: %w", err)
+		return "", fmt.Errorf("failed to delete old avatars: %w", err)
 	}
 
 	// Update database
@@ -149,10 +149,12 @@ func (service *UserService) UpdateAvatarById(
 		if deleteErr := service.bucket.Delete(fileName); deleteErr != nil {
 			log.Printf("Failed to delete avatar after db error: %v", deleteErr)
 		}
-		return fmt.Errorf("failed to update avatar in database: %w", err)
+		return "", fmt.Errorf("failed to update avatar in database: %w", err)
 	}
 
-	return nil
+	// Return the avatar path without .webp suffix
+	avatarPath := fmt.Sprintf("/uploads/avatar/%s", imageId)
+	return avatarPath, nil
 }
 
 func (service *UserService) UpdateUserById(
