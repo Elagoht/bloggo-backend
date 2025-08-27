@@ -37,3 +37,12 @@ type RequestPostFilters struct {
 	CategoryId *int64  `form:"categoryId"`
 	AuthorId   *int64  `form:"authorId"`
 }
+
+// -- Validation for Post Submission -- //
+type PostSubmissionValidation struct {
+	Title       string `validate:"required,max=100"`
+	Content     string `validate:"required,min=100"`
+	Description string `validate:"required,max=155"`
+	Spot        string `validate:"required,max=75"`
+	CategoryId  int64  `validate:"required"`
+}

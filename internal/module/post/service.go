@@ -10,7 +10,12 @@ import (
 	"bloggo/internal/utils/file/validatefile"
 	"bloggo/internal/utils/readtime"
 	"bloggo/internal/utils/schemas/responses"
+	"bloggo/internal/utils/validate"
 	"fmt"
+	"strconv"
+	"strings"
+
+	"github.com/go-playground/validator/v10"
 )
 
 type PostService struct {
@@ -335,6 +340,11 @@ func (service *PostService) SubmitVersionForReview(
 		return apierrors.ErrPreconditionFailed
 	}
 
+	// Validate the version content before allowing submission
+	if err := service.validateVersionForSubmission(postId, versionId); err != nil {
+		return err
+	}
+
 	// Update version status to pending (submitted for review)
 	return service.repository.UpdateVersionStatus(
 		versionId,
@@ -530,4 +540,69 @@ func (service *PostService) PublishVersion(
 
 func (service *PostService) TrackView(model *models.RequestTrackView) error {
 	return service.repository.TrackView(model.PostId, model.UserAgent)
+}
+
+// validateVersionForSubmission validates that a post version has all required fields
+// populated before it can be submitted for review
+func (service *PostService) validateVersionForSubmission(postId int64, versionId int64) error {
+	// Get the version details to validate
+	version, err := service.repository.GetPostVersionById(postId, versionId)
+	if err != nil {
+		return err
+	}
+
+	// Create validation struct from version data
+	validationData := models.PostSubmissionValidation{}
+
+	// Map version fields to validation struct, handling nil pointers
+	if version.Title != nil {
+		validationData.Title = strings.TrimSpace(*version.Title)
+	}
+	if version.Content != nil {
+		validationData.Content = strings.TrimSpace(*version.Content)
+	}
+	if version.Description != nil {
+		validationData.Description = strings.TrimSpace(*version.Description)
+	}
+	if version.Spot != nil {
+		validationData.Spot = strings.TrimSpace(*version.Spot)
+	}
+	if version.Category.Id != nil {
+		if categoryId, err := strconv.ParseInt(*version.Category.Id, 10, 64); err == nil {
+			validationData.CategoryId = categoryId
+		}
+	}
+
+	// Use the validator to validate the struct
+	validatorInstance := validate.GetValidator()
+	if err := validatorInstance.Struct(validationData); err != nil {
+		// Convert validator errors to API errors
+		if validationErrors, ok := err.(validator.ValidationErrors); ok {
+			var errors []apierrors.ValidationError
+			for _, validationError := range validationErrors {
+				errors = append(errors, apierrors.ValidationError{
+					Field:   validationError.Field(),
+					Message: service.getValidationErrorMessage(validationError),
+				})
+			}
+			return apierrors.NewValidationAPIError(errors)
+		}
+		return err
+	}
+
+	return nil
+}
+
+// getValidationErrorMessage converts validation error tags to human-readable messages
+func (service *PostService) getValidationErrorMessage(fieldError validator.FieldError) string {
+	switch fieldError.Tag() {
+	case "required":
+		return fieldError.Field() + " is required"
+	case "min":
+		return fieldError.Field() + " must be at least " + fieldError.Param() + " characters"
+	case "max":
+		return fieldError.Field() + " must be " + fieldError.Param() + " characters or less"
+	default:
+		return fieldError.Field() + " is invalid"
+	}
 }

@@ -322,6 +322,12 @@ func (handler *PostHandler) SubmitVersionForReview(
 		versionId,
 		userId,
 	); err != nil {
+		// Handle validation errors specially
+		if apiErr, ok := err.(*apierrors.APIError); ok {
+			handlers.WriteError(writer, apiErr, http.StatusBadRequest)
+			return
+		}
+
 		apierrors.MapErrors(err, writer, apierrors.HTTPErrorMapping{
 			apierrors.ErrPreconditionFailed: {
 				Message: "Only draft versions can be submitted for review.",
