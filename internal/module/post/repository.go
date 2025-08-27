@@ -86,20 +86,20 @@ func (repository *PostRepository) GetPostListPaginated(
 
 	// Add search filter
 	if filters.Q != nil && strings.TrimSpace(*filters.Q) != "" {
-		whereClauses = append(whereClauses, "(pv.title LIKE ? OR pv.spot LIKE ? OR pv.content LIKE ?)")
+		whereClauses = append(whereClauses, "(COALESCE(current_pv.title, best_pv.title) LIKE ? OR COALESCE(current_pv.spot, best_pv.spot) LIKE ? OR COALESCE(current_pv.content, best_pv.content) LIKE ?)")
 		searchTerm := "%" + *filters.Q + "%"
 		args = append(args, searchTerm, searchTerm, searchTerm)
 	}
 
 	// Add status filter
 	if filters.Status != nil {
-		whereClauses = append(whereClauses, "pv.status = ?")
+		whereClauses = append(whereClauses, "COALESCE(current_pv.status, best_pv.status) = ?")
 		args = append(args, *filters.Status)
 	}
 
 	// Add category filter
 	if filters.CategoryId != nil {
-		whereClauses = append(whereClauses, "pv.category_id = ?")
+		whereClauses = append(whereClauses, "COALESCE(current_pv.category_id, best_pv.category_id) = ?")
 		args = append(args, *filters.CategoryId)
 	}
 
@@ -127,20 +127,20 @@ func (repository *PostRepository) GetPostListPaginated(
 		var orderField string
 		switch *filters.Order {
 		case "title":
-			orderField = "pv.title"
+			orderField = "title"
 		case "created_at":
-			orderField = "pv.created_at"
+			orderField = "created_at"
 		case "updated_at":
-			orderField = "pv.updated_at"
+			orderField = "updated_at"
 		case "read_count":
 			orderField = "p.read_count"
 		default:
-			orderField = "pv.updated_at" // default fallback
+			orderField = "updated_at" // default fallback
 		}
 
 		orderClause = fmt.Sprintf(" ORDER BY %s %s", orderField, direction)
 	} else {
-		orderClause = " ORDER BY pv.updated_at DESC"
+		orderClause = " ORDER BY updated_at DESC"
 	}
 
 	// Set pagination defaults
@@ -265,7 +265,7 @@ func (repository *PostRepository) GetPostById(
 func (repository *PostRepository) GetPostGetByCurrentVersionSlug(
 	slug string,
 ) (*models.ResponsePostDetails, error) {
-	row := repository.database.QueryRow(QueryPostGetByCurrentVersionSlug, slug)
+	row := repository.database.QueryRow(QueryPostGetByCurrentVersionSlug, slug, slug)
 
 	var post models.ResponsePostDetails
 	var rawCoverImage *string

@@ -3,54 +3,122 @@ package post
 const (
 	QueryPostGetByCurrentVersionSlug = `
 	SELECT
-		p.id as post_id, pv.id as version_id,
+		p.id as post_id,
+		COALESCE(current_pv.id, best_pv.id) as version_id,
 		u.id as author_id, u.name as author_name, u.avatar as author_avatar,
-		pv.title, pv.slug, pv.content, pv.cover_image, pv.description, pv.spot,
-		pv.status, p.read_count, pv.created_at, pv.updated_at,
+		COALESCE(current_pv.title, best_pv.title) as title,
+		COALESCE(current_pv.slug, best_pv.slug) as slug,
+		COALESCE(current_pv.content, best_pv.content) as content,
+		COALESCE(current_pv.cover_image, best_pv.cover_image) as cover_image,
+		COALESCE(current_pv.description, best_pv.description) as description,
+		COALESCE(current_pv.spot, best_pv.spot) as spot,
+		COALESCE(current_pv.status, best_pv.status) as status,
+		p.read_count,
+		COALESCE(current_pv.created_at, best_pv.created_at) as created_at,
+		COALESCE(current_pv.updated_at, best_pv.updated_at) as updated_at,
 		c.slug AS category_slug, c.id AS category_id, c.name AS category_name
 	FROM posts p
-	JOIN post_versions pv
-	ON pv.id = p.current_version_id
-	LEFT JOIN categories c
-	ON c.id = pv.category_id
-	LEFT JOIN users u
-	ON u.id = p.created_by
-	WHERE pv.slug = ?
+	LEFT JOIN post_versions current_pv ON current_pv.id = p.current_version_id AND current_pv.deleted_at IS NULL
+	LEFT JOIN post_versions best_pv ON best_pv.post_id = p.id
+		AND best_pv.deleted_at IS NULL
+		AND best_pv.id = (
+			SELECT pv2.id FROM post_versions pv2
+			WHERE pv2.post_id = p.id AND pv2.deleted_at IS NULL
+			ORDER BY
+			CASE pv2.status
+					WHEN 5 THEN 1  -- Published
+					WHEN 2 THEN 2  -- Approved
+					WHEN 1 THEN 3  -- Pending
+					WHEN 0 THEN 4  -- Draft
+					WHEN 3 THEN 5  -- Rejected
+					ELSE 6
+				END,
+				pv2.updated_at DESC
+			LIMIT 1
+		)
+	LEFT JOIN categories c ON c.id = COALESCE(current_pv.category_id, best_pv.category_id)
+	LEFT JOIN users u ON u.id = p.created_by
+	WHERE (current_pv.slug = ? OR best_pv.slug = ?)
 		AND p.deleted_at IS NULL
+		AND (current_pv.id IS NOT NULL OR best_pv.id IS NOT NULL)
 	LIMIT 1;`
 	QueryPostGetById = `
 	SELECT
-		p.id as post_id, pv.id as version_id,
+		p.id as post_id,
+		COALESCE(current_pv.id, best_pv.id) as version_id,
 		u.id as author_id, u.name as author_name, u.avatar as author_avatar,
-		pv.title, pv.slug, pv.content, pv.cover_image, pv.description, pv.spot,
-		pv.status, p.read_count, pv.created_at, pv.updated_at,
+		COALESCE(current_pv.title, best_pv.title) as title,
+		COALESCE(current_pv.slug, best_pv.slug) as slug,
+		COALESCE(current_pv.content, best_pv.content) as content,
+		COALESCE(current_pv.cover_image, best_pv.cover_image) as cover_image,
+		COALESCE(current_pv.description, best_pv.description) as description,
+		COALESCE(current_pv.spot, best_pv.spot) as spot,
+		COALESCE(current_pv.status, best_pv.status) as status,
+		p.read_count,
+		COALESCE(current_pv.created_at, best_pv.created_at) as created_at,
+		COALESCE(current_pv.updated_at, best_pv.updated_at) as updated_at,
 		c.slug AS category_slug, c.id AS category_id, c.name AS category_name
 	FROM posts p
-	JOIN post_versions pv
-	ON pv.id = p.current_version_id
-	LEFT JOIN categories c
-	ON c.id = pv.category_id
-	LEFT JOIN users u
-	ON u.id = p.created_by
+	LEFT JOIN post_versions current_pv ON current_pv.id = p.current_version_id AND current_pv.deleted_at IS NULL
+	LEFT JOIN post_versions best_pv ON best_pv.post_id = p.id
+		AND best_pv.deleted_at IS NULL
+		AND best_pv.id = (
+			SELECT pv2.id FROM post_versions pv2
+			WHERE pv2.post_id = p.id AND pv2.deleted_at IS NULL
+			ORDER BY
+			CASE pv2.status
+					WHEN 5 THEN 1  -- Published
+					WHEN 2 THEN 2  -- Approved
+					WHEN 1 THEN 3  -- Pending
+					WHEN 0 THEN 4  -- Draft
+					WHEN 3 THEN 5  -- Rejected
+					ELSE 6
+				END,
+				pv2.updated_at DESC
+			LIMIT 1
+		)
+	LEFT JOIN categories c ON c.id = COALESCE(current_pv.category_id, best_pv.category_id)
+	LEFT JOIN users u ON u.id = p.created_by
 	WHERE p.id = ?
 		AND p.deleted_at IS NULL
+		AND (current_pv.id IS NOT NULL OR best_pv.id IS NOT NULL)
 	LIMIT 1;`
 	QueryPostGetList = `
 	SELECT
 		p.id as post_id,
 		u.id as author_id, u.name as author_name, u.avatar as author_avatar,
-		pv.title, pv.slug, pv.cover_image, pv.spot,
-		pv.status, p.read_count,
-		pv.created_at, pv.updated_at,
+		COALESCE(current_pv.title, best_pv.title) as title,
+		COALESCE(current_pv.slug, best_pv.slug) as slug,
+		COALESCE(current_pv.cover_image, best_pv.cover_image) as cover_image,
+		COALESCE(current_pv.spot, best_pv.spot) as spot,
+		COALESCE(current_pv.status, best_pv.status) as status,
+		p.read_count,
+		COALESCE(current_pv.created_at, best_pv.created_at) as created_at,
+		COALESCE(current_pv.updated_at, best_pv.updated_at) as updated_at,
 		c.slug AS category_slug, c.id AS category_id, c.name AS category_name
 	FROM posts p
-	JOIN post_versions pv
-	ON pv.id = p.current_version_id
-	LEFT JOIN categories c
-	ON c.id = pv.category_id
-	LEFT JOIN users u
-	ON u.id = p.created_by
-	WHERE p.deleted_at IS NULL %s;`
+	LEFT JOIN post_versions current_pv ON current_pv.id = p.current_version_id AND current_pv.deleted_at IS NULL
+	LEFT JOIN post_versions best_pv ON best_pv.post_id = p.id
+		AND best_pv.deleted_at IS NULL
+		AND best_pv.id = (
+			SELECT pv2.id FROM post_versions pv2
+			WHERE pv2.post_id = p.id AND pv2.deleted_at IS NULL
+			ORDER BY
+			CASE pv2.status
+					WHEN 5 THEN 1  -- Published
+					WHEN 2 THEN 2  -- Approved
+					WHEN 1 THEN 3  -- Pending
+					WHEN 0 THEN 4  -- Draft
+					WHEN 3 THEN 5  -- Rejected
+					ELSE 6
+				END,
+				pv2.updated_at DESC
+			LIMIT 1
+		)
+	LEFT JOIN categories c ON c.id = COALESCE(current_pv.category_id, best_pv.category_id)
+	LEFT JOIN users u ON u.id = p.created_by
+	WHERE p.deleted_at IS NULL
+	AND (current_pv.id IS NOT NULL OR best_pv.id IS NOT NULL) %s;`
 	QueryPostVersionGetById = `
 	SELECT
 		pv.id, pv.duplicated_from,
