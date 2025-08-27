@@ -70,7 +70,7 @@ type PostVersionsCard struct {
 
 // -- Post Versions List Item -- //
 type ResponseVersionsOfPost struct {
-	CurrentVersionId int64  `json:"currentVersionId"`
+	CurrentVersionId *int64 `json:"currentVersionId,omitempty"`
 	CreatedAt        string `json:"createdAt"`
 	OriginalAuthor   struct {
 		Id     int64   `json:"id"`
