@@ -1,6 +1,9 @@
 package cryptography
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
+
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -17,4 +20,11 @@ func HashPassphrase(passphrase string) (string, error) {
 func ComparePassphrase(hashedPassphrase, passphrase string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hashedPassphrase), []byte(passphrase))
 	return err == nil
+}
+
+// HashString creates a SHA256 hash of a string for caching purposes.
+func HashString(input string) string {
+	hasher := sha256.New()
+	hasher.Write([]byte(input))
+	return hex.EncodeToString(hasher.Sum(nil))
 }

@@ -60,6 +60,7 @@ func (module PostModule) RegisterModule(router *chi.Mux) {
 			router.Post("/{id}/versions/{versionId}/reject", module.Handler.RejectVersion)
 			router.Post("/{id}/versions/{versionId}/publish", module.Handler.PublishVersion)
 			router.Delete("/{id}/versions/{versionId}", module.Handler.DeleteVersionById)
+			router.Get("/{id}/versions/{versionId}/generative-fill", module.Handler.GenerativeFill)
 			router.Post("/track-view", module.Handler.TrackView)
 		},
 	)

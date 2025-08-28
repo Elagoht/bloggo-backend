@@ -16,6 +16,7 @@ type Config struct {
 	JWTSecret            string `json:"JWTSecret" validate:"required,min=32,max=32"`
 	AccessTokenDuration  int    `json:"accessTokenDuration" validate:"required"`
 	RefreshTokenDuration int    `json:"refreshTokenDuration" validate:"required"`
+	GeminiAPIKey         string `json:"geminiApiKey"`
 }
 
 var (
@@ -49,6 +50,10 @@ func Get() Config {
 		instance = load(configFile)
 	})
 	return instance
+}
+
+func IsGeminiEnabled() bool {
+	return Get().GeminiAPIKey != ""
 }
 
 func load(file string) Config {
@@ -89,5 +94,6 @@ func generateConfig() *Config {
 		JWTSecret:            secret,           // Random secret key per distributed instance
 		AccessTokenDuration:  60 * 15,          // 15 minutes for access token
 		RefreshTokenDuration: 60 * 60 * 24 * 7, // Defaults 7 days for refresh token
+		GeminiAPIKey:         "",               // Empty by default - users can add their key
 	}
 }

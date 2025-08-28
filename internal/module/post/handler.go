@@ -552,3 +552,26 @@ func (handler *PostHandler) TrackView(
 
 	writer.WriteHeader(http.StatusNoContent)
 }
+
+func (handler *PostHandler) GenerativeFill(
+	writer http.ResponseWriter,
+	request *http.Request,
+) {
+	postId, ok := handlers.GetParam[int64](writer, request, "id")
+	if !ok {
+		return
+	}
+
+	versionId, ok := handlers.GetParam[int64](writer, request, "versionId")
+	if !ok {
+		return
+	}
+
+	result, err := handler.service.GenerativeFill(postId, versionId)
+	if err != nil {
+		apierrors.MapErrors(err, writer, nil)
+		return
+	}
+
+	json.NewEncoder(writer).Encode(result)
+}

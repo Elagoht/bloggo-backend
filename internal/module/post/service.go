@@ -3,6 +3,8 @@ package post
 import (
 	"bloggo/internal/infrastructure/bucket"
 	"bloggo/internal/infrastructure/permissions"
+	"bloggo/internal/module/ai"
+	aimodels "bloggo/internal/module/ai/models"
 	"bloggo/internal/module/post/models"
 	"bloggo/internal/utils/apierrors"
 	"bloggo/internal/utils/cryptography"
@@ -14,6 +16,8 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/go-playground/validator/v10"
 )
@@ -24,6 +28,52 @@ type PostService struct {
 	imageValidator validatefile.FileValidator
 	coverResizer   transformfile.FileTransformer
 	permissions    permissions.Store
+	aiService      ai.AIService
+	cache          *GenerativeFillCache
+}
+
+type CacheEntry struct {
+	data      *aimodels.ResponseGenerativeFill
+	timestamp time.Time
+}
+
+type GenerativeFillCache struct {
+	mu    sync.RWMutex
+	cache map[string]*CacheEntry
+}
+
+func NewGenerativeFillCache() *GenerativeFillCache {
+	return &GenerativeFillCache{
+		cache: make(map[string]*CacheEntry),
+	}
+}
+
+func (c *GenerativeFillCache) Get(key string) (*aimodels.ResponseGenerativeFill, bool) {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+
+	entry, exists := c.cache[key]
+	if !exists {
+		return nil, false
+	}
+
+	// Check if cache entry is expired (1 minute)
+	if time.Since(entry.timestamp) > time.Minute {
+		delete(c.cache, key)
+		return nil, false
+	}
+
+	return entry.data, true
+}
+
+func (c *GenerativeFillCache) Set(key string, data *aimodels.ResponseGenerativeFill) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	c.cache[key] = &CacheEntry{
+		data:      data,
+		timestamp: time.Now(),
+	}
 }
 
 func NewPostService(
@@ -34,11 +84,13 @@ func NewPostService(
 	permissions permissions.Store,
 ) PostService {
 	return PostService{
-		repository,
-		bucket,
-		imageValidator,
-		coverResizer,
-		permissions,
+		repository:     repository,
+		bucket:         bucket,
+		imageValidator: imageValidator,
+		coverResizer:   coverResizer,
+		permissions:    permissions,
+		aiService:      ai.NewAIService(),
+		cache:          NewGenerativeFillCache(),
 	}
 }
 
@@ -60,7 +112,10 @@ func (service *PostService) GetPostListPaginated(
 	// Add avatar URL prefix to each post author if avatar exists
 	for i := range response.Data {
 		if response.Data[i].Author.Avatar != nil && *response.Data[i].Author.Avatar != "" {
-			avatarPath := fmt.Sprintf("/uploads/avatar/%s", *response.Data[i].Author.Avatar)
+			avatarPath := fmt.Sprintf(
+				"/uploads/avatar/%s",
+				*response.Data[i].Author.Avatar,
+			)
 			response.Data[i].Author.Avatar = &avatarPath
 		}
 	}
@@ -594,7 +649,9 @@ func (service *PostService) validateVersionForSubmission(postId int64, versionId
 }
 
 // getValidationErrorMessage converts validation error tags to human-readable messages
-func (service *PostService) getValidationErrorMessage(fieldError validator.FieldError) string {
+func (service *PostService) getValidationErrorMessage(
+	fieldError validator.FieldError,
+) string {
 	switch fieldError.Tag() {
 	case "required":
 		return fieldError.Field() + " is required"
@@ -605,4 +662,47 @@ func (service *PostService) getValidationErrorMessage(fieldError validator.Field
 	default:
 		return fieldError.Field() + " is invalid"
 	}
+}
+
+func (service *PostService) GenerativeFill(
+	postId,
+	versionId int64,
+) (*aimodels.ResponseGenerativeFill, error) {
+	// Get the version details
+	version, err := service.repository.GetPostVersionById(postId, versionId)
+	if err != nil {
+		return nil, err
+	}
+
+	// Check if content exists and has minimum 1000 characters
+	if version.Content == nil || len(*version.Content) < 1000 {
+		return nil, apierrors.NewAPIError(
+			"Content must be at least 1000 characters long",
+			apierrors.ErrBadRequest,
+		)
+	}
+
+	// Create cache key based on content hash
+	cacheKey := fmt.Sprintf(
+		"%d-%d-%s",
+		postId,
+		versionId,
+		cryptography.HashString(*version.Content),
+	)
+
+	// Check cache first
+	if cached, found := service.cache.Get(cacheKey); found {
+		return cached, nil
+	}
+
+	// Generate AI metadata
+	result, err := service.aiService.GenerateContentMetadata(*version.Content)
+	if err != nil {
+		return nil, err
+	}
+
+	// Cache the result for 1 minute
+	service.cache.Set(cacheKey, result)
+
+	return result, nil
 }
