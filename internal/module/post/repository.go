@@ -82,7 +82,7 @@ func (repository *PostRepository) GetPostListPaginated(
 	filters *models.RequestPostFilters,
 ) (*responses.PaginatedResponse[models.ResponsePostCard], error) {
 	var whereClauses []string
-	var args []interface{}
+	var args []any
 
 	// Add search filter
 	if filters.Q != nil && strings.TrimSpace(*filters.Q) != "" {
@@ -159,14 +159,8 @@ func (repository *PostRepository) GetPostListPaginated(
 	// Build final query using the existing QueryPostGetList
 	finalQuery := fmt.Sprintf(QueryPostGetList, whereClause+orderClause+" LIMIT ? OFFSET ?")
 
-	// Build count query
-	countQuery := fmt.Sprintf(`
-	SELECT COUNT(*)
-	FROM posts p
-	JOIN post_versions pv ON pv.id = p.current_version_id
-	LEFT JOIN categories c ON c.id = pv.category_id
-	LEFT JOIN users u ON u.id = p.created_by
-	WHERE p.deleted_at IS NULL%s`, whereClause)
+	// Build count query using the declared query
+	countQuery := fmt.Sprintf(QueryPostGetListCount, whereClause)
 
 	// Add pagination args
 	queryArgs := append(args, take, offset)

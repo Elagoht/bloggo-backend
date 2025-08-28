@@ -281,4 +281,29 @@ const (
 	QueryInsertPostView = `
 	INSERT INTO post_views (post_id, user_agent)
 	VALUES (?, ?);`
+	QueryPostGetListCount = `
+	SELECT COUNT(*)
+	FROM posts p
+	LEFT JOIN post_versions current_pv ON current_pv.id = p.current_version_id AND current_pv.deleted_at IS NULL
+	LEFT JOIN post_versions best_pv ON best_pv.post_id = p.id
+		AND best_pv.deleted_at IS NULL
+		AND best_pv.id = (
+			SELECT pv2.id FROM post_versions pv2
+			WHERE pv2.post_id = p.id AND pv2.deleted_at IS NULL
+			ORDER BY
+			CASE pv2.status
+					WHEN 5 THEN 1  -- Published
+					WHEN 2 THEN 2  -- Approved
+					WHEN 1 THEN 3  -- Pending
+					WHEN 0 THEN 4  -- Draft
+					WHEN 3 THEN 5  -- Rejected
+					ELSE 6
+				END,
+				pv2.updated_at DESC
+			LIMIT 1
+		)
+	LEFT JOIN categories c ON c.id = COALESCE(current_pv.category_id, best_pv.category_id)
+	LEFT JOIN users u ON u.id = p.created_by
+	WHERE p.deleted_at IS NULL
+	AND (current_pv.id IS NOT NULL OR best_pv.id IS NOT NULL)%s;`
 )
