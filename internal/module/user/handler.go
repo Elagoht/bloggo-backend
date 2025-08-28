@@ -49,6 +49,12 @@ func (handler *UserHandler) GetUsers(
 		return
 	}
 
+	// Map API field names to qualified SQL column names
+	if paginate.OrderBy != nil && *paginate.OrderBy == "name" {
+		qualifiedName := "users.name"
+		paginate.OrderBy = &qualifiedName
+	}
+
 	search, ok := filter.GetSearchOptions(writer, request)
 	if !ok {
 		return

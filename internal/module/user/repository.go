@@ -27,7 +27,7 @@ func (repository *UserRepository) GetUsers(
 	orderByClause, limitClause, offsetClause, args := paginate.BuildPaginationClauses()
 
 	// Handle search by name
-	searchClause, searchArgs := filter.BuildSearchClause(search, []string{"name"})
+	searchClause, searchArgs := filter.BuildSearchClause(search, []string{"users.name"})
 
 	// Merge them and generate query
 	query, allArgs := handlers.BuildModifiedSQL(
@@ -73,7 +73,7 @@ func (repository *UserRepository) GetUsersCount(
 	search *filter.SearchOptions,
 ) (int64, error) {
 	// Handle search by name and email
-	searchClause, searchArgs := filter.BuildSearchClause(search, []string{"name", "email"})
+	searchClause, searchArgs := filter.BuildSearchClause(search, []string{"users.name", "users.email"})
 
 	// Generate query
 	query, allArgs := handlers.BuildModifiedSQL(
