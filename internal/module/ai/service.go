@@ -16,6 +16,7 @@ import (
 type AIService interface {
 	GenerateContentMetadata(
 		content string,
+		availableCategories []string,
 	) (*models.ResponseGenerativeFill, error)
 }
 
@@ -41,6 +42,7 @@ type DisabledAIService struct{}
 
 func (service *DisabledAIService) GenerateContentMetadata(
 	content string,
+	availableCategories []string,
 ) (*models.ResponseGenerativeFill, error) {
 	return nil, errors.New(
 		"gemini ai service is not enabled - please configure an api key",
@@ -73,22 +75,29 @@ type GeminiResponse struct {
 
 func (service *GeminiService) GenerateContentMetadata(
 	content string,
+	availableCategories []string,
 ) (*models.ResponseGenerativeFill, error) {
 	if len(content) < 1000 {
 		return nil, errors.New("content must be at least 1000 characters long")
 	}
 
+	categoriesStr := "any appropriate category"
+	if len(availableCategories) > 0 {
+		categoriesStr = fmt.Sprintf("one of these existing categories: %s", strings.Join(availableCategories, ", "))
+	}
+
 	prompt := fmt.Sprintf(
 		`Analyze the following blog post content and generate appropriate metadata. Return a valid JSON object with these exact fields:
-- "title": An engaging, SEO-friendly title (max 60 characters)
-- "metaDescription": A compelling meta description (max 160 characters)
-- "spot": A brief excerpt or teaser (max 200 characters)
-- "suggestedCategory": A single, most appropriate category name
+- "title": An engaging, SEO-friendly title (max 100 characters)
+- "metaDescription": A compelling meta description (70-155 characters)
+- "spot": A brief excerpt or teaser (max 75 characters)
+- "suggestedCategory": Select the best fit from this categories: [%s]
 
 Content to analyze:
 %s
 
 Return only valid JSON, no additional text or formatting.`,
+		categoriesStr,
 		content,
 	)
 
@@ -150,8 +159,14 @@ Return only valid JSON, no additional text or formatting.`,
 		)
 	}
 
+	// Read the full response body for logging
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response body: %v", err)
+	}
+
 	var geminiResp GeminiResponse
-	if err := json.NewDecoder(resp.Body).Decode(&geminiResp); err != nil {
+	if err := json.Unmarshal(body, &geminiResp); err != nil {
 		return nil, fmt.Errorf("failed to decode Gemini response: %v", err)
 	}
 

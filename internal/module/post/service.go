@@ -667,6 +667,7 @@ func (service *PostService) getValidationErrorMessage(
 func (service *PostService) GenerativeFill(
 	postId,
 	versionId int64,
+	availableCategories []string,
 ) (*aimodels.ResponseGenerativeFill, error) {
 	// Get the version details
 	version, err := service.repository.GetPostVersionById(postId, versionId)
@@ -696,7 +697,7 @@ func (service *PostService) GenerativeFill(
 	}
 
 	// Generate AI metadata
-	result, err := service.aiService.GenerateContentMetadata(*version.Content)
+	result, err := service.aiService.GenerateContentMetadata(*version.Content, availableCategories)
 	if err != nil {
 		return nil, err
 	}

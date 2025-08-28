@@ -8,6 +8,7 @@ import (
 	"bloggo/internal/utils/pagination"
 	"encoding/json"
 	"net/http"
+	"strings"
 )
 
 type PostHandler struct {
@@ -567,7 +568,18 @@ func (handler *PostHandler) GenerativeFill(
 		return
 	}
 
-	result, err := handler.service.GenerativeFill(postId, versionId)
+	// Get categories from query parameter
+	categoriesParam := request.URL.Query().Get("categories")
+	var categories []string
+	if categoriesParam != "" {
+		categories = strings.Split(categoriesParam, ",")
+		// Trim whitespace
+		for i, cat := range categories {
+			categories[i] = strings.TrimSpace(cat)
+		}
+	}
+
+	result, err := handler.service.GenerativeFill(postId, versionId, categories)
 	if err != nil {
 		apierrors.MapErrors(err, writer, nil)
 		return
