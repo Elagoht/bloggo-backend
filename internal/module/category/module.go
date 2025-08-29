@@ -5,6 +5,7 @@ import (
 	"bloggo/internal/db"
 	"bloggo/internal/infrastructure/permissions"
 	"bloggo/internal/middleware"
+	"bloggo/internal/module/ai"
 
 	"github.com/go-chi/chi"
 )
@@ -18,8 +19,9 @@ type CategoryModule struct {
 func NewModule() CategoryModule {
 	database := db.Get()
 	permissionStore := permissions.Get()
+	aiService := ai.NewAIService()
 	repository := NewCategoryRepository(database)
-	service := NewCategoryService(repository, permissionStore)
+	service := NewCategoryService(repository, permissionStore, aiService)
 	handler := NewCategoryHandler(service)
 
 	return CategoryModule{
@@ -41,6 +43,7 @@ func (module CategoryModule) RegisterModule(router *chi.Mux) {
 			router.Post("/", module.Handler.CategoryCreate)
 			router.Patch("/{slug}", module.Handler.CategoryUpdate)
 			router.Delete("/{slug}", module.Handler.CategoryDelete)
+			router.Get("/generative-fill", module.Handler.GenerativeFill)
 		},
 	)
 }

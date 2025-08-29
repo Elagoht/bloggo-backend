@@ -165,3 +165,42 @@ func (handler *CategoryHandler) CategoryDelete(
 
 	writer.WriteHeader(http.StatusNoContent)
 }
+
+func (handler *CategoryHandler) GenerativeFill(
+	writer http.ResponseWriter,
+	request *http.Request,
+) {
+	roleId, ok := handlers.GetContextValue[int64](writer, request, handlers.TokenRoleId)
+	if !ok {
+		return
+	}
+
+	// Get category name from query parameter
+	categoryName := request.URL.Query().Get("name")
+	if categoryName == "" {
+		apierrors.MapErrors(apierrors.ErrBadRequest, writer, apierrors.HTTPErrorMapping{
+			apierrors.ErrBadRequest: {
+				Message: "Category name is required",
+				Status:  http.StatusBadRequest,
+			},
+		})
+		return
+	}
+
+	result, err := handler.service.GenerativeFill(categoryName, roleId)
+	if err != nil {
+		apierrors.MapErrors(err, writer, apierrors.HTTPErrorMapping{
+			apierrors.ErrForbidden: {
+				Message: "Only editors and admins can use generative fill.",
+				Status:  http.StatusForbidden,
+			},
+		})
+		return
+	}
+
+	// Set cache headers for 1 hour
+	writer.Header().Set("Cache-Control", "public, max-age=3600")
+	writer.Header().Set("ETag", `"`+categoryName+`"`)
+
+	json.NewEncoder(writer).Encode(result)
+}

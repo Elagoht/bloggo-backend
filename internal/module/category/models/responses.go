@@ -26,3 +26,9 @@ type ResponseCategoryListItem struct {
 	Id   int64  `json:"id"`
 	Name string `json:"name"`
 }
+
+// -- Category Generative Fill -- //
+type ResponseCategoryGenerativeFill struct {
+	Spot        string `json:"spot"`
+	Description string `json:"description"`
+}

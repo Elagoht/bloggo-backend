@@ -2,6 +2,7 @@ package category
 
 import (
 	"bloggo/internal/infrastructure/permissions"
+	"bloggo/internal/module/ai"
 	"bloggo/internal/module/category/models"
 	"bloggo/internal/utils/apierrors"
 	"bloggo/internal/utils/filter"
@@ -12,12 +13,14 @@ import (
 type CategoryService struct {
 	repository  CategoryRepository
 	permissions permissions.Store
+	aiService   ai.AIService
 }
 
-func NewCategoryService(repository CategoryRepository, permissions permissions.Store) CategoryService {
+func NewCategoryService(repository CategoryRepository, permissions permissions.Store, aiService ai.AIService) CategoryService {
 	return CategoryService{
 		repository,
 		permissions,
+		aiService,
 	}
 }
 
@@ -116,4 +119,25 @@ func (service *CategoryService) CategoryDelete(
 	}
 
 	return service.repository.CategoryDelete(slug)
+}
+
+func (service *CategoryService) GenerativeFill(
+	categoryName string,
+	userRoleId int64,
+) (*models.ResponseCategoryGenerativeFill, error) {
+	// Check if user has permission to create categories
+	hasPermission := service.permissions.HasPermission(userRoleId, "category:create")
+	if !hasPermission {
+		return nil, apierrors.ErrForbidden
+	}
+
+	result, err := service.aiService.GenerateCategoryMetadata(categoryName)
+	if err != nil {
+		return nil, err
+	}
+
+	return &models.ResponseCategoryGenerativeFill{
+		Spot:        result.Spot,
+		Description: result.Description,
+	}, nil
 }
