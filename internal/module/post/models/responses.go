@@ -24,6 +24,13 @@ type ResponsePostDetails struct {
 		Name *string `json:"name"`
 		Slug *string `json:"slug"`
 	} `json:"category"`
+	Tags []TagCard `json:"tags"`
+}
+
+type TagCard struct {
+	Id   int64  `json:"id"`
+	Name string `json:"name"`
+	Slug string `json:"slug"`
 }
 
 // -- Post Card -- //

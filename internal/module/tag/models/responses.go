@@ -29,8 +29,3 @@ type ResponseTagListItem struct {
 	Name string `json:"name"`
 }
 
-// -- Post Tags -- //
-type ResponsePostTags struct {
-	PostId int64             `json:"postId"`
-	Tags   []ResponseTagCard `json:"tags"`
-}

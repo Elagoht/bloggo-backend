@@ -306,4 +306,25 @@ const (
 	LEFT JOIN users u ON u.id = p.created_by
 	WHERE p.deleted_at IS NULL
 	AND (current_pv.id IS NOT NULL OR best_pv.id IS NOT NULL)%s;`
+	// Post-Tag Relationships
+	QueryGetPostTags = `
+	SELECT t.id, t.name, t.slug
+	FROM tags t
+	JOIN post_tags pt ON pt.tag_id = t.id
+	WHERE pt.post_id = ? AND t.deleted_at IS NULL;`
+	QueryAssignTagsToPost = `
+	INSERT INTO post_tags (post_id, tag_id)
+	VALUES %s
+	ON CONFLICT (post_id, tag_id) DO NOTHING;`
+	QueryRemoveTagsFromPost = `
+	DELETE FROM post_tags
+	WHERE post_id = ? AND tag_id IN (%s);`
+	QueryGetCurrentPostTagIds = `
+	SELECT tag_id
+	FROM post_tags
+	WHERE post_id = ?;`
+	QueryCheckTagExists = `
+	SELECT COUNT(*)
+	FROM tags
+	WHERE id = ? AND deleted_at IS NULL;`
 )

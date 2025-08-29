@@ -48,16 +48,4 @@ func (module TagModule) RegisterModule(router *chi.Mux) {
 		},
 	)
 
-	// Post-tag relationship routes
-	router.With(middleware.AuthMiddleware(&config)).Route(
-		"/posts/{postId}/tags",
-		func(router chi.Router) {
-			// Public route to view post tags
-			router.Get("/", module.Handler.GetPostTags)
-
-			// Editor-only routes for managing post tags
-			router.Post("/", module.Handler.AssignTagsToPost)
-			router.Delete("/{tagId}", module.Handler.RemoveTagFromPost)
-		},
-	)
 }

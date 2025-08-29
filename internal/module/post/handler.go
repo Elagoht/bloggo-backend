@@ -587,3 +587,36 @@ func (handler *PostHandler) GenerativeFill(
 
 	json.NewEncoder(writer).Encode(result)
 }
+
+func (handler *PostHandler) AssignTagsToPost(
+	writer http.ResponseWriter,
+	request *http.Request,
+) {
+	roleId, ok := handlers.GetContextValue[int64](writer, request, handlers.TokenRoleId)
+	if !ok {
+		return
+	}
+
+	postId, ok := handlers.GetParam[int64](writer, request, "id")
+	if !ok {
+		return
+	}
+
+	body, ok := handlers.BindAndValidate[models.RequestAssignTagsToPost](writer, request)
+	if !ok {
+		return
+	}
+
+	err := handler.service.AssignTagsToPost(postId, body.TagIds, roleId)
+	if err != nil {
+		apierrors.MapErrors(err, writer, apierrors.HTTPErrorMapping{
+			apierrors.ErrForbidden: {
+				Message: "You don't have permission to assign tags to posts.",
+				Status:  http.StatusForbidden,
+			},
+		})
+		return
+	}
+
+	writer.WriteHeader(http.StatusNoContent)
+}

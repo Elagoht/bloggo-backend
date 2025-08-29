@@ -843,3 +843,182 @@ func (repository *PostRepository) TrackView(postId int64, userAgent string) erro
 
 	return transaction.Commit()
 }
+
+func (repository *PostRepository) AssignTagsToPost(postId int64, tagIds []int64) error {
+	// Check if all tags exist
+	for _, tagId := range tagIds {
+		if exists, err := repository.checkTagExists(tagId); err != nil {
+			return err
+		} else if !exists {
+			return apierrors.ErrNotFound
+		}
+	}
+
+	// Get current tags for the post
+	currentTagIds, err := repository.getCurrentPostTagIds(postId)
+	if err != nil {
+		return err
+	}
+
+	// Convert slices to maps for easier comparison
+	currentTagMap := make(map[int64]bool)
+	for _, tagId := range currentTagIds {
+		currentTagMap[tagId] = true
+	}
+
+	newTagMap := make(map[int64]bool)
+	for _, tagId := range tagIds {
+		newTagMap[tagId] = true
+	}
+
+	// Find tags to remove (in current but not in new)
+	var tagsToRemove []int64
+	for tagId := range currentTagMap {
+		if !newTagMap[tagId] {
+			tagsToRemove = append(tagsToRemove, tagId)
+		}
+	}
+
+	// Find tags to add (in new but not in current)
+	var tagsToAdd []int64
+	for tagId := range newTagMap {
+		if !currentTagMap[tagId] {
+			tagsToAdd = append(tagsToAdd, tagId)
+		}
+	}
+
+	// If no changes needed, return early
+	if len(tagsToRemove) == 0 && len(tagsToAdd) == 0 {
+		return nil
+	}
+
+	// Start transaction
+	transaction, err := repository.database.Begin()
+	if err != nil {
+		return err
+	}
+
+	// Remove tags that are no longer needed (batch operation)
+	if len(tagsToRemove) > 0 {
+		err := repository.removeTagsFromPostBatch(transaction, postId, tagsToRemove)
+		if err != nil {
+			transaction.Rollback()
+			return err
+		}
+	}
+
+	// Add new tags (batch operation)
+	if len(tagsToAdd) > 0 {
+		err := repository.addTagsToPostBatch(transaction, postId, tagsToAdd)
+		if err != nil {
+			transaction.Rollback()
+			return err
+		}
+	}
+
+	return transaction.Commit()
+}
+
+func (repository *PostRepository) getCurrentPostTagIds(postId int64) ([]int64, error) {
+	rows, err := repository.database.Query(QueryGetCurrentPostTagIds, postId)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var tagIds []int64
+	for rows.Next() {
+		var tagId int64
+		err := rows.Scan(&tagId)
+		if err != nil {
+			return nil, err
+		}
+		tagIds = append(tagIds, tagId)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return tagIds, nil
+}
+
+func (repository *PostRepository) checkTagExists(tagId int64) (bool, error) {
+	row := repository.database.QueryRow(QueryCheckTagExists, tagId)
+
+	var count int64
+	err := row.Scan(&count)
+	if err != nil {
+		return false, err
+	}
+
+	return count > 0, nil
+}
+
+func (repository *PostRepository) removeTagsFromPostBatch(transaction *sql.Tx, postId int64, tagIds []int64) error {
+	if len(tagIds) == 0 {
+		return nil
+	}
+	
+	// Build placeholders for IN clause
+	placeholders := make([]string, len(tagIds))
+	args := make([]any, len(tagIds)+1)
+	args[0] = postId
+	
+	for i, tagId := range tagIds {
+		placeholders[i] = "?"
+		args[i+1] = tagId
+	}
+	
+	query := fmt.Sprintf(QueryRemoveTagsFromPost, strings.Join(placeholders, ","))
+	_, err := transaction.Exec(query, args...)
+	return err
+}
+
+func (repository *PostRepository) addTagsToPostBatch(transaction *sql.Tx, postId int64, tagIds []int64) error {
+	if len(tagIds) == 0 {
+		return nil
+	}
+	
+	// Build VALUES clause
+	valueParts := make([]string, len(tagIds))
+	args := make([]any, len(tagIds)*2)
+	
+	for i, tagId := range tagIds {
+		valueParts[i] = "(?, ?)"
+		args[i*2] = postId
+		args[i*2+1] = tagId
+	}
+	
+	query := fmt.Sprintf(QueryAssignTagsToPost, strings.Join(valueParts, ","))
+	_, err := transaction.Exec(query, args...)
+	return err
+}
+
+func (repository *PostRepository) GetPostTags(postId int64) ([]models.TagCard, error) {
+	rows, err := repository.database.Query(QueryGetPostTags, postId)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	tags := []models.TagCard{}
+	for rows.Next() {
+		var tag models.TagCard
+		err := rows.Scan(
+			&tag.Id,
+			&tag.Name,
+			&tag.Slug,
+		)
+		if err != nil {
+			return nil, err
+		}
+		tags = append(tags, tag)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return tags, nil
+}

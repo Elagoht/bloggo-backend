@@ -46,3 +46,8 @@ type PostSubmissionValidation struct {
 	Spot        string `validate:"required,max=75"`
 	CategoryId  int64  `validate:"required"`
 }
+
+// -- Assign Tags to Post -- //
+type RequestAssignTagsToPost struct {
+	TagIds []int64 `json:"tagIds" validate:"required"`
+}

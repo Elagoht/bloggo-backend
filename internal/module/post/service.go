@@ -137,6 +137,14 @@ func (service *PostService) GetPostById(
 		post.Author.Avatar = &avatarPath
 	}
 
+	// Get tags for this post
+	tags, err := service.repository.GetPostTags(id)
+	if err != nil {
+		// Don't fail if tags can't be retrieved, just return empty array
+		tags = []models.TagCard{}
+	}
+	post.Tags = tags
+
 	return post, nil
 }
 
@@ -153,6 +161,14 @@ func (service *PostService) GetPostBySlug(
 		avatarPath := fmt.Sprintf("/uploads/avatar/%s", *post.Author.Avatar)
 		post.Author.Avatar = &avatarPath
 	}
+
+	// Get tags for this post
+	tags, err := service.repository.GetPostTags(post.PostId)
+	if err != nil {
+		// Don't fail if tags can't be retrieved, just return empty array
+		tags = []models.TagCard{}
+	}
+	post.Tags = tags
 
 	return post, nil
 }
@@ -706,4 +722,18 @@ func (service *PostService) GenerativeFill(
 	service.cache.Set(cacheKey, result)
 
 	return result, nil
+}
+
+func (service *PostService) AssignTagsToPost(
+	postId int64,
+	tagIds []int64,
+	userRoleId int64,
+) error {
+	// Check if user has permission to assign tags
+	hasPermission := service.permissions.HasPermission(userRoleId, "tag:assign")
+	if !hasPermission {
+		return apierrors.ErrForbidden
+	}
+
+	return service.repository.AssignTagsToPost(postId, tagIds)
 }
