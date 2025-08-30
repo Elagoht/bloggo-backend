@@ -43,9 +43,9 @@ func NewModule() PostModule {
 func (module PostModule) RegisterModule(router *chi.Mux) {
 	config := config.Get()
 
-	router.With(middleware.AuthMiddleware(&config)).Route(
-		"/posts",
-		func(router chi.Router) {
+	router.Route("/posts", func(router chi.Router) {
+		// Most routes require authentication
+		router.With(middleware.AuthMiddleware(&config)).Group(func(router chi.Router) {
 			router.Get("/", module.Handler.ListPosts)
 			router.Get("/{id}", module.Handler.GetPostById)
 			router.Post("/", module.Handler.CreatePostWithFirstVersion)
@@ -61,8 +61,12 @@ func (module PostModule) RegisterModule(router *chi.Mux) {
 			router.Post("/{id}/versions/{versionId}/publish", module.Handler.PublishVersion)
 			router.Delete("/{id}/versions/{versionId}", module.Handler.DeleteVersionById)
 			router.Get("/{id}/versions/{versionId}/generative-fill", module.Handler.GenerativeFill)
-			router.Post("/track-view", module.Handler.TrackView)
 			router.Post("/{id}/tags", module.Handler.AssignTagsToPost)
-		},
-	)
+		})
+
+		// Track-view endpoint only requires trusted frontend header
+		router.With(
+			middleware.TrustedFrontendMiddleware(&config),
+		).Post("/track-view", module.Handler.TrackView)
+	})
 }

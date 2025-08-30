@@ -959,17 +959,17 @@ func (repository *PostRepository) removeTagsFromPostBatch(transaction *sql.Tx, p
 	if len(tagIds) == 0 {
 		return nil
 	}
-	
+
 	// Build placeholders for IN clause
 	placeholders := make([]string, len(tagIds))
 	args := make([]any, len(tagIds)+1)
 	args[0] = postId
-	
+
 	for i, tagId := range tagIds {
 		placeholders[i] = "?"
 		args[i+1] = tagId
 	}
-	
+
 	query := fmt.Sprintf(QueryRemoveTagsFromPost, strings.Join(placeholders, ","))
 	_, err := transaction.Exec(query, args...)
 	return err
@@ -979,17 +979,17 @@ func (repository *PostRepository) addTagsToPostBatch(transaction *sql.Tx, postId
 	if len(tagIds) == 0 {
 		return nil
 	}
-	
+
 	// Build VALUES clause
 	valueParts := make([]string, len(tagIds))
 	args := make([]any, len(tagIds)*2)
-	
+
 	for i, tagId := range tagIds {
 		valueParts[i] = "(?, ?)"
 		args[i*2] = postId
 		args[i*2+1] = tagId
 	}
-	
+
 	query := fmt.Sprintf(QueryAssignTagsToPost, strings.Join(valueParts, ","))
 	_, err := transaction.Exec(query, args...)
 	return err

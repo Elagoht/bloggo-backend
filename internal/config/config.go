@@ -17,6 +17,7 @@ type Config struct {
 	AccessTokenDuration  int    `json:"accessTokenDuration" validate:"required"`
 	RefreshTokenDuration int    `json:"refreshTokenDuration" validate:"required"`
 	GeminiAPIKey         string `json:"geminiApiKey"`
+	TrustedFrontendKey   string `json:"trustedFrontendKey" validate:"required,min=32,max=32"`
 }
 
 var (
@@ -89,11 +90,17 @@ func generateConfig() *Config {
 		log.Fatal("Couldn't generate secret key.")
 	}
 
+	trustedFrontendKey, err := cryptography.GenerateRandomHS256Secret()
+	if err != nil {
+		log.Fatal("Couldn't generate trusted frontend key.")
+	}
+
 	return &Config{
-		Port:                 8723,             // Default port
-		JWTSecret:            secret,           // Random secret key per distributed instance
-		AccessTokenDuration:  60 * 15,          // 15 minutes for access token
-		RefreshTokenDuration: 60 * 60 * 24 * 7, // Defaults 7 days for refresh token
-		GeminiAPIKey:         "",               // Empty by default - users can add their key
+		Port:                 8723,               // Default port
+		JWTSecret:            secret,             // Random secret key per distributed instance
+		AccessTokenDuration:  60 * 15,            // 15 minutes for access token
+		RefreshTokenDuration: 60 * 60 * 24 * 7,   // Defaults 7 days for refresh token
+		GeminiAPIKey:         "",                 // Empty by default - users can add their key
+		TrustedFrontendKey:   trustedFrontendKey, // Random key for trusted frontend requests
 	}
 }
