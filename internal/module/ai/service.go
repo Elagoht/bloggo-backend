@@ -218,14 +218,10 @@ func (service *GeminiService) GenerateCategoryMetadata(
 	prompt := fmt.Sprintf(
 		`Generate appropriate metadata for a blog category named "%s". Return a valid JSON object with these exact fields:
 
-- "spot": A brief, engaging description (MUST be 75 characters or fewer)
-- "description": A meta description for SEO (MUST be between 70-155 characters, aim for 120-140)
+- "spot": A brief, engaging description (MUST be max 75 characters)
+- "description": A meta description for SEO (MUST be between 70-155 characters)
 
-IMPORTANT CHARACTER LIMITS:
-- spot: Maximum 75 characters (count carefully!)
-- description: Minimum 70, Maximum 155 characters (count carefully!)
-
-The content should be SEO-friendly and help readers understand what topics they'll find in this category. Keep descriptions concise and within the specified character limits.
+The content should be SEO-friendly and help readers understand what topics they'll find in this category. Keep descriptions concise and within the specified character limits. Do not use ellipsis. Generate complete sentences. Uncompleted sentences isn't allowed.
 
 Return only valid JSON, no additional text or formatting.`,
 		categoryName,
