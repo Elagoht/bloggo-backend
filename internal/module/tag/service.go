@@ -59,7 +59,7 @@ func (service *TagService) GetTags(
 	}
 
 	page := 1
-	take := 12
+	take := 24
 	if pagination.Page != nil {
 		page = *pagination.Page
 	}
@@ -108,4 +108,3 @@ func (service *TagService) TagDelete(
 
 	return service.repository.TagDelete(slug)
 }
-
