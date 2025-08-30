@@ -217,10 +217,15 @@ func (service *GeminiService) GenerateCategoryMetadata(
 
 	prompt := fmt.Sprintf(
 		`Generate appropriate metadata for a blog category named "%s". Return a valid JSON object with these exact fields:
-- "spot": A brief, engaging description of what this category covers (max 75 characters)
-- "description": A detailed meta description explaining what readers can expect from posts in this category (70-155 characters)
 
-The content should be SEO-friendly and help readers understand what topics and content they'll find in this category.
+- "spot": A brief, engaging description (MUST be 75 characters or fewer)
+- "description": A meta description for SEO (MUST be between 70-155 characters, aim for 120-140)
+
+IMPORTANT CHARACTER LIMITS:
+- spot: Maximum 75 characters (count carefully!)
+- description: Minimum 70, Maximum 155 characters (count carefully!)
+
+The content should be SEO-friendly and help readers understand what topics they'll find in this category. Keep descriptions concise and within the specified character limits.
 
 Return only valid JSON, no additional text or formatting.`,
 		categoryName,
@@ -316,6 +321,30 @@ Return only valid JSON, no additional text or formatting.`,
 			err,
 			generatedText,
 		)
+	}
+
+	// Ensure character limits are enforced
+	if len(result.Spot) > 75 {
+		// Truncate at word boundary if possible
+		truncated := result.Spot[:72]
+		if lastSpace := strings.LastIndex(truncated, " "); lastSpace > 50 {
+			truncated = result.Spot[:lastSpace]
+		}
+		result.Spot = truncated + "..."
+	}
+
+	if len(result.Description) > 155 {
+		// Truncate at word boundary if possible
+		truncated := result.Description[:152]
+		if lastSpace := strings.LastIndex(truncated, " "); lastSpace > 130 {
+			truncated = result.Description[:lastSpace]
+		}
+		result.Description = truncated + "..."
+	}
+
+	// Ensure minimum length for description
+	if len(result.Description) < 70 {
+		return nil, errors.New("generated description is too short (minimum 70 characters)")
 	}
 
 	return &result, nil
