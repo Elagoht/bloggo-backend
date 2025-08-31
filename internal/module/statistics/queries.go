@@ -221,9 +221,9 @@ const (
 	SELECT
 		u.id as author_id,
 		u.name as author_name,
-		COUNT(DISTINCT p.id) as total_blogs,
-		COUNT(pv.id) as total_views,
-		COALESCE(SUM(ver.read_time), 0) as total_read_time
+		COUNT(DISTINCT CASE WHEN ver.status = 5 AND p.deleted_at IS NULL AND ver.deleted_at IS NULL THEN p.id END) as total_blogs,
+		COUNT(CASE WHEN ver.status = 5 AND p.deleted_at IS NULL AND ver.deleted_at IS NULL THEN pv.id END) as total_views,
+		COALESCE(SUM(CASE WHEN ver.status = 5 AND p.deleted_at IS NULL AND ver.deleted_at IS NULL THEN ver.read_time END), 0) as total_read_time
 	FROM users u
 	LEFT JOIN post_versions ver
 		ON ver.created_by = u.id
@@ -232,15 +232,6 @@ const (
 	LEFT JOIN post_views pv
 		ON pv.post_id = p.id
 	WHERE u.id = ?
-		AND (
-			p.deleted_at IS NULL
-			OR p.deleted_at IS NULL
-		)
-		AND (
-			ver.deleted_at IS NULL
-			OR ver.deleted_at IS NULL
-		)
-		AND ver.status = 5
 	GROUP BY u.id, u.name`
 
 	QueryAuthorCategoryViewsDistribution = `
