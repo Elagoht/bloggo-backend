@@ -390,4 +390,105 @@ const (
 		AND ver.created_by = ?
 		GROUP BY p.id
 	) as view_counts`
+
+	// Author-specific Last 24 Hours Views
+	QueryAuthorLast24HoursViews = `
+	SELECT
+		CAST(strftime('%H', pv.viewed_at) AS INTEGER) as hour,
+		COUNT(*) as view_count
+	FROM post_views pv
+	JOIN posts p ON pv.post_id = p.id
+	JOIN post_versions ver ON p.current_version_id = ver.id
+	WHERE pv.viewed_at >= datetime('now', '-24 hours')
+		AND p.deleted_at IS NULL
+		AND ver.created_by = ?
+	GROUP BY hour
+	ORDER BY hour`
+
+	// Author-specific Category Blog Distribution
+	QueryAuthorCategoryBlogDistribution = `
+	SELECT
+		c.id as category_id,
+		c.name as category_name,
+		COUNT(DISTINCT p.id) as blog_count
+	FROM categories c
+	LEFT JOIN post_versions ver 
+		ON ver.category_id = c.id
+		AND ver.created_by = ?
+	LEFT JOIN posts p 
+		ON p.current_version_id = ver.id
+	WHERE c.deleted_at IS NULL
+		AND (p.deleted_at IS NULL OR p.deleted_at IS NULL)
+		AND (ver.deleted_at IS NULL OR ver.deleted_at IS NULL)
+		AND ver.status = 5
+	GROUP BY c.id, c.name
+	ORDER BY blog_count DESC`
+
+	// Author-specific Category Read Time Distribution
+	QueryAuthorCategoryReadTimeDistribution = `
+	SELECT
+		c.id as category_id,
+		c.name as category_name,
+		COALESCE(SUM(ver.read_time), 0) as total_read_time,
+		COALESCE(AVG(CAST(ver.read_time AS REAL)), 0) as average_read_time
+	FROM categories c
+	LEFT JOIN post_versions ver 
+		ON ver.category_id = c.id
+		AND ver.created_by = ?
+	LEFT JOIN posts p 
+		ON p.current_version_id = ver.id
+	WHERE c.deleted_at IS NULL
+		AND (p.deleted_at IS NULL OR p.deleted_at IS NULL)
+		AND (ver.deleted_at IS NULL OR ver.deleted_at IS NULL)
+		AND ver.status = 5
+		AND ver.read_time IS NOT NULL
+	GROUP BY c.id, c.name
+	ORDER BY total_read_time DESC`
+
+	// Author-specific Category Length Distribution
+	QueryAuthorCategoryLengthDistribution = `
+	SELECT
+		c.id as category_id,
+		c.name as category_name,
+		COALESCE(SUM(LENGTH(ver.content)), 0) as total_length,
+		COALESCE(AVG(CAST(LENGTH(ver.content) AS REAL)), 0) as average_length
+	FROM categories c
+	LEFT JOIN post_versions ver 
+		ON ver.category_id = c.id
+		AND ver.created_by = ?
+	LEFT JOIN posts p 
+		ON p.current_version_id = ver.id
+	WHERE c.deleted_at IS NULL
+		AND (p.deleted_at IS NULL OR p.deleted_at IS NULL)
+		AND (ver.deleted_at IS NULL OR ver.deleted_at IS NULL)
+		AND ver.status = 5
+		AND ver.content IS NOT NULL
+	GROUP BY c.id, c.name
+	ORDER BY total_length DESC`
+
+	// Author-specific User Agent Queries
+	QueryAuthorTopUserAgents = `
+	SELECT
+		pv.user_agent,
+		COUNT(*) as view_count
+	FROM post_views pv
+	JOIN posts p ON pv.post_id = p.id
+	JOIN post_versions ver ON p.current_version_id = ver.id
+	WHERE pv.user_agent IS NOT NULL
+		AND pv.user_agent != ''
+		AND p.deleted_at IS NULL
+		AND ver.created_by = ?
+	GROUP BY pv.user_agent
+	ORDER BY view_count DESC
+	LIMIT ?`
+
+	QueryAuthorGetAllUserAgents = `
+	SELECT pv.user_agent
+	FROM post_views pv
+	JOIN posts p ON pv.post_id = p.id
+	JOIN post_versions ver ON p.current_version_id = ver.id
+	WHERE pv.user_agent IS NOT NULL 
+		AND pv.user_agent != ''
+		AND p.deleted_at IS NULL
+		AND ver.created_by = ?`
 )

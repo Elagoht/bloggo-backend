@@ -606,3 +606,307 @@ func (repository *StatisticsRepository) GetAuthorBlogStatistics(authorId int64) 
 
 	return stats, nil
 }
+
+func (repository *StatisticsRepository) GetAuthorLast24HoursViews(authorId int64) (*models.Last24HoursViews, error) {
+	rows, err := repository.database.Query(QueryAuthorLast24HoursViews, authorId)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	hours := make([]models.HourlyViewCount, 0)
+	for rows.Next() {
+		var hour models.HourlyViewCount
+		err := rows.Scan(&hour.Hour, &hour.ViewCount)
+		if err != nil {
+			return nil, err
+		}
+		hours = append(hours, hour)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return &models.Last24HoursViews{Hours: hours}, nil
+}
+
+func (repository *StatisticsRepository) GetAuthorCategoryBlogDistribution(authorId int64) ([]models.CategoryBlogDistribution, error) {
+	rows, err := repository.database.Query(QueryAuthorCategoryBlogDistribution, authorId)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var totalBlogs int64
+	categories := make([]models.CategoryBlogDistribution, 0)
+
+	for rows.Next() {
+		var category models.CategoryBlogDistribution
+		err := rows.Scan(&category.CategoryId, &category.CategoryName, &category.BlogCount)
+		if err != nil {
+			return nil, err
+		}
+		totalBlogs += category.BlogCount
+		categories = append(categories, category)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	// Calculate percentages
+	for i := range categories {
+		if totalBlogs > 0 {
+			categories[i].Percentage = float64(categories[i].BlogCount) / float64(totalBlogs) * 100
+		}
+	}
+
+	return categories, nil
+}
+
+func (repository *StatisticsRepository) GetAuthorCategoryReadTimeDistribution(authorId int64) ([]models.CategoryReadTimeDistribution, error) {
+	rows, err := repository.database.Query(QueryAuthorCategoryReadTimeDistribution, authorId)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var totalReadTime int64
+	categories := make([]models.CategoryReadTimeDistribution, 0)
+
+	for rows.Next() {
+		var category models.CategoryReadTimeDistribution
+		err := rows.Scan(&category.CategoryId, &category.CategoryName, &category.TotalReadTime, &category.AverageReadTime)
+		if err != nil {
+			return nil, err
+		}
+		totalReadTime += category.TotalReadTime
+		categories = append(categories, category)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	// Calculate percentages
+	for i := range categories {
+		if totalReadTime > 0 {
+			categories[i].Percentage = float64(categories[i].TotalReadTime) / float64(totalReadTime) * 100
+		}
+	}
+
+	return categories, nil
+}
+
+func (repository *StatisticsRepository) GetAuthorCategoryLengthDistribution(authorId int64) ([]models.CategoryLengthDistribution, error) {
+	rows, err := repository.database.Query(QueryAuthorCategoryLengthDistribution, authorId)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var totalLength int64
+	categories := make([]models.CategoryLengthDistribution, 0)
+
+	for rows.Next() {
+		var category models.CategoryLengthDistribution
+		err := rows.Scan(&category.CategoryId, &category.CategoryName, &category.TotalLength, &category.AverageLength)
+		if err != nil {
+			return nil, err
+		}
+		totalLength += category.TotalLength
+		categories = append(categories, category)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	// Calculate percentages
+	for i := range categories {
+		if totalLength > 0 {
+			categories[i].Percentage = float64(categories[i].TotalLength) / float64(totalLength) * 100
+		}
+	}
+
+	return categories, nil
+}
+
+func (repository *StatisticsRepository) GetAuthorTopUserAgents(authorId int64, limit int) ([]models.UserAgentStat, error) {
+	rows, err := repository.database.Query(QueryAuthorTopUserAgents, authorId, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var totalViews int64
+	userAgents := make([]models.UserAgentStat, 0)
+
+	for rows.Next() {
+		var ua models.UserAgentStat
+		err := rows.Scan(&ua.UserAgent, &ua.ViewCount)
+		if err != nil {
+			return nil, err
+		}
+		totalViews += ua.ViewCount
+		userAgents = append(userAgents, ua)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	// Calculate percentages
+	for i := range userAgents {
+		if totalViews > 0 {
+			userAgents[i].Percentage = float64(userAgents[i].ViewCount) / float64(totalViews) * 100
+		}
+	}
+
+	return userAgents, nil
+}
+
+func (repository *StatisticsRepository) GetAuthorDeviceTypeDistribution(authorId int64) ([]models.DeviceTypeStat, error) {
+	// Get all user agents for this author first
+	rows, err := repository.database.Query(QueryAuthorGetAllUserAgents, authorId)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var userAgents []string
+	for rows.Next() {
+		var ua string
+		err := rows.Scan(&ua)
+		if err != nil {
+			return nil, err
+		}
+		userAgents = append(userAgents, ua)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	// Parse user agents and count device types
+	deviceDistribution := useragent.GetDeviceTypeDistribution(userAgents)
+
+	var totalViews int64
+	var deviceStats []models.DeviceTypeStat
+
+	for deviceType, count := range deviceDistribution {
+		if count > 0 {
+			totalViews += int64(count)
+			deviceStats = append(deviceStats, models.DeviceTypeStat{
+				DeviceType: deviceType,
+				ViewCount:  int64(count),
+			})
+		}
+	}
+
+	// Calculate percentages
+	for i := range deviceStats {
+		if totalViews > 0 {
+			deviceStats[i].Percentage = float64(deviceStats[i].ViewCount) / float64(totalViews) * 100
+		}
+	}
+
+	return deviceStats, nil
+}
+
+func (repository *StatisticsRepository) GetAuthorOSDistribution(authorId int64) ([]models.OSStatistic, error) {
+	// Get all user agents for this author first
+	rows, err := repository.database.Query(QueryAuthorGetAllUserAgents, authorId)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var userAgents []string
+	for rows.Next() {
+		var ua string
+		err := rows.Scan(&ua)
+		if err != nil {
+			return nil, err
+		}
+		userAgents = append(userAgents, ua)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	// Parse user agents and count operating systems
+	osDistribution := useragent.GetOSDistribution(userAgents)
+
+	var totalViews int64
+	var osStats []models.OSStatistic
+
+	for os, count := range osDistribution {
+		if count > 0 {
+			totalViews += int64(count)
+			osStats = append(osStats, models.OSStatistic{
+				OS:        os,
+				ViewCount: int64(count),
+			})
+		}
+	}
+
+	// Calculate percentages
+	for i := range osStats {
+		if totalViews > 0 {
+			osStats[i].Percentage = float64(osStats[i].ViewCount) / float64(totalViews) * 100
+		}
+	}
+
+	return osStats, nil
+}
+
+func (repository *StatisticsRepository) GetAuthorBrowserDistribution(authorId int64) ([]models.BrowserStat, error) {
+	// Get all user agents for this author first
+	rows, err := repository.database.Query(QueryAuthorGetAllUserAgents, authorId)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var userAgents []string
+	for rows.Next() {
+		var ua string
+		err := rows.Scan(&ua)
+		if err != nil {
+			return nil, err
+		}
+		userAgents = append(userAgents, ua)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	// Parse user agents and count browsers
+	browserDistribution := useragent.GetBrowserDistribution(userAgents)
+
+	var totalViews int64
+	var browserStats []models.BrowserStat
+
+	for browser, count := range browserDistribution {
+		if count > 0 {
+			totalViews += int64(count)
+			browserStats = append(browserStats, models.BrowserStat{
+				Browser:   browser,
+				ViewCount: int64(count),
+			})
+		}
+	}
+
+	// Calculate percentages
+	for i := range browserStats {
+		if totalViews > 0 {
+			browserStats[i].Percentage = float64(browserStats[i].ViewCount) / float64(totalViews) * 100
+		}
+	}
+
+	return browserStats, nil
+}

@@ -159,8 +159,8 @@ func (service *StatisticsService) GetAuthorStatistics(authorId int64, userRoleId
 		return nil, err
 	}
 
-	// Get last 24 hours views (this will be global for now, could be author-specific later)
-	last24Hours, err := service.repository.GetLast24HoursViews()
+	// Get last 24 hours views for this author
+	last24Hours, err := service.repository.GetAuthorLast24HoursViews(authorId)
 	if err != nil {
 		return nil, err
 	}
@@ -190,43 +190,43 @@ func (service *StatisticsService) GetAuthorStatistics(authorId int64, userRoleId
 	}
 
 	// Get category blog distribution (author-specific)
-	categoryBlogs, err := service.repository.GetCategoryBlogDistribution()
+	categoryBlogs, err := service.repository.GetAuthorCategoryBlogDistribution(authorId)
 	if err != nil {
 		return nil, err
 	}
 
 	// Get category read time distribution (author-specific)
-	categoryReadTime, err := service.repository.GetCategoryReadTimeDistribution()
+	categoryReadTime, err := service.repository.GetAuthorCategoryReadTimeDistribution(authorId)
 	if err != nil {
 		return nil, err
 	}
 
 	// Get category length distribution (author-specific)
-	categoryLength, err := service.repository.GetCategoryLengthDistribution()
+	categoryLength, err := service.repository.GetAuthorCategoryLengthDistribution(authorId)
 	if err != nil {
 		return nil, err
 	}
 
-	// Get top user agents (global for now)
-	topUserAgents, err := service.repository.GetTopUserAgents(10)
+	// Get top user agents (author-specific)
+	topUserAgents, err := service.repository.GetAuthorTopUserAgents(authorId, 10)
 	if err != nil {
 		return nil, err
 	}
 
-	// Get device type distribution (global for now)
-	deviceDistribution, err := service.repository.GetDeviceTypeDistribution()
+	// Get device type distribution (author-specific)
+	deviceDistribution, err := service.repository.GetAuthorDeviceTypeDistribution(authorId)
 	if err != nil {
 		return nil, err
 	}
 
-	// Get OS distribution (global for now)
-	osDistribution, err := service.repository.GetOSDistribution()
+	// Get OS distribution (author-specific)
+	osDistribution, err := service.repository.GetAuthorOSDistribution(authorId)
 	if err != nil {
 		return nil, err
 	}
 
-	// Get browser distribution (global for now)
-	browserDistribution, err := service.repository.GetBrowserDistribution()
+	// Get browser distribution (author-specific)
+	browserDistribution, err := service.repository.GetAuthorBrowserDistribution(authorId)
 	if err != nil {
 		return nil, err
 	}
