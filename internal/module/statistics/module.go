@@ -37,10 +37,10 @@ func (module StatisticsModule) RegisterModule(router *chi.Mux) {
 		func(router chi.Router) {
 			// All statistics endpoint (for users with statistics:view-total permission)
 			router.Get("/", module.Handler.GetAllStatistics)
-			
+
 			// User own statistics endpoint (for users with statistics:view-self permission)
 			router.Get("/me", module.Handler.GetUserOwnStatistics)
-			
+
 			// Author statistics endpoint (for users with statistics:view-others permission)
 			router.Get("/author/{authorId}", module.Handler.GetAuthorStatistics)
 		},
