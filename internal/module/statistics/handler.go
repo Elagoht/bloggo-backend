@@ -146,4 +146,3 @@ func (handler *StatisticsHandler) GetAuthorStatistics(
 
 	json.NewEncoder(writer).Encode(response)
 }
-

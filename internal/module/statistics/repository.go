@@ -257,6 +257,40 @@ func (repository *StatisticsRepository) GetCategoryReadTimeDistribution() ([]mod
 	return categories, nil
 }
 
+func (repository *StatisticsRepository) GetCategoryLengthDistribution() ([]models.CategoryLengthDistribution, error) {
+	rows, err := repository.database.Query(QueryCategoryLengthDistribution)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var totalLength int64
+	categories := make([]models.CategoryLengthDistribution, 0)
+
+	for rows.Next() {
+		var category models.CategoryLengthDistribution
+		err := rows.Scan(&category.CategoryId, &category.CategoryName, &category.TotalLength, &category.AverageLength)
+		if err != nil {
+			return nil, err
+		}
+		totalLength += category.TotalLength
+		categories = append(categories, category)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	// Calculate percentages
+	for i := range categories {
+		if totalLength > 0 {
+			categories[i].Percentage = float64(categories[i].TotalLength) / float64(totalLength) * 100
+		}
+	}
+
+	return categories, nil
+}
+
 func (repository *StatisticsRepository) GetTopUserAgents(limit int) ([]models.UserAgentStat, error) {
 	rows, err := repository.database.Query(QueryTopUserAgents, limit)
 	if err != nil {

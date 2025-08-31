@@ -73,6 +73,12 @@ func (service *StatisticsService) GetAllStatistics(userRoleId int64) (*models.Re
 		return nil, err
 	}
 
+	// Get category length distribution
+	categoryLength, err := service.repository.GetCategoryLengthDistribution()
+	if err != nil {
+		return nil, err
+	}
+
 	// Get top user agents (top 10)
 	topUserAgents, err := service.repository.GetTopUserAgents(10)
 	if err != nil {
@@ -98,18 +104,19 @@ func (service *StatisticsService) GetAllStatistics(userRoleId int64) (*models.Re
 	}
 
 	return &models.ResponseAllStatistics{
-		ViewStats:                    viewStats,
-		Last24Hours:                  last24Hours,
-		CategoryViewsDistribution:    categoryViews,
-		MostViewedBlogs:              mostViewed,
-		BlogStats:                    blogStats,
-		LongestBlogs:                 longestBlogs,
-		CategoryBlogsDistribution:    categoryBlogs,
-		CategoryReadTimeDistribution: categoryReadTime,
-		TopUserAgents:                topUserAgents,
-		DeviceTypeDistribution:       deviceDistribution,
-		OSDistribution:               osDistribution,
-		BrowserDistribution:          browserDistribution,
+		ViewStats:                     viewStats,
+		Last24Hours:                   last24Hours,
+		CategoryViewsDistribution:     categoryViews,
+		MostViewedBlogs:               mostViewed,
+		BlogStats:                     blogStats,
+		LongestBlogs:                  longestBlogs,
+		CategoryBlogsDistribution:     categoryBlogs,
+		CategoryReadTimeDistribution:  categoryReadTime,
+		CategoryLengthDistribution:    categoryLength,
+		TopUserAgents:                 topUserAgents,
+		DeviceTypeDistribution:        deviceDistribution,
+		OSDistribution:                osDistribution,
+		BrowserDistribution:           browserDistribution,
 	}, nil
 }
 
@@ -194,6 +201,12 @@ func (service *StatisticsService) GetAuthorStatistics(authorId int64, userRoleId
 		return nil, err
 	}
 
+	// Get category length distribution (author-specific)
+	categoryLength, err := service.repository.GetCategoryLengthDistribution()
+	if err != nil {
+		return nil, err
+	}
+
 	// Get top user agents (global for now)
 	topUserAgents, err := service.repository.GetTopUserAgents(10)
 	if err != nil {
@@ -219,19 +232,20 @@ func (service *StatisticsService) GetAuthorStatistics(authorId int64, userRoleId
 	}
 
 	return &models.ResponseAuthorStatistics{
-		AuthorStats:                  authorStats,
-		ViewStats:                    viewStats,
-		Last24Hours:                  last24Hours,
-		CategoryViewsDistribution:    categoryViews,
-		MostViewedBlogs:              mostViewed,
-		BlogStats:                    blogStats,
-		LongestBlogs:                 longestBlogs,
-		CategoryBlogsDistribution:    categoryBlogs,
-		CategoryReadTimeDistribution: categoryReadTime,
-		TopUserAgents:                topUserAgents,
-		DeviceTypeDistribution:       deviceDistribution,
-		OSDistribution:               osDistribution,
-		BrowserDistribution:          browserDistribution,
+		AuthorStats:                   authorStats,
+		ViewStats:                     viewStats,
+		Last24Hours:                   last24Hours,
+		CategoryViewsDistribution:     categoryViews,
+		MostViewedBlogs:               mostViewed,
+		BlogStats:                     blogStats,
+		LongestBlogs:                  longestBlogs,
+		CategoryBlogsDistribution:     categoryBlogs,
+		CategoryReadTimeDistribution:  categoryReadTime,
+		CategoryLengthDistribution:    categoryLength,
+		TopUserAgents:                 topUserAgents,
+		DeviceTypeDistribution:        deviceDistribution,
+		OSDistribution:                osDistribution,
+		BrowserDistribution:           browserDistribution,
 	}, nil
 }
 

@@ -57,6 +57,14 @@ type CategoryReadTimeDistribution struct {
 	Percentage       float64 `json:"percentage"`
 }
 
+type CategoryLengthDistribution struct {
+	CategoryId       int64   `json:"category_id"`
+	CategoryName     string  `json:"category_name"`
+	TotalLength      int64   `json:"total_length"`
+	AverageLength    float64 `json:"average_length"`
+	Percentage       float64 `json:"percentage"`
+}
+
 type LongestBlog struct {
 	PostId       int64  `json:"post_id"`
 	Title        string `json:"title"`
@@ -101,32 +109,34 @@ type AuthorStatistics struct {
 }
 
 type ResponseAllStatistics struct {
-	ViewStats                    *ViewStatistics                    `json:"view_statistics"`
-	Last24Hours                  *Last24HoursViews                  `json:"last_24_hours_views"`
-	CategoryViewsDistribution    []CategoryViewDistribution         `json:"category_views_distribution"`
-	MostViewedBlogs              []MostViewedBlog                   `json:"most_viewed_blogs"`
-	BlogStats                    *BlogStatistics                    `json:"blog_statistics"`
-	LongestBlogs                 []LongestBlog                      `json:"longest_blogs"`
-	CategoryBlogsDistribution    []CategoryBlogDistribution         `json:"category_blogs_distribution"`
-	CategoryReadTimeDistribution []CategoryReadTimeDistribution     `json:"category_read_time_distribution"`
-	TopUserAgents                []UserAgentStat                    `json:"top_user_agents"`
-	DeviceTypeDistribution       []DeviceTypeStat                   `json:"device_type_distribution"`
-	OSDistribution               []OSStatistic                      `json:"operating_system_distribution"`
-	BrowserDistribution          []BrowserStat                      `json:"browser_distribution"`
+	ViewStats                     *ViewStatistics                    `json:"view_statistics"`
+	Last24Hours                   *Last24HoursViews                  `json:"last_24_hours_views"`
+	CategoryViewsDistribution     []CategoryViewDistribution         `json:"category_views_distribution"`
+	MostViewedBlogs               []MostViewedBlog                   `json:"most_viewed_blogs"`
+	BlogStats                     *BlogStatistics                    `json:"blog_statistics"`
+	LongestBlogs                  []LongestBlog                      `json:"longest_blogs"`
+	CategoryBlogsDistribution     []CategoryBlogDistribution         `json:"category_blogs_distribution"`
+	CategoryReadTimeDistribution  []CategoryReadTimeDistribution     `json:"category_read_time_distribution"`
+	CategoryLengthDistribution    []CategoryLengthDistribution       `json:"category_length_distribution"`
+	TopUserAgents                 []UserAgentStat                    `json:"top_user_agents"`
+	DeviceTypeDistribution        []DeviceTypeStat                   `json:"device_type_distribution"`
+	OSDistribution                []OSStatistic                      `json:"operating_system_distribution"`
+	BrowserDistribution           []BrowserStat                      `json:"browser_distribution"`
 }
 
 type ResponseAuthorStatistics struct {
-	AuthorStats                  *AuthorStatistics                  `json:"author_statistics"`
-	ViewStats                    *ViewStatistics                    `json:"view_statistics"`
-	Last24Hours                  *Last24HoursViews                  `json:"last_24_hours_views"`
-	CategoryViewsDistribution    []CategoryViewDistribution         `json:"category_views_distribution"`
-	MostViewedBlogs              []MostViewedBlog                   `json:"most_viewed_blogs"`
-	BlogStats                    *BlogStatistics                    `json:"blog_statistics"`
-	LongestBlogs                 []LongestBlog                      `json:"longest_blogs"`
-	CategoryBlogsDistribution    []CategoryBlogDistribution         `json:"category_blogs_distribution"`
-	CategoryReadTimeDistribution []CategoryReadTimeDistribution     `json:"category_read_time_distribution"`
-	TopUserAgents                []UserAgentStat                    `json:"top_user_agents"`
-	DeviceTypeDistribution       []DeviceTypeStat                   `json:"device_type_distribution"`
-	OSDistribution               []OSStatistic                      `json:"operating_system_distribution"`
-	BrowserDistribution          []BrowserStat                      `json:"browser_distribution"`
+	AuthorStats                   *AuthorStatistics                  `json:"author_statistics"`
+	ViewStats                     *ViewStatistics                    `json:"view_statistics"`
+	Last24Hours                   *Last24HoursViews                  `json:"last_24_hours_views"`
+	CategoryViewsDistribution     []CategoryViewDistribution         `json:"category_views_distribution"`
+	MostViewedBlogs               []MostViewedBlog                   `json:"most_viewed_blogs"`
+	BlogStats                     *BlogStatistics                    `json:"blog_statistics"`
+	LongestBlogs                  []LongestBlog                      `json:"longest_blogs"`
+	CategoryBlogsDistribution     []CategoryBlogDistribution         `json:"category_blogs_distribution"`
+	CategoryReadTimeDistribution  []CategoryReadTimeDistribution     `json:"category_read_time_distribution"`
+	CategoryLengthDistribution    []CategoryLengthDistribution       `json:"category_length_distribution"`
+	TopUserAgents                 []UserAgentStat                    `json:"top_user_agents"`
+	DeviceTypeDistribution        []DeviceTypeStat                   `json:"device_type_distribution"`
+	OSDistribution                []OSStatistic                      `json:"operating_system_distribution"`
+	BrowserDistribution           []BrowserStat                      `json:"browser_distribution"`
 }

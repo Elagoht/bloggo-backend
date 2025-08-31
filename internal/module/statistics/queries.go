@@ -196,6 +196,24 @@ const (
 	GROUP BY c.id, c.name
 	ORDER BY total_read_time DESC`
 
+	// Category Length Distribution
+	QueryCategoryLengthDistribution = `
+	SELECT
+	c.id as category_id,
+		c.name as category_name,
+		COALESCE(SUM(LENGTH(ver.content)), 0) as total_length,
+		COALESCE(AVG(CAST(LENGTH(ver.content) AS REAL)), 0) as average_length
+	FROM categories c
+	LEFT JOIN post_versions ver ON ver.category_id = c.id
+	LEFT JOIN posts p ON p.current_version_id = ver.id
+	WHERE c.deleted_at IS NULL
+	AND (p.deleted_at IS NULL OR p.deleted_at IS NULL)
+	AND (ver.deleted_at IS NULL OR ver.deleted_at IS NULL)
+	AND ver.status = 5
+	AND ver.content IS NOT NULL
+	GROUP BY c.id, c.name
+	ORDER BY total_length DESC`
+
 	// User Agent Statistics
 	QueryTopUserAgents = `
 	SELECT
