@@ -75,6 +75,34 @@ func (handler *StatisticsHandler) GetAllStatistics(
 	}
 }
 
+func (handler *StatisticsHandler) GetUserOwnStatistics(
+	writer http.ResponseWriter,
+	request *http.Request,
+) {
+	roleId, ok := handlers.GetContextValue[int64](writer, request, handlers.TokenRoleId)
+	if !ok {
+		return
+	}
+
+	userId, ok := handlers.GetContextValue[int64](writer, request, handlers.TokenUserId)
+	if !ok {
+		return
+	}
+
+	response, err := handler.service.GetUserOwnStatistics(roleId, userId)
+	if err != nil {
+		apierrors.MapErrors(err, writer, apierrors.HTTPErrorMapping{
+			apierrors.ErrForbidden: {
+				Message: "You need permission to view your own statistics.",
+				Status:  http.StatusForbidden,
+			},
+		})
+		return
+	}
+
+	json.NewEncoder(writer).Encode(response)
+}
+
 func (handler *StatisticsHandler) GetAuthorStatistics(
 	writer http.ResponseWriter,
 	request *http.Request,
@@ -119,302 +147,3 @@ func (handler *StatisticsHandler) GetAuthorStatistics(
 	json.NewEncoder(writer).Encode(response)
 }
 
-func (handler *StatisticsHandler) GetViewStatistics(
-	writer http.ResponseWriter,
-	request *http.Request,
-) {
-	roleId, ok := handlers.GetContextValue[int64](writer, request, handlers.TokenRoleId)
-	if !ok {
-		return
-	}
-
-	response, err := handler.service.GetViewStatistics(roleId)
-	if err != nil {
-		apierrors.MapErrors(err, writer, apierrors.HTTPErrorMapping{
-			apierrors.ErrForbidden: {
-				Message: "You need permissions to view statistics.",
-				Status:  http.StatusForbidden,
-			},
-		})
-		return
-	}
-
-	json.NewEncoder(writer).Encode(response)
-}
-
-func (handler *StatisticsHandler) GetLast24HoursViews(
-	writer http.ResponseWriter,
-	request *http.Request,
-) {
-	roleId, ok := handlers.GetContextValue[int64](writer, request, handlers.TokenRoleId)
-	if !ok {
-		return
-	}
-
-	response, err := handler.service.GetLast24HoursViews(roleId)
-	if err != nil {
-		apierrors.MapErrors(err, writer, apierrors.HTTPErrorMapping{
-			apierrors.ErrForbidden: {
-				Message: "You need permissions to view statistics.",
-				Status:  http.StatusForbidden,
-			},
-		})
-		return
-	}
-
-	json.NewEncoder(writer).Encode(response)
-}
-
-func (handler *StatisticsHandler) GetCategoryViewsDistribution(
-	writer http.ResponseWriter,
-	request *http.Request,
-) {
-	roleId, ok := handlers.GetContextValue[int64](writer, request, handlers.TokenRoleId)
-	if !ok {
-		return
-	}
-
-	response, err := handler.service.GetCategoryViewsDistribution(roleId)
-	if err != nil {
-		apierrors.MapErrors(err, writer, apierrors.HTTPErrorMapping{
-			apierrors.ErrForbidden: {
-				Message: "You need permissions to view statistics.",
-				Status:  http.StatusForbidden,
-			},
-		})
-		return
-	}
-
-	json.NewEncoder(writer).Encode(response)
-}
-
-func (handler *StatisticsHandler) GetMostViewedBlogs(
-	writer http.ResponseWriter,
-	request *http.Request,
-) {
-	roleId, ok := handlers.GetContextValue[int64](writer, request, handlers.TokenRoleId)
-	if !ok {
-		return
-	}
-
-	// Get limit from query parameter
-	limit := 12 // default
-	if limitStr := request.URL.Query().Get("limit"); limitStr != "" {
-		if parsedLimit, err := strconv.Atoi(limitStr); err == nil {
-			limit = parsedLimit
-		}
-	}
-
-	response, err := handler.service.GetMostViewedBlogs(limit, roleId)
-	if err != nil {
-		apierrors.MapErrors(err, writer, apierrors.HTTPErrorMapping{
-			apierrors.ErrForbidden: {
-				Message: "You need permissions to view statistics.",
-				Status:  http.StatusForbidden,
-			},
-		})
-		return
-	}
-
-	json.NewEncoder(writer).Encode(response)
-}
-
-func (handler *StatisticsHandler) GetBlogStatistics(
-	writer http.ResponseWriter,
-	request *http.Request,
-) {
-	roleId, ok := handlers.GetContextValue[int64](writer, request, handlers.TokenRoleId)
-	if !ok {
-		return
-	}
-
-	response, err := handler.service.GetBlogStatistics(roleId)
-	if err != nil {
-		apierrors.MapErrors(err, writer, apierrors.HTTPErrorMapping{
-			apierrors.ErrForbidden: {
-				Message: "You need permissions to view statistics.",
-				Status:  http.StatusForbidden,
-			},
-		})
-		return
-	}
-
-	json.NewEncoder(writer).Encode(response)
-}
-
-func (handler *StatisticsHandler) GetLongestBlogs(
-	writer http.ResponseWriter,
-	request *http.Request,
-) {
-	roleId, ok := handlers.GetContextValue[int64](writer, request, handlers.TokenRoleId)
-	if !ok {
-		return
-	}
-
-	// Get limit from query parameter
-	limit := 12 // default
-	if limitStr := request.URL.Query().Get("limit"); limitStr != "" {
-		if parsedLimit, err := strconv.Atoi(limitStr); err == nil {
-			limit = parsedLimit
-		}
-	}
-
-	response, err := handler.service.GetLongestBlogs(limit, roleId)
-	if err != nil {
-		apierrors.MapErrors(err, writer, apierrors.HTTPErrorMapping{
-			apierrors.ErrForbidden: {
-				Message: "You need permissions to view statistics.",
-				Status:  http.StatusForbidden,
-			},
-		})
-		return
-	}
-
-	json.NewEncoder(writer).Encode(response)
-}
-
-func (handler *StatisticsHandler) GetCategoryBlogDistribution(
-	writer http.ResponseWriter,
-	request *http.Request,
-) {
-	roleId, ok := handlers.GetContextValue[int64](writer, request, handlers.TokenRoleId)
-	if !ok {
-		return
-	}
-
-	response, err := handler.service.GetCategoryBlogDistribution(roleId)
-	if err != nil {
-		apierrors.MapErrors(err, writer, apierrors.HTTPErrorMapping{
-			apierrors.ErrForbidden: {
-				Message: "You need permissions to view statistics.",
-				Status:  http.StatusForbidden,
-			},
-		})
-		return
-	}
-
-	json.NewEncoder(writer).Encode(response)
-}
-
-func (handler *StatisticsHandler) GetCategoryReadTimeDistribution(
-	writer http.ResponseWriter,
-	request *http.Request,
-) {
-	roleId, ok := handlers.GetContextValue[int64](writer, request, handlers.TokenRoleId)
-	if !ok {
-		return
-	}
-
-	response, err := handler.service.GetCategoryReadTimeDistribution(roleId)
-	if err != nil {
-		apierrors.MapErrors(err, writer, apierrors.HTTPErrorMapping{
-			apierrors.ErrForbidden: {
-				Message: "You need permissions to view statistics.",
-				Status:  http.StatusForbidden,
-			},
-		})
-		return
-	}
-
-	json.NewEncoder(writer).Encode(response)
-}
-
-func (handler *StatisticsHandler) GetTopUserAgents(
-	writer http.ResponseWriter,
-	request *http.Request,
-) {
-	roleId, ok := handlers.GetContextValue[int64](writer, request, handlers.TokenRoleId)
-	if !ok {
-		return
-	}
-
-	// Get limit from query parameter
-	limit := 12 // default
-	if limitStr := request.URL.Query().Get("limit"); limitStr != "" {
-		if parsedLimit, err := strconv.Atoi(limitStr); err == nil {
-			limit = parsedLimit
-		}
-	}
-
-	response, err := handler.service.GetTopUserAgents(limit, roleId)
-	if err != nil {
-		apierrors.MapErrors(err, writer, apierrors.HTTPErrorMapping{
-			apierrors.ErrForbidden: {
-				Message: "You need permissions to view statistics.",
-				Status:  http.StatusForbidden,
-			},
-		})
-		return
-	}
-
-	json.NewEncoder(writer).Encode(response)
-}
-
-func (handler *StatisticsHandler) GetDeviceTypeDistribution(
-	writer http.ResponseWriter,
-	request *http.Request,
-) {
-	roleId, ok := handlers.GetContextValue[int64](writer, request, handlers.TokenRoleId)
-	if !ok {
-		return
-	}
-
-	response, err := handler.service.GetDeviceTypeDistribution(roleId)
-	if err != nil {
-		apierrors.MapErrors(err, writer, apierrors.HTTPErrorMapping{
-			apierrors.ErrForbidden: {
-				Message: "You need permissions to view statistics.",
-				Status:  http.StatusForbidden,
-			},
-		})
-		return
-	}
-
-	json.NewEncoder(writer).Encode(response)
-}
-
-func (handler *StatisticsHandler) GetOSDistribution(
-	writer http.ResponseWriter,
-	request *http.Request,
-) {
-	roleId, ok := handlers.GetContextValue[int64](writer, request, handlers.TokenRoleId)
-	if !ok {
-		return
-	}
-
-	response, err := handler.service.GetOSDistribution(roleId)
-	if err != nil {
-		apierrors.MapErrors(err, writer, apierrors.HTTPErrorMapping{
-			apierrors.ErrForbidden: {
-				Message: "You need permissions to view statistics.",
-				Status:  http.StatusForbidden,
-			},
-		})
-		return
-	}
-
-	json.NewEncoder(writer).Encode(response)
-}
-
-func (handler *StatisticsHandler) GetBrowserDistribution(
-	writer http.ResponseWriter,
-	request *http.Request,
-) {
-	roleId, ok := handlers.GetContextValue[int64](writer, request, handlers.TokenRoleId)
-	if !ok {
-		return
-	}
-
-	response, err := handler.service.GetBrowserDistribution(roleId)
-	if err != nil {
-		apierrors.MapErrors(err, writer, apierrors.HTTPErrorMapping{
-			apierrors.ErrForbidden: {
-				Message: "You need permissions to view statistics.",
-				Status:  http.StatusForbidden,
-			},
-		})
-		return
-	}
-
-	json.NewEncoder(writer).Encode(response)
-}

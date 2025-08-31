@@ -99,7 +99,7 @@ func MapErrors(
 		case sqlite3.ErrNotFound:
 			item = (*DefaultErrorMapping)[ErrNotFound]
 		case sqlite3.ErrError:
-			item = (*DefaultErrorMapping)[ErrBadRequest]
+			item = (*DefaultErrorMapping)[ErrInternalServer]
 		default:
 			// Re-set as false if not matched
 			found = false

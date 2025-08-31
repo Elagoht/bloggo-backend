@@ -19,8 +19,7 @@ func NewStatisticsService(repository StatisticsRepository, permissions permissio
 }
 
 func (service *StatisticsService) GetAllStatistics(userRoleId int64) (*models.ResponseAllStatistics, error) {
-	// Everyone can view all statistics now
-	hasViewAllPermission := service.permissions.HasPermission(userRoleId, "statistics:view-all")
+	hasViewAllPermission := service.permissions.HasPermission(userRoleId, "statistics:view-total")
 
 	if !hasViewAllPermission {
 		return nil, apierrors.ErrForbidden
@@ -114,6 +113,15 @@ func (service *StatisticsService) GetAllStatistics(userRoleId int64) (*models.Re
 	}, nil
 }
 
+func (service *StatisticsService) GetUserOwnStatistics(userRoleId int64, userId int64) (*models.ResponseAuthorStatistics, error) {
+	hasViewSelfPermission := service.permissions.HasPermission(userRoleId, "statistics:view-self")
+	if !hasViewSelfPermission {
+		return nil, apierrors.ErrForbidden
+	}
+
+	return service.GetAuthorStatistics(userId, userRoleId, userId)
+}
+
 func (service *StatisticsService) GetAuthorStatistics(authorId int64, userRoleId int64, requestingUserId int64) (*models.ResponseAuthorStatistics, error) {
 	// Check if requesting own statistics
 	isOwnStats := requestingUserId == authorId
@@ -125,9 +133,9 @@ func (service *StatisticsService) GetAuthorStatistics(authorId int64, userRoleId
 			return nil, apierrors.ErrForbidden
 		}
 	} else {
-		// If viewing another user's stats, need statistics:view-all permission
-		hasViewAllPermission := service.permissions.HasPermission(userRoleId, "statistics:view-all")
-		if !hasViewAllPermission {
+		// If viewing another user's stats, need statistics:view-others permission
+		hasViewOthersPermission := service.permissions.HasPermission(userRoleId, "statistics:view-others")
+		if !hasViewOthersPermission {
 			return nil, apierrors.ErrForbidden
 		}
 	}
@@ -227,146 +235,3 @@ func (service *StatisticsService) GetAuthorStatistics(authorId int64, userRoleId
 	}, nil
 }
 
-func (service *StatisticsService) GetViewStatistics(userRoleId int64) (*models.ViewStatistics, error) {
-	// Everyone can view all statistics now
-	hasViewAllPermission := service.permissions.HasPermission(userRoleId, "statistics:view-all")
-
-	if !hasViewAllPermission {
-		return nil, apierrors.ErrForbidden
-	}
-
-	return service.repository.GetViewStatistics()
-}
-
-func (service *StatisticsService) GetLast24HoursViews(userRoleId int64) (*models.Last24HoursViews, error) {
-	// Everyone can view all statistics now
-	hasViewAllPermission := service.permissions.HasPermission(userRoleId, "statistics:view-all")
-
-	if !hasViewAllPermission {
-		return nil, apierrors.ErrForbidden
-	}
-
-	return service.repository.GetLast24HoursViews()
-}
-
-func (service *StatisticsService) GetCategoryViewsDistribution(userRoleId int64) ([]models.CategoryViewDistribution, error) {
-	// Everyone can view all statistics now
-	hasViewAllPermission := service.permissions.HasPermission(userRoleId, "statistics:view-all")
-
-	if !hasViewAllPermission {
-		return nil, apierrors.ErrForbidden
-	}
-
-	return service.repository.GetCategoryViewsDistribution()
-}
-
-func (service *StatisticsService) GetMostViewedBlogs(limit int, userRoleId int64) ([]models.MostViewedBlog, error) {
-	// Everyone can view all statistics now
-	hasViewAllPermission := service.permissions.HasPermission(userRoleId, "statistics:view-all")
-
-	if !hasViewAllPermission {
-		return nil, apierrors.ErrForbidden
-	}
-
-	if limit <= 0 || limit > 100 {
-		limit = 10 // Default limit
-	}
-
-	return service.repository.GetMostViewedBlogs(limit)
-}
-
-func (service *StatisticsService) GetBlogStatistics(userRoleId int64) (*models.BlogStatistics, error) {
-	// Everyone can view all statistics now
-	hasViewAllPermission := service.permissions.HasPermission(userRoleId, "statistics:view-all")
-
-	if !hasViewAllPermission {
-		return nil, apierrors.ErrForbidden
-	}
-
-	return service.repository.GetBlogStatistics()
-}
-
-func (service *StatisticsService) GetLongestBlogs(limit int, userRoleId int64) ([]models.LongestBlog, error) {
-	// Everyone can view all statistics now
-	hasViewAllPermission := service.permissions.HasPermission(userRoleId, "statistics:view-all")
-
-	if !hasViewAllPermission {
-		return nil, apierrors.ErrForbidden
-	}
-
-	if limit <= 0 || limit > 100 {
-		limit = 10 // Default limit
-	}
-
-	return service.repository.GetLongestBlogs(limit)
-}
-
-func (service *StatisticsService) GetCategoryBlogDistribution(userRoleId int64) ([]models.CategoryBlogDistribution, error) {
-	// Everyone can view all statistics now
-	hasViewAllPermission := service.permissions.HasPermission(userRoleId, "statistics:view-all")
-
-	if !hasViewAllPermission {
-		return nil, apierrors.ErrForbidden
-	}
-
-	return service.repository.GetCategoryBlogDistribution()
-}
-
-func (service *StatisticsService) GetCategoryReadTimeDistribution(userRoleId int64) ([]models.CategoryReadTimeDistribution, error) {
-	// Everyone can view all statistics now
-	hasViewAllPermission := service.permissions.HasPermission(userRoleId, "statistics:view-all")
-
-	if !hasViewAllPermission {
-		return nil, apierrors.ErrForbidden
-	}
-
-	return service.repository.GetCategoryReadTimeDistribution()
-}
-
-func (service *StatisticsService) GetTopUserAgents(limit int, userRoleId int64) ([]models.UserAgentStat, error) {
-	// Everyone can view all statistics now
-	hasViewAllPermission := service.permissions.HasPermission(userRoleId, "statistics:view-all")
-
-	if !hasViewAllPermission {
-		return nil, apierrors.ErrForbidden
-	}
-
-	if limit <= 0 || limit > 100 {
-		limit = 10 // Default limit
-	}
-
-	return service.repository.GetTopUserAgents(limit)
-}
-
-func (service *StatisticsService) GetDeviceTypeDistribution(userRoleId int64) ([]models.DeviceTypeStat, error) {
-	// Everyone can view all statistics now
-	hasViewAllPermission := service.permissions.HasPermission(userRoleId, "statistics:view-all")
-
-	if !hasViewAllPermission {
-		return nil, apierrors.ErrForbidden
-	}
-
-	return service.repository.GetDeviceTypeDistribution()
-}
-
-func (service *StatisticsService) GetOSDistribution(userRoleId int64) ([]models.OSStatistic, error) {
-	// Everyone can view all statistics now
-	hasViewAllPermission := service.permissions.HasPermission(userRoleId, "statistics:view-all")
-
-	if !hasViewAllPermission {
-		return nil, apierrors.ErrForbidden
-	}
-
-	return service.repository.GetOSDistribution()
-}
-
-func (service *StatisticsService) GetBrowserDistribution(userRoleId int64) ([]models.BrowserStat, error) {
-	// Everyone can view all statistics now
-	hasViewAllPermission := service.permissions.HasPermission(userRoleId, "statistics:view-all")
-
-	if !hasViewAllPermission {
-		return nil, apierrors.ErrForbidden
-	}
-
-	return service.repository.GetBrowserDistribution()
-}

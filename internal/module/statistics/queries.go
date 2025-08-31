@@ -263,7 +263,7 @@ const (
 		)
 		AND (
 			ver.deleted_at IS NULL
-			OR ver.deleted_at IS NUL
+			OR ver.deleted_at IS NULL
 		)
 		AND ver.status = 5
 	GROUP BY c.id, c.name

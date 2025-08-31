@@ -35,22 +35,14 @@ func (module StatisticsModule) RegisterModule(router *chi.Mux) {
 	router.With(middleware.AuthMiddleware(&config)).Route(
 		"/statistics",
 		func(router chi.Router) {
-			// All statistics endpoint (supports optional ?userId=X query parameter)
+			// All statistics endpoint (for users with statistics:view-total permission)
 			router.Get("/", module.Handler.GetAllStatistics)
-
-			// Individual statistics endpoints
-			router.Get("/views", module.Handler.GetViewStatistics)
-			router.Get("/views/last-24-hours", module.Handler.GetLast24HoursViews)
-			router.Get("/blogs", module.Handler.GetBlogStatistics)
-			router.Get("/blogs/most-viewed", module.Handler.GetMostViewedBlogs)
-			router.Get("/blogs/longest", module.Handler.GetLongestBlogs)
-			router.Get("/categories/views", module.Handler.GetCategoryViewsDistribution)
-			router.Get("/categories/blogs", module.Handler.GetCategoryBlogDistribution)
-			router.Get("/categories/read-time", module.Handler.GetCategoryReadTimeDistribution)
-			router.Get("/user-agents", module.Handler.GetTopUserAgents)
-			router.Get("/device-types", module.Handler.GetDeviceTypeDistribution)
-			router.Get("/operating-systems", module.Handler.GetOSDistribution)
-			router.Get("/browsers", module.Handler.GetBrowserDistribution)
+			
+			// User own statistics endpoint (for users with statistics:view-self permission)
+			router.Get("/me", module.Handler.GetUserOwnStatistics)
+			
+			// Author statistics endpoint (for users with statistics:view-others permission)
+			router.Get("/author/{authorId}", module.Handler.GetAuthorStatistics)
 		},
 	)
 }
