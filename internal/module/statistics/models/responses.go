@@ -17,6 +17,24 @@ type Last24HoursViews struct {
 	Hours []HourlyViewCount `json:"hours"`
 }
 
+type DailyViewCount struct {
+	Day       int   `json:"day"`
+	ViewCount int64 `json:"view_count"`
+}
+
+type LastMonthViews struct {
+	Days []DailyViewCount `json:"days"`
+}
+
+type MonthlyViewCount struct {
+	Month     int   `json:"month"`
+	ViewCount int64 `json:"view_count"`
+}
+
+type LastYearViews struct {
+	Months []MonthlyViewCount `json:"months"`
+}
+
 type CategoryViewDistribution struct {
 	CategoryId   int64  `json:"category_id"`
 	CategoryName string `json:"category_name"`
@@ -111,6 +129,8 @@ type AuthorStatistics struct {
 type ResponseAllStatistics struct {
 	ViewStats                     *ViewStatistics                    `json:"view_statistics"`
 	Last24Hours                   *Last24HoursViews                  `json:"last_24_hours_views"`
+	LastMonth                     *LastMonthViews                    `json:"last_month_views"`
+	LastYear                      *LastYearViews                     `json:"last_year_views"`
 	CategoryViewsDistribution     []CategoryViewDistribution         `json:"category_views_distribution"`
 	MostViewedBlogs               []MostViewedBlog                   `json:"most_viewed_blogs"`
 	BlogStats                     *BlogStatistics                    `json:"blog_statistics"`
@@ -128,6 +148,8 @@ type ResponseAuthorStatistics struct {
 	AuthorStats                   *AuthorStatistics                  `json:"author_statistics"`
 	ViewStats                     *ViewStatistics                    `json:"view_statistics"`
 	Last24Hours                   *Last24HoursViews                  `json:"last_24_hours_views"`
+	LastMonth                     *LastMonthViews                    `json:"last_month_views"`
+	LastYear                      *LastYearViews                     `json:"last_year_views"`
 	CategoryViewsDistribution     []CategoryViewDistribution         `json:"category_views_distribution"`
 	MostViewedBlogs               []MostViewedBlog                   `json:"most_viewed_blogs"`
 	BlogStats                     *BlogStatistics                    `json:"blog_statistics"`

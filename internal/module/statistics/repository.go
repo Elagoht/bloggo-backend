@@ -71,6 +71,54 @@ func (repository *StatisticsRepository) GetLast24HoursViews() (*models.Last24Hou
 	return &models.Last24HoursViews{Hours: hours}, nil
 }
 
+func (repository *StatisticsRepository) GetLastMonthViews() (*models.LastMonthViews, error) {
+	rows, err := repository.database.Query(QueryLastMonthViews)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	days := make([]models.DailyViewCount, 0)
+	for rows.Next() {
+		var day models.DailyViewCount
+		err := rows.Scan(&day.Day, &day.ViewCount)
+		if err != nil {
+			return nil, err
+		}
+		days = append(days, day)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return &models.LastMonthViews{Days: days}, nil
+}
+
+func (repository *StatisticsRepository) GetLastYearViews() (*models.LastYearViews, error) {
+	rows, err := repository.database.Query(QueryLastYearViews)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	months := make([]models.MonthlyViewCount, 0)
+	for rows.Next() {
+		var month models.MonthlyViewCount
+		err := rows.Scan(&month.Month, &month.ViewCount)
+		if err != nil {
+			return nil, err
+		}
+		months = append(months, month)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return &models.LastYearViews{Months: months}, nil
+}
+
 func (repository *StatisticsRepository) GetCategoryViewsDistribution() ([]models.CategoryViewDistribution, error) {
 	rows, err := repository.database.Query(QueryCategoryViewsDistribution)
 	if err != nil {
@@ -629,6 +677,54 @@ func (repository *StatisticsRepository) GetAuthorLast24HoursViews(authorId int64
 	}
 
 	return &models.Last24HoursViews{Hours: hours}, nil
+}
+
+func (repository *StatisticsRepository) GetAuthorLastMonthViews(authorId int64) (*models.LastMonthViews, error) {
+	rows, err := repository.database.Query(QueryAuthorLastMonthViews, authorId)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	days := make([]models.DailyViewCount, 0)
+	for rows.Next() {
+		var day models.DailyViewCount
+		err := rows.Scan(&day.Day, &day.ViewCount)
+		if err != nil {
+			return nil, err
+		}
+		days = append(days, day)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return &models.LastMonthViews{Days: days}, nil
+}
+
+func (repository *StatisticsRepository) GetAuthorLastYearViews(authorId int64) (*models.LastYearViews, error) {
+	rows, err := repository.database.Query(QueryAuthorLastYearViews, authorId)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	months := make([]models.MonthlyViewCount, 0)
+	for rows.Next() {
+		var month models.MonthlyViewCount
+		err := rows.Scan(&month.Month, &month.ViewCount)
+		if err != nil {
+			return nil, err
+		}
+		months = append(months, month)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return &models.LastYearViews{Months: months}, nil
 }
 
 func (repository *StatisticsRepository) GetAuthorCategoryBlogDistribution(authorId int64) ([]models.CategoryBlogDistribution, error) {

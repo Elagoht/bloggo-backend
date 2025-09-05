@@ -37,6 +37,18 @@ func (service *StatisticsService) GetAllStatistics(userRoleId int64) (*models.Re
 		return nil, err
 	}
 
+	// Get last month views
+	lastMonth, err := service.repository.GetLastMonthViews()
+	if err != nil {
+		return nil, err
+	}
+
+	// Get last year views
+	lastYear, err := service.repository.GetLastYearViews()
+	if err != nil {
+		return nil, err
+	}
+
 	// Get category views distribution
 	categoryViews, err := service.repository.GetCategoryViewsDistribution()
 	if err != nil {
@@ -106,6 +118,8 @@ func (service *StatisticsService) GetAllStatistics(userRoleId int64) (*models.Re
 	return &models.ResponseAllStatistics{
 		ViewStats:                     viewStats,
 		Last24Hours:                   last24Hours,
+		LastMonth:                     lastMonth,
+		LastYear:                      lastYear,
 		CategoryViewsDistribution:     categoryViews,
 		MostViewedBlogs:               mostViewed,
 		BlogStats:                     blogStats,
@@ -161,6 +175,18 @@ func (service *StatisticsService) GetAuthorStatistics(authorId int64, userRoleId
 
 	// Get last 24 hours views for this author
 	last24Hours, err := service.repository.GetAuthorLast24HoursViews(authorId)
+	if err != nil {
+		return nil, err
+	}
+
+	// Get last month views for this author
+	lastMonth, err := service.repository.GetAuthorLastMonthViews(authorId)
+	if err != nil {
+		return nil, err
+	}
+
+	// Get last year views for this author
+	lastYear, err := service.repository.GetAuthorLastYearViews(authorId)
 	if err != nil {
 		return nil, err
 	}
@@ -235,6 +261,8 @@ func (service *StatisticsService) GetAuthorStatistics(authorId int64, userRoleId
 		AuthorStats:                   authorStats,
 		ViewStats:                     viewStats,
 		Last24Hours:                   last24Hours,
+		LastMonth:                     lastMonth,
+		LastYear:                      lastYear,
 		CategoryViewsDistribution:     categoryViews,
 		MostViewedBlogs:               mostViewed,
 		BlogStats:                     blogStats,

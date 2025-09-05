@@ -47,7 +47,29 @@ const (
 	AND p.deleted_at IS NULL
 	GROUP BY hour
 	ORDER BY hour`
-
+	// Last Month Views by Day
+	QueryLastMonthViews = `
+	SELECT
+		CAST(strftime('%d', pv.viewed_at) AS INTEGER) as day,
+		COUNT(*) as view_count
+	FROM post_views pv
+	JOIN posts p ON pv.post_id = p.id
+	WHERE DATE(pv.viewed_at) >= DATE('now', 'start of month', '-1 month')
+	AND DATE(pv.viewed_at) < DATE('now', 'start of month')
+	AND p.deleted_at IS NULL
+	GROUP BY day
+	ORDER BY day`
+	// Last 12 Months Views by Month
+	QueryLastYearViews = `
+	SELECT
+		CAST(strftime('%m', pv.viewed_at) AS INTEGER) as month,
+		COUNT(*) as view_count
+	FROM post_views pv
+	JOIN posts p ON pv.post_id = p.id
+	WHERE pv.viewed_at >= datetime('now', '-12 months')
+	AND p.deleted_at IS NULL
+	GROUP BY month
+	ORDER BY month`
 	// Category Views Distribution
 	QueryCategoryViewsDistribution = `
 	SELECT
@@ -404,6 +426,35 @@ const (
 		AND ver.created_by = ?
 	GROUP BY hour
 	ORDER BY hour`
+
+	// Author-specific Last Month Views by Day
+	QueryAuthorLastMonthViews = `
+	SELECT
+		CAST(strftime('%d', pv.viewed_at) AS INTEGER) as day,
+		COUNT(*) as view_count
+	FROM post_views pv
+	JOIN posts p ON pv.post_id = p.id
+	JOIN post_versions ver ON p.current_version_id = ver.id
+	WHERE DATE(pv.viewed_at) >= DATE('now', 'start of month', '-1 month')
+		AND DATE(pv.viewed_at) < DATE('now', 'start of month')
+		AND p.deleted_at IS NULL
+		AND ver.created_by = ?
+	GROUP BY day
+	ORDER BY day`
+
+	// Author-specific Last 12 Months Views by Month
+	QueryAuthorLastYearViews = `
+	SELECT
+		CAST(strftime('%m', pv.viewed_at) AS INTEGER) as month,
+		COUNT(*) as view_count
+	FROM post_views pv
+	JOIN posts p ON pv.post_id = p.id
+	JOIN post_versions ver ON p.current_version_id = ver.id
+	WHERE pv.viewed_at >= datetime('now', '-12 months')
+		AND p.deleted_at IS NULL
+		AND ver.created_by = ?
+	GROUP BY month
+	ORDER BY month`
 
 	// Author-specific Category Blog Distribution
 	QueryAuthorCategoryBlogDistribution = `
