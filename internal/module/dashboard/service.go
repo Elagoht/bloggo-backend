@@ -28,8 +28,9 @@ func (service *DashboardService) GetDashboardStats(userRoleId int64) (*models.Re
 	hasTagList := service.permissions.HasPermission(userRoleId, "tag:list")
 	hasTagView := service.permissions.HasPermission(userRoleId, "tag:view")
 	hasPostCreate := service.permissions.HasPermission(userRoleId, "post:create")
+	hasAuditlogView := service.permissions.HasPermission(userRoleId, "auditlog:view")
 
-	if !hasPostPublish && !hasStatsViewOthers && !hasStatsViewTotal && !hasStatsViewSelf && !hasUserList && !hasTagList && !hasTagView && !hasPostCreate {
+	if !hasPostPublish && !hasStatsViewOthers && !hasStatsViewTotal && !hasStatsViewSelf && !hasUserList && !hasTagList && !hasTagView && !hasPostCreate && !hasAuditlogView {
 		return nil, apierrors.ErrForbidden
 	}
 
@@ -47,8 +48,8 @@ func (service *DashboardService) GetDashboardStats(userRoleId int64) (*models.Re
 		filteredStats.PendingVersions = stats.PendingVersions
 	}
 
-	// Recent activity - for users with statistics permissions
-	if hasStatsViewOthers || hasStatsViewTotal || hasStatsViewSelf {
+	// Recent activity - for users with auditlog:view permission
+	if hasAuditlogView {
 		filteredStats.RecentActivity = stats.RecentActivity
 	}
 
