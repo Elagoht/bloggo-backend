@@ -27,6 +27,7 @@ type LastMonthViews struct {
 }
 
 type MonthlyViewCount struct {
+	Year      int   `json:"year"`
 	Month     int   `json:"month"`
 	ViewCount int64 `json:"view_count"`
 }

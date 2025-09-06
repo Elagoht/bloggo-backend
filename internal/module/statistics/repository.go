@@ -105,7 +105,7 @@ func (repository *StatisticsRepository) GetLastYearViews() (*models.LastYearView
 	months := make([]models.MonthlyViewCount, 0)
 	for rows.Next() {
 		var month models.MonthlyViewCount
-		err := rows.Scan(&month.Month, &month.ViewCount)
+		err := rows.Scan(&month.Year, &month.Month, &month.ViewCount)
 		if err != nil {
 			return nil, err
 		}
@@ -713,7 +713,7 @@ func (repository *StatisticsRepository) GetAuthorLastYearViews(authorId int64) (
 	months := make([]models.MonthlyViewCount, 0)
 	for rows.Next() {
 		var month models.MonthlyViewCount
-		err := rows.Scan(&month.Month, &month.ViewCount)
+		err := rows.Scan(&month.Year, &month.Month, &month.ViewCount)
 		if err != nil {
 			return nil, err
 		}
