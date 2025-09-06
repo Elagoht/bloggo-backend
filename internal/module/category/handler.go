@@ -29,12 +29,17 @@ func (handler *CategoryHandler) CategoryCreate(
 		return
 	}
 
+	userId, ok := handlers.GetContextValue[int64](writer, request, handlers.TokenUserId)
+	if !ok {
+		return
+	}
+
 	body, ok := handlers.BindAndValidate[models.RequestCategoryCreate](writer, request)
 	if !ok {
 		return
 	}
 
-	response, err := handler.service.CategoryCreate(&body, roleId)
+	response, err := handler.service.CategoryCreate(&body, roleId, userId)
 	if err != nil {
 		apierrors.MapErrors(err, writer, apierrors.HTTPErrorMapping{
 			apierrors.ErrForbidden: {
@@ -114,6 +119,11 @@ func (handler *CategoryHandler) CategoryUpdate(
 		return
 	}
 
+	userId, ok := handlers.GetContextValue[int64](writer, request, handlers.TokenUserId)
+	if !ok {
+		return
+	}
+
 	slug, ok := handlers.GetParam[string](writer, request, "slug")
 	if !ok {
 		return
@@ -124,7 +134,7 @@ func (handler *CategoryHandler) CategoryUpdate(
 		return
 	}
 
-	err := handler.service.CategoryUpdate(slug, &body, roleId)
+	err := handler.service.CategoryUpdate(slug, &body, roleId, userId)
 	if err != nil {
 		apierrors.MapErrors(err, writer, apierrors.HTTPErrorMapping{
 			apierrors.ErrForbidden: {
@@ -147,12 +157,17 @@ func (handler *CategoryHandler) CategoryDelete(
 		return
 	}
 
+	userId, ok := handlers.GetContextValue[int64](writer, request, handlers.TokenUserId)
+	if !ok {
+		return
+	}
+
 	slug, ok := handlers.GetParam[string](writer, request, "slug")
 	if !ok {
 		return
 	}
 
-	err := handler.service.CategoryDelete(slug, roleId)
+	err := handler.service.CategoryDelete(slug, roleId, userId)
 	if err != nil {
 		apierrors.MapErrors(err, writer, apierrors.HTTPErrorMapping{
 			apierrors.ErrForbidden: {

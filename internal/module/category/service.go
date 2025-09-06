@@ -5,6 +5,7 @@ import (
 	"bloggo/internal/module/ai"
 	"bloggo/internal/module/category/models"
 	"bloggo/internal/utils/apierrors"
+	"bloggo/internal/utils/audit"
 	"bloggo/internal/utils/filter"
 	"bloggo/internal/utils/pagination"
 	"bloggo/internal/utils/schemas/responses"
@@ -27,6 +28,7 @@ func NewCategoryService(repository CategoryRepository, permissions permissions.S
 func (service *CategoryService) CategoryCreate(
 	model *models.RequestCategoryCreate,
 	userRoleId int64,
+	userId int64,
 ) (*responses.ResponseCreated, error) {
 	// Check if user has permission to create categories
 	hasPermission := service.permissions.HasPermission(userRoleId, "category:create")
@@ -40,6 +42,9 @@ func (service *CategoryService) CategoryCreate(
 	if err != nil {
 		return nil, err
 	}
+
+	// Log the action
+	audit.LogAction(&userId, "category", id, "created")
 
 	return &responses.ResponseCreated{
 		Id: id,
@@ -95,6 +100,7 @@ func (service *CategoryService) CategoryUpdate(
 	slug string,
 	model *models.RequestCategoryUpdate,
 	userRoleId int64,
+	userId int64,
 ) error {
 	// Check if user has permission to update categories
 	hasPermission := service.permissions.HasPermission(userRoleId, "category:update")
@@ -102,15 +108,29 @@ func (service *CategoryService) CategoryUpdate(
 		return apierrors.ErrForbidden
 	}
 
-	return service.repository.CategoryUpdate(
+	// First get the category ID to log it
+	category, err := service.repository.GetCategoryBySlug(slug)
+	if err != nil {
+		return err
+	}
+
+	err = service.repository.CategoryUpdate(
 		slug,
 		models.ToUpdateCategoryParams(model),
 	)
+	if err != nil {
+		return err
+	}
+
+	// Log the action
+	audit.LogAction(&userId, "category", category.Id, "updated")
+	return nil
 }
 
 func (service *CategoryService) CategoryDelete(
 	slug string,
 	userRoleId int64,
+	userId int64,
 ) error {
 	// Check if user has permission to delete categories
 	hasPermission := service.permissions.HasPermission(userRoleId, "category:delete")
@@ -118,7 +138,20 @@ func (service *CategoryService) CategoryDelete(
 		return apierrors.ErrForbidden
 	}
 
-	return service.repository.CategoryDelete(slug)
+	// First get the category ID to log it
+	category, err := service.repository.GetCategoryBySlug(slug)
+	if err != nil {
+		return err
+	}
+
+	err = service.repository.CategoryDelete(slug)
+	if err != nil {
+		return err
+	}
+
+	// Log the action
+	audit.LogAction(&userId, "category", category.Id, "deleted")
+	return nil
 }
 
 func (service *CategoryService) GenerativeFill(

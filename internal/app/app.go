@@ -10,6 +10,7 @@ import (
 	"bloggo/internal/db"
 	"bloggo/internal/infrastructure/permissions"
 	"bloggo/internal/module"
+	"bloggo/internal/utils/audit"
 
 	"github.com/go-chi/chi"
 )
@@ -31,6 +32,9 @@ func Get() *Application {
 		permissionStore := permissions.Get()
 		// Initial cache from database
 		permissionStore.Load(databaseConnection)
+		
+		// Initialize audit logger
+		audit.InitializeAuditLogger(databaseConnection)
 
 		instance = Application{
 			Router: chi.NewRouter(),

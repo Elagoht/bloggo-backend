@@ -4,6 +4,7 @@ import (
 	"bloggo/internal/infrastructure/permissions"
 	"bloggo/internal/module/tag/models"
 	"bloggo/internal/utils/apierrors"
+	"bloggo/internal/utils/audit"
 	"bloggo/internal/utils/filter"
 	"bloggo/internal/utils/pagination"
 	"bloggo/internal/utils/schemas/responses"
@@ -24,6 +25,7 @@ func NewTagService(repository TagRepository, permissions permissions.Store) TagS
 func (service *TagService) TagCreate(
 	model *models.RequestTagCreate,
 	userRoleId int64,
+	userId int64,
 ) (*responses.ResponseCreated, error) {
 	// Check if user has permission to create tags
 	hasPermission := service.permissions.HasPermission(userRoleId, "tag:create")
@@ -37,6 +39,9 @@ func (service *TagService) TagCreate(
 	if err != nil {
 		return nil, err
 	}
+
+	// Log the action
+	audit.LogAction(&userId, "tag", id, "created")
 
 	return &responses.ResponseCreated{
 		Id: id,
@@ -83,6 +88,7 @@ func (service *TagService) TagUpdate(
 	slug string,
 	model *models.RequestTagUpdate,
 	userRoleId int64,
+	userId int64,
 ) error {
 	// Check if user has permission to update tags
 	hasPermission := service.permissions.HasPermission(userRoleId, "tag:update")
@@ -90,15 +96,29 @@ func (service *TagService) TagUpdate(
 		return apierrors.ErrForbidden
 	}
 
-	return service.repository.TagUpdate(
+	// First get the tag ID to log it
+	tag, err := service.repository.GetTagBySlug(slug)
+	if err != nil {
+		return err
+	}
+
+	err = service.repository.TagUpdate(
 		slug,
 		models.ToUpdateTagParams(model),
 	)
+	if err != nil {
+		return err
+	}
+
+	// Log the action
+	audit.LogAction(&userId, "tag", tag.Id, "updated")
+	return nil
 }
 
 func (service *TagService) TagDelete(
 	slug string,
 	userRoleId int64,
+	userId int64,
 ) error {
 	// Check if user has permission to delete tags
 	hasPermission := service.permissions.HasPermission(userRoleId, "tag:delete")
@@ -106,5 +126,18 @@ func (service *TagService) TagDelete(
 		return apierrors.ErrForbidden
 	}
 
-	return service.repository.TagDelete(slug)
+	// First get the tag ID to log it
+	tag, err := service.repository.GetTagBySlug(slug)
+	if err != nil {
+		return err
+	}
+
+	err = service.repository.TagDelete(slug)
+	if err != nil {
+		return err
+	}
+
+	// Log the action
+	audit.LogAction(&userId, "tag", tag.Id, "deleted")
+	return nil
 }

@@ -4,7 +4,9 @@ import (
 	"bloggo/internal/app"
 	"bloggo/internal/middleware"
 	"bloggo/internal/module"
+	"bloggo/internal/module/audit"
 	"bloggo/internal/module/category"
+	"bloggo/internal/module/dashboard"
 	"bloggo/internal/module/health"
 	"bloggo/internal/module/post"
 	"bloggo/internal/module/removal_request"
@@ -38,6 +40,8 @@ func main() {
 		storage.NewModule(),
 		removal_request.NewModule(),
 		statistics.NewModule(),
+		audit.NewModule(),
+		dashboard.NewModule(),
 		health.NewModule(),
 	}
 	application.RegisterModules(modules)

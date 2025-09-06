@@ -29,12 +29,17 @@ func (handler *TagHandler) TagCreate(
 		return
 	}
 
+	userId, ok := handlers.GetContextValue[int64](writer, request, handlers.TokenUserId)
+	if !ok {
+		return
+	}
+
 	body, ok := handlers.BindAndValidate[models.RequestTagCreate](writer, request)
 	if !ok {
 		return
 	}
 
-	response, err := handler.service.TagCreate(&body, roleId)
+	response, err := handler.service.TagCreate(&body, roleId, userId)
 	if err != nil {
 		apierrors.MapErrors(err, writer, apierrors.HTTPErrorMapping{
 			apierrors.ErrForbidden: {
@@ -114,6 +119,11 @@ func (handler *TagHandler) TagUpdate(
 		return
 	}
 
+	userId, ok := handlers.GetContextValue[int64](writer, request, handlers.TokenUserId)
+	if !ok {
+		return
+	}
+
 	slug, ok := handlers.GetParam[string](writer, request, "slug")
 	if !ok {
 		return
@@ -124,7 +134,7 @@ func (handler *TagHandler) TagUpdate(
 		return
 	}
 
-	err := handler.service.TagUpdate(slug, &body, roleId)
+	err := handler.service.TagUpdate(slug, &body, roleId, userId)
 	if err != nil {
 		apierrors.MapErrors(err, writer, apierrors.HTTPErrorMapping{
 			apierrors.ErrForbidden: {
@@ -147,12 +157,17 @@ func (handler *TagHandler) TagDelete(
 		return
 	}
 
+	userId, ok := handlers.GetContextValue[int64](writer, request, handlers.TokenUserId)
+	if !ok {
+		return
+	}
+
 	slug, ok := handlers.GetParam[string](writer, request, "slug")
 	if !ok {
 		return
 	}
 
-	err := handler.service.TagDelete(slug, roleId)
+	err := handler.service.TagDelete(slug, roleId, userId)
 	if err != nil {
 		apierrors.MapErrors(err, writer, apierrors.HTTPErrorMapping{
 			apierrors.ErrForbidden: {
