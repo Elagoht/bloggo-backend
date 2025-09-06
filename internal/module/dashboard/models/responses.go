@@ -2,23 +2,23 @@ package models
 
 type ResponseDashboardStats struct {
 	// Pending content section
-	PendingVersions    []PendingVersion   `json:"pendingVersions"`
-	RecentActivity     []RecentActivity   `json:"recentActivity"`
-	PublishingRate     PublishingRate     `json:"publishingRate"`
-	AuthorPerformance  []AuthorPerformance `json:"authorPerformance"`
-	
+	PendingVersions   []PendingVersion    `json:"pendingVersions"`
+	RecentActivity    []RecentActivity    `json:"recentActivity"`
+	PublishingRate    PublishingRate      `json:"publishingRate"`
+	AuthorPerformance []AuthorPerformance `json:"authorPerformance"`
+
 	// Content management
-	DraftCount         DraftCount         `json:"draftCount"`
-	PopularTags        []PopularTag       `json:"popularTags"`
-	StorageUsage       StorageUsage       `json:"storageUsage"`
+	DraftCount   DraftCount   `json:"draftCount"`
+	PopularTags  []PopularTag `json:"popularTags"`
+	StorageUsage StorageUsage `json:"storageUsage"`
 }
 
 type PendingVersion struct {
-	Id          int64  `json:"id"`
-	Title       string `json:"title"`
-	AuthorId    int64  `json:"authorId"`
-	AuthorName  string `json:"authorName"`
-	CreatedAt   string `json:"createdAt"`
+	Id         int64  `json:"id"`
+	Title      string `json:"title"`
+	AuthorId   int64  `json:"authorId"`
+	AuthorName string `json:"authorName"`
+	CreatedAt  string `json:"createdAt"`
 }
 
 type RecentActivity struct {
@@ -33,13 +33,13 @@ type PublishingRate struct {
 }
 
 type AuthorPerformance struct {
-	AuthorId     int64  `json:"authorId"`
-	AuthorName   string `json:"authorName"`
-	PostCount    int    `json:"postCount"`
+	AuthorId   int64  `json:"authorId"`
+	AuthorName string `json:"authorName"`
+	PostCount  int    `json:"postCount"`
 }
 
 type DraftCount struct {
-	TotalDrafts   int               `json:"totalDrafts"`
+	TotalDrafts    int              `json:"totalDrafts"`
 	DraftsByAuthor []DraftsByAuthor `json:"draftsByAuthor"`
 }
 
