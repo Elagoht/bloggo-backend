@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"os"
 	"path/filepath"
+	"syscall"
 )
 
 type DashboardRepository struct {
@@ -195,13 +196,34 @@ func (repo *DashboardRepository) getPopularTags() ([]models.PopularTag, error) {
 func (repo *DashboardRepository) getStorageUsage() (models.StorageUsage, error) {
 	var storage models.StorageUsage
 
-	// Calculate storage usage from the uploads directory
-	uploadDir := "uploads"
+	// Get current working directory to calculate filesystem stats
+	cwd, err := os.Getwd()
+	if err != nil {
+		return storage, err
+	}
 
-	totalSize := int64(0)
+	// Get filesystem stats for the current directory
+	var stat syscall.Statfs_t
+	err = syscall.Statfs(cwd, &stat)
+	if err != nil {
+		return storage, err
+	}
+
+	// Calculate filesystem usage
+	blockSize := uint64(stat.Bsize)
+	totalBytes := stat.Blocks * blockSize
+	freeBytes := stat.Bavail * blockSize
+	usedBytes := totalBytes - freeBytes
+
+	storage.FilesystemUsedBytes = int64(usedBytes)
+	storage.FilesystemFreeBytes = int64(freeBytes)
+
+	// Calculate bloggo storage usage from the uploads directory
+	uploadDir := "uploads"
+	bloggoUsed := int64(0)
 	fileCount := 0
 
-	err := filepath.Walk(uploadDir, func(path string, info os.FileInfo, err error) error {
+	err = filepath.Walk(uploadDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			// If uploads directory doesn't exist, return zero values
 			if os.IsNotExist(err) {
@@ -210,22 +232,19 @@ func (repo *DashboardRepository) getStorageUsage() (models.StorageUsage, error) 
 			return err
 		}
 		if !info.IsDir() {
-			totalSize += info.Size()
+			bloggoUsed += info.Size()
 			fileCount++
 		}
 		return nil
 	})
 
 	if err != nil {
-		// If there's an error (like directory not found), return zero values
-		storage.TotalSizeBytes = 0
-		storage.TotalSizeMB = 0
-		storage.FileCount = 0
-		return storage, nil
+		// If there's an error (like directory not found), set zero values for bloggo usage
+		bloggoUsed = 0
+		fileCount = 0
 	}
 
-	storage.TotalSizeBytes = totalSize
-	storage.TotalSizeMB = float64(totalSize) / (1024 * 1024)
+	storage.BloggoUsedBytes = bloggoUsed
 	storage.FileCount = fileCount
 
 	return storage, nil
