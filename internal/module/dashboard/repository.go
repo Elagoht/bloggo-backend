@@ -154,7 +154,7 @@ func (repo *DashboardRepository) GetStorageUsage() (models.StorageUsage, error) 
 	freeBytes := stat.Bavail * blockSize
 	totalUsedBytes := totalBytes - freeBytes
 
-	storage.FreeBytes = int64(freeBytes)
+	// Will be converted to decimal later
 
 	// Calculate bloggo storage usage from the uploads directory
 	uploadDir := "uploads"
@@ -182,8 +182,14 @@ func (repo *DashboardRepository) GetStorageUsage() (models.StorageUsage, error) 
 		fileCount = 0
 	}
 
-	storage.UsedByBloggoBytes = bloggoUsed
-	storage.UsedByOthersBytes = int64(totalUsedBytes) - bloggoUsed
+	// Convert binary bytes to decimal bytes (true GB/MB/KB)
+	// Multiply by 1024^3 and divide by 1000^3 to convert GiB to GB
+	// This makes filesystem stats match what users see in Finder/Explorer
+	conversionFactor := 1.073741824 // 1024^3 / 1000^3
+
+	storage.UsedByBloggoBytes = int64(float64(bloggoUsed) * conversionFactor)
+	storage.UsedByOthersBytes = int64(float64(int64(totalUsedBytes)-bloggoUsed) * conversionFactor)
+	storage.FreeBytes = int64(float64(freeBytes) * conversionFactor)
 	storage.FileCount = fileCount
 
 	return storage, nil
