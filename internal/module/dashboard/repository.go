@@ -129,7 +129,7 @@ func (repo *DashboardRepository) GetPopularTags() ([]models.PopularTag, error) {
 	var tags []models.PopularTag
 	for rows.Next() {
 		var tag models.PopularTag
-		err := rows.Scan(&tag.Id, &tag.Name, &tag.Usage)
+		err := rows.Scan(&tag.Id, &tag.Name, &tag.Slug, &tag.Usage)
 		if err != nil {
 			return nil, err
 		}
