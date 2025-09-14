@@ -37,7 +37,7 @@ const (
 	// Get author performance (published posts)
 	QueryGetAuthorPerformance = `
 	SELECT
-		u.id as author_id, u.name as author_name, COUNT(*) as post_count
+		u.id as author_id, u.name as author_name, u.avatar as author_avatar, COUNT(*) as post_count
 	FROM post_versions pv
 	JOIN users u ON pv.created_by = u.id
 	WHERE pv.status = 5

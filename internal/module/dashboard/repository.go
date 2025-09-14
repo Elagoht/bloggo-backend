@@ -82,7 +82,7 @@ func (repo *DashboardRepository) GetAuthorPerformance() ([]models.AuthorPerforma
 	var performances []models.AuthorPerformance
 	for rows.Next() {
 		var performance models.AuthorPerformance
-		err := rows.Scan(&performance.AuthorId, &performance.AuthorName, &performance.PostCount)
+		err := rows.Scan(&performance.Id, &performance.Name, &performance.Avatar, &performance.PostCount)
 		if err != nil {
 			return nil, err
 		}
