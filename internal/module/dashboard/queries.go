@@ -44,7 +44,7 @@ const (
 		AND pv.deleted_at IS NULL
 	GROUP BY u.id, u.name
 	ORDER BY post_count DESC
-	LIMIT 5`
+	LIMIT 3`
 	// Get total draft count
 	QueryGetTotalDraftCount = `
 	SELECT COUNT(*)
