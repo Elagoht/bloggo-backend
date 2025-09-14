@@ -58,8 +58,8 @@ type PopularTag struct {
 }
 
 type StorageUsage struct {
-	FilesystemUsedBytes int64 `json:"filesystemUsedBytes"`
-	FilesystemFreeBytes int64 `json:"filesystemFreeBytes"`
-	BloggoUsedBytes     int64 `json:"bloggoUsedBytes"`
+	UsedByOthersBytes   int64 `json:"usedByOthersBytes"`
+	UsedByBloggoBytes   int64 `json:"usedByBloggoBytes"`
+	FreeBytes           int64 `json:"freeBytes"`
 	FileCount           int   `json:"fileCount"`
 }

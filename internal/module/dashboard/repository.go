@@ -141,15 +141,9 @@ func (repo *DashboardRepository) GetPopularTags() ([]models.PopularTag, error) {
 func (repo *DashboardRepository) GetStorageUsage() (models.StorageUsage, error) {
 	var storage models.StorageUsage
 
-	// Get current working directory to calculate filesystem stats
-	cwd, err := os.Getwd()
-	if err != nil {
-		return storage, err
-	}
-
-	// Get filesystem stats for the current directory
+	// Get filesystem stats for the root directory to get total system storage
 	var stat syscall.Statfs_t
-	err = syscall.Statfs(cwd, &stat)
+	err := syscall.Statfs("/", &stat)
 	if err != nil {
 		return storage, err
 	}
@@ -158,10 +152,9 @@ func (repo *DashboardRepository) GetStorageUsage() (models.StorageUsage, error) 
 	blockSize := uint64(stat.Bsize)
 	totalBytes := stat.Blocks * blockSize
 	freeBytes := stat.Bavail * blockSize
-	usedBytes := totalBytes - freeBytes
+	totalUsedBytes := totalBytes - freeBytes
 
-	storage.FilesystemUsedBytes = int64(usedBytes)
-	storage.FilesystemFreeBytes = int64(freeBytes)
+	storage.FreeBytes = int64(freeBytes)
 
 	// Calculate bloggo storage usage from the uploads directory
 	uploadDir := "uploads"
@@ -189,7 +182,8 @@ func (repo *DashboardRepository) GetStorageUsage() (models.StorageUsage, error) 
 		fileCount = 0
 	}
 
-	storage.BloggoUsedBytes = bloggoUsed
+	storage.UsedByBloggoBytes = bloggoUsed
+	storage.UsedByOthersBytes = int64(totalUsedBytes) - bloggoUsed
 	storage.FileCount = fileCount
 
 	return storage, nil
