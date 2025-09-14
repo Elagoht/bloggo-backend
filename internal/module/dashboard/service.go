@@ -3,6 +3,7 @@ package dashboard
 import (
 	"bloggo/internal/infrastructure/permissions"
 	"bloggo/internal/module/dashboard/models"
+	"fmt"
 )
 
 type DashboardService struct {
@@ -66,6 +67,13 @@ func (service *DashboardService) GetDashboardStats(
 			return nil, err
 		}
 		result.AuthorPerformance = authorPerformance
+
+		for index := range authorPerformance {
+			if authorPerformance[index].Avatar != nil && *authorPerformance[index].Avatar != "" {
+				avatarPath := fmt.Sprintf("/uploads/avatar/%s", *authorPerformance[index].Avatar)
+				authorPerformance[index].Avatar = &avatarPath
+			}
+		}
 
 		storageUsage, err := service.repository.GetStorageUsage()
 		if err != nil {

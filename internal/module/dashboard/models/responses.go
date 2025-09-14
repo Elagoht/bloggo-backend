@@ -33,10 +33,10 @@ type PublishingRate struct {
 }
 
 type AuthorPerformance struct {
-	Id        int64  `json:"id"`
-	Name      string `json:"name"`
-	Avatar    string `json:"avatar"`
-	PostCount int    `json:"postCount"`
+	Id        int64   `json:"id"`
+	Name      string  `json:"name"`
+	Avatar    *string `json:"avatar"`
+	PostCount int     `json:"postCount"`
 }
 
 type DraftCount struct {
