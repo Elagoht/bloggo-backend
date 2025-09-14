@@ -18,62 +18,7 @@ func NewDashboardRepository(db *sql.DB) DashboardRepository {
 	}
 }
 
-func (repo *DashboardRepository) GetDashboardStats() (*models.ResponseDashboardStats, error) {
-	stats := &models.ResponseDashboardStats{}
-
-	// Get pending versions
-	pendingVersions, err := repo.getPendingVersions()
-	if err != nil {
-		return nil, err
-	}
-	stats.PendingVersions = pendingVersions
-
-	// Get recent activity
-	recentActivity, err := repo.getRecentActivity()
-	if err != nil {
-		return nil, err
-	}
-	stats.RecentActivity = recentActivity
-
-	// Get publishing rate
-	publishingRate, err := repo.getPublishingRate()
-	if err != nil {
-		return nil, err
-	}
-	stats.PublishingRate = publishingRate
-
-	// Get author performance
-	authorPerformance, err := repo.getAuthorPerformance()
-	if err != nil {
-		return nil, err
-	}
-	stats.AuthorPerformance = authorPerformance
-
-	// Get draft count
-	draftCount, err := repo.getDraftCount()
-	if err != nil {
-		return nil, err
-	}
-	stats.DraftCount = draftCount
-
-	// Get popular tags
-	popularTags, err := repo.getPopularTags()
-	if err != nil {
-		return nil, err
-	}
-	stats.PopularTags = popularTags
-
-	// Get storage usage
-	storageUsage, err := repo.getStorageUsage()
-	if err != nil {
-		return nil, err
-	}
-	stats.StorageUsage = storageUsage
-
-	return stats, nil
-}
-
-func (repo *DashboardRepository) getPendingVersions() ([]models.PendingVersion, error) {
+func (repo *DashboardRepository) GetPendingVersions() ([]models.PendingVersion, error) {
 	rows, err := repo.db.Query(QueryGetPendingVersions)
 	if err != nil {
 		return nil, err
@@ -92,7 +37,7 @@ func (repo *DashboardRepository) getPendingVersions() ([]models.PendingVersion, 
 	return versions, nil
 }
 
-func (repo *DashboardRepository) getRecentActivity() ([]models.RecentActivity, error) {
+func (repo *DashboardRepository) GetRecentActivity() ([]models.RecentActivity, error) {
 	rows, err := repo.db.Query(QueryGetRecentActivity)
 	if err != nil {
 		return nil, err
@@ -111,7 +56,7 @@ func (repo *DashboardRepository) getRecentActivity() ([]models.RecentActivity, e
 	return activities, nil
 }
 
-func (repo *DashboardRepository) getPublishingRate() (models.PublishingRate, error) {
+func (repo *DashboardRepository) GetPublishingRate() (models.PublishingRate, error) {
 	var rate models.PublishingRate
 
 	err := repo.db.QueryRow(QueryGetPublishingRateWeek).Scan(&rate.ThisWeek)
@@ -127,7 +72,7 @@ func (repo *DashboardRepository) getPublishingRate() (models.PublishingRate, err
 	return rate, nil
 }
 
-func (repo *DashboardRepository) getAuthorPerformance() ([]models.AuthorPerformance, error) {
+func (repo *DashboardRepository) GetAuthorPerformance() ([]models.AuthorPerformance, error) {
 	rows, err := repo.db.Query(QueryGetAuthorPerformance)
 	if err != nil {
 		return nil, err
@@ -146,7 +91,7 @@ func (repo *DashboardRepository) getAuthorPerformance() ([]models.AuthorPerforma
 	return performances, nil
 }
 
-func (repo *DashboardRepository) getDraftCount() (models.DraftCount, error) {
+func (repo *DashboardRepository) GetDraftCount() (models.DraftCount, error) {
 	var draftCount models.DraftCount
 
 	err := repo.db.QueryRow(QueryGetTotalDraftCount).Scan(&draftCount.TotalDrafts)
@@ -174,7 +119,7 @@ func (repo *DashboardRepository) getDraftCount() (models.DraftCount, error) {
 	return draftCount, nil
 }
 
-func (repo *DashboardRepository) getPopularTags() ([]models.PopularTag, error) {
+func (repo *DashboardRepository) GetPopularTags() ([]models.PopularTag, error) {
 	rows, err := repo.db.Query(QueryGetPopularTags)
 	if err != nil {
 		return nil, err
@@ -193,7 +138,7 @@ func (repo *DashboardRepository) getPopularTags() ([]models.PopularTag, error) {
 	return tags, nil
 }
 
-func (repo *DashboardRepository) getStorageUsage() (models.StorageUsage, error) {
+func (repo *DashboardRepository) GetStorageUsage() (models.StorageUsage, error) {
 	var storage models.StorageUsage
 
 	// Get current working directory to calculate filesystem stats
