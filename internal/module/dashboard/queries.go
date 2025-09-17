@@ -4,7 +4,7 @@ const (
 	// Get pending versions (status = 0 is draft)
 	QueryGetPendingVersions = `
 	SELECT
-		pv.id, pv.title, pv.created_by, u.name as author_name, pv.created_at
+		pv.id, pv.title, pv.created_by, u.name as author_name, u.avatar as author_avatar, pv.created_at
 	FROM post_versions pv
 	JOIN users u ON pv.created_by = u.id
 	WHERE pv.status = 0
@@ -54,12 +54,12 @@ const (
 	// Get drafts by author
 	QueryGetDraftsByAuthor = `
 	SELECT
-		u.id as author_id, u.name as author_name, COUNT(*) as draft_count
+		u.id as author_id, u.name as author_name, u.avatar as author_avatar, COUNT(*) as draft_count
 	FROM post_versions pv
 	JOIN users u ON pv.created_by = u.id
 	WHERE pv.status = 0
 		AND pv.deleted_at IS NULL
-	GROUP BY u.id, u.name
+	GROUP BY u.id, u.name, u.avatar
 	ORDER BY draft_count DESC
 	LIMIT 5`
 	// Get popular tags

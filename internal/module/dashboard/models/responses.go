@@ -14,11 +14,12 @@ type ResponseDashboardStats struct {
 }
 
 type PendingVersion struct {
-	Id         int64  `json:"id"`
-	Title      string `json:"title"`
-	AuthorId   int64  `json:"authorId"`
-	AuthorName string `json:"authorName"`
-	CreatedAt  string `json:"createdAt"`
+	Id           int64   `json:"id"`
+	Title        string  `json:"title"`
+	AuthorId     int64   `json:"authorId"`
+	AuthorName   string  `json:"authorName"`
+	AuthorAvatar *string `json:"authorAvatar"`
+	CreatedAt    string  `json:"createdAt"`
 }
 
 type RecentActivity struct {
@@ -45,9 +46,10 @@ type DraftCount struct {
 }
 
 type DraftsByAuthor struct {
-	AuthorId   int64  `json:"authorId"`
-	AuthorName string `json:"authorName"`
-	DraftCount int    `json:"draftCount"`
+	AuthorId     int64   `json:"authorId"`
+	AuthorName   string  `json:"authorName"`
+	AuthorAvatar *string `json:"authorAvatar"`
+	DraftCount   int     `json:"draftCount"`
 }
 
 type PopularTag struct {

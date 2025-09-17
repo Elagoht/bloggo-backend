@@ -28,7 +28,7 @@ func (repo *DashboardRepository) GetPendingVersions() ([]models.PendingVersion, 
 	var versions []models.PendingVersion
 	for rows.Next() {
 		var version models.PendingVersion
-		err := rows.Scan(&version.Id, &version.Title, &version.AuthorId, &version.AuthorName, &version.CreatedAt)
+		err := rows.Scan(&version.Id, &version.Title, &version.AuthorId, &version.AuthorName, &version.AuthorAvatar, &version.CreatedAt)
 		if err != nil {
 			return nil, err
 		}
@@ -108,7 +108,7 @@ func (repo *DashboardRepository) GetDraftCount() (models.DraftCount, error) {
 	var draftsByAuthor []models.DraftsByAuthor
 	for rows.Next() {
 		var draft models.DraftsByAuthor
-		err := rows.Scan(&draft.AuthorId, &draft.AuthorName, &draft.DraftCount)
+		err := rows.Scan(&draft.AuthorId, &draft.AuthorName, &draft.AuthorAvatar, &draft.DraftCount)
 		if err != nil {
 			return draftCount, err
 		}

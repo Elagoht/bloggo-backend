@@ -34,6 +34,14 @@ func (service *DashboardService) GetDashboardStats(
 	if err != nil {
 		return nil, err
 	}
+
+	for index := range draftCount.DraftsByAuthor {
+		if draftCount.DraftsByAuthor[index].AuthorAvatar != nil && *draftCount.DraftsByAuthor[index].AuthorAvatar != "" {
+			avatarPath := fmt.Sprintf("/uploads/avatar/%s", *draftCount.DraftsByAuthor[index].AuthorAvatar)
+			draftCount.DraftsByAuthor[index].AuthorAvatar = &avatarPath
+		}
+	}
+
 	result.DraftCount = draftCount
 
 	popularTags, err := service.repository.GetPopularTags()
@@ -48,6 +56,14 @@ func (service *DashboardService) GetDashboardStats(
 		if err != nil {
 			return nil, err
 		}
+
+		for index := range pendingVersions {
+			if pendingVersions[index].AuthorAvatar != nil && *pendingVersions[index].AuthorAvatar != "" {
+				avatarPath := fmt.Sprintf("/uploads/avatar/%s", *pendingVersions[index].AuthorAvatar)
+				pendingVersions[index].AuthorAvatar = &avatarPath
+			}
+		}
+
 		result.PendingVersions = pendingVersions
 	}
 
