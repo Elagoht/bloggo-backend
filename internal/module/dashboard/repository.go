@@ -59,12 +59,22 @@ func (repo *DashboardRepository) GetRecentActivity() ([]models.RecentActivity, e
 func (repo *DashboardRepository) GetPublishingRate() (models.PublishingRate, error) {
 	var rate models.PublishingRate
 
-	err := repo.db.QueryRow(QueryGetPublishingRateWeek).Scan(&rate.ThisWeek)
+	err := repo.db.QueryRow(QueryGetPublishingRateDay).Scan(&rate.Today)
+	if err != nil {
+		return rate, err
+	}
+
+	err = repo.db.QueryRow(QueryGetPublishingRateWeek).Scan(&rate.ThisWeek)
 	if err != nil {
 		return rate, err
 	}
 
 	err = repo.db.QueryRow(QueryGetPublishingRateMonth).Scan(&rate.ThisMonth)
+	if err != nil {
+		return rate, err
+	}
+
+	err = repo.db.QueryRow(QueryGetPublishingRateYear).Scan(&rate.ThisYear)
 	if err != nil {
 		return rate, err
 	}

@@ -34,6 +34,20 @@ const (
 	WHERE pv.status = 5
 		AND pv.status_changed_at >= datetime('now', '-30 days')
 		AND pv.deleted_at IS NULL`
+	// Get publishing rate for today
+	QueryGetPublishingRateDay = `
+	SELECT COUNT(*)
+	FROM post_versions pv
+	WHERE pv.status = 5
+		AND pv.status_changed_at >= datetime('now', 'start of day')
+		AND pv.deleted_at IS NULL`
+	// Get publishing rate for this year
+	QueryGetPublishingRateYear = `
+	SELECT COUNT(*)
+	FROM post_versions pv
+	WHERE pv.status = 5
+		AND pv.status_changed_at >= datetime('now', 'start of year')
+		AND pv.deleted_at IS NULL`
 	// Get author performance (published posts)
 	QueryGetAuthorPerformance = `
 	SELECT

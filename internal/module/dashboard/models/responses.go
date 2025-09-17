@@ -29,8 +29,10 @@ type RecentActivity struct {
 }
 
 type PublishingRate struct {
+	Today     int `json:"today"`
 	ThisWeek  int `json:"thisWeek"`
 	ThisMonth int `json:"thisMonth"`
+	ThisYear  int `json:"thisYear"`
 }
 
 type AuthorPerformance struct {
