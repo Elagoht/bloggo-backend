@@ -5,8 +5,6 @@ type AuditLogEntry struct {
 	EntityType string                 `json:"entityType"`
 	EntityID   int64                  `json:"entityId"`
 	Action     string                 `json:"action"`
-	OldValues  map[string]interface{} `json:"oldValues,omitempty"`
-	NewValues  map[string]interface{} `json:"newValues,omitempty"`
 	Metadata   map[string]interface{} `json:"metadata,omitempty"`
 }
 

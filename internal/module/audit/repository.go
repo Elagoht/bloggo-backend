@@ -18,23 +18,9 @@ func NewAuditRepository(database *sql.DB) AuditRepository {
 }
 
 func (repository *AuditRepository) LogAction(entry *models.AuditLogEntry) error {
-	var oldValuesJSON, newValuesJSON, metadataJSON *string
+	var metadataJSON *string
 
-	// Convert maps to JSON strings
-	if entry.OldValues != nil {
-		if jsonBytes, err := json.Marshal(entry.OldValues); err == nil {
-			jsonStr := string(jsonBytes)
-			oldValuesJSON = &jsonStr
-		}
-	}
-
-	if entry.NewValues != nil {
-		if jsonBytes, err := json.Marshal(entry.NewValues); err == nil {
-			jsonStr := string(jsonBytes)
-			newValuesJSON = &jsonStr
-		}
-	}
-
+	// Convert metadata to JSON string
 	if entry.Metadata != nil {
 		if jsonBytes, err := json.Marshal(entry.Metadata); err == nil {
 			jsonStr := string(jsonBytes)
@@ -48,8 +34,6 @@ func (repository *AuditRepository) LogAction(entry *models.AuditLogEntry) error 
 		entry.EntityType,
 		entry.EntityID,
 		entry.Action,
-		oldValuesJSON,
-		newValuesJSON,
 		metadataJSON,
 	)
 
@@ -112,12 +96,14 @@ func (repository *AuditRepository) GetAuditLogsWithFilters(limit, offset int, us
 	SELECT
 		al.id, al.user_id, u.name as user_name,
 		al.entity_type, al.entity_id, al.action,
-		al.old_values, al.new_values, al.metadata,
+		al.metadata,
 		al.created_at,
 		CASE
 			WHEN al.entity_type = 'user' THEN (SELECT name FROM users WHERE id = al.entity_id)
 			WHEN al.entity_type = 'category' THEN (SELECT name FROM categories WHERE id = al.entity_id)
 			WHEN al.entity_type = 'tag' THEN (SELECT name FROM tags WHERE id = al.entity_id)
+			WHEN al.entity_type = 'post' THEN (SELECT pv.title FROM post_versions pv JOIN posts p ON p.current_version_id = pv.id WHERE p.id = al.entity_id)
+			WHEN al.entity_type = 'post_version' THEN (SELECT title FROM post_versions WHERE id = al.entity_id)
 			ELSE NULL
 		END as entity_name
 	FROM audit_logs al
@@ -215,7 +201,7 @@ func (repository *AuditRepository) scanAuditLogs(rows *sql.Rows) ([]models.Audit
 
 	for rows.Next() {
 		var log models.AuditLogResponse
-		var oldValuesJSON, newValuesJSON, metadataJSON sql.NullString
+		var metadataJSON sql.NullString
 
 		err := rows.Scan(
 			&log.ID,
@@ -224,8 +210,6 @@ func (repository *AuditRepository) scanAuditLogs(rows *sql.Rows) ([]models.Audit
 			&log.EntityType,
 			&log.EntityID,
 			&log.Action,
-			&oldValuesJSON,
-			&newValuesJSON,
 			&metadataJSON,
 			&log.CreatedAt,
 			&log.EntityName,
@@ -236,20 +220,6 @@ func (repository *AuditRepository) scanAuditLogs(rows *sql.Rows) ([]models.Audit
 		}
 
 		// Parse JSON strings back to maps
-		if oldValuesJSON.Valid {
-			var oldValues map[string]interface{}
-			if err := json.Unmarshal([]byte(oldValuesJSON.String), &oldValues); err == nil {
-				log.OldValues = &oldValues
-			}
-		}
-
-		if newValuesJSON.Valid {
-			var newValues map[string]interface{}
-			if err := json.Unmarshal([]byte(newValuesJSON.String), &newValues); err == nil {
-				log.NewValues = &newValues
-			}
-		}
-
 		if metadataJSON.Valid {
 			var metadata map[string]interface{}
 			if err := json.Unmarshal([]byte(metadataJSON.String), &metadata); err == nil {

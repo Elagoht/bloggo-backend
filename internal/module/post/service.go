@@ -220,7 +220,7 @@ func (service *PostService) CreatePostWithFirstVersion(
 	}
 
 	// Log post creation audit
-	audit.LogPostAction(&userId, createdId, auditmodels.ActionPostCreated, nil, nil)
+	audit.LogPostAction(&userId, createdId, auditmodels.ActionPostCreated)
 
 	return &responses.ResponseCreated{
 		Id: createdId,
@@ -538,7 +538,7 @@ func (service *PostService) DeleteVersionById(
 		}
 
 		// Log post deletion audit
-		audit.LogPostAction(&userId, postId, auditmodels.ActionPostDeleted, nil, nil)
+		audit.LogPostAction(&userId, postId, auditmodels.ActionPostDeleted)
 
 		return &models.ResponseVersionDeleted{PostDeleted: true}, nil
 	}
@@ -586,7 +586,7 @@ func (service *PostService) DeleteVersionById(
 	}
 
 	// Log version deletion audit
-	audit.LogVersionAction(&userId, versionId, auditmodels.ActionVersionDeleted, nil, nil, nil)
+	audit.LogVersionAction(&userId, versionId, auditmodels.ActionVersionDeleted, nil)
 
 	return &models.ResponseVersionDeleted{PostDeleted: false}, nil
 }
@@ -644,7 +644,7 @@ func (service *PostService) PublishVersion(
 	}
 
 	// Log version publication audit
-	audit.LogVersionAction(&userId, versionId, auditmodels.ActionVersionPublished, nil, nil, nil)
+	audit.LogVersionAction(&userId, versionId, auditmodels.ActionVersionPublished, nil)
 
 	// Set this version as the current published version for the post
 	return service.repository.SetCurrentVersionForPost(postId, versionId)

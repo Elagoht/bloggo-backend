@@ -97,7 +97,7 @@ func (service *SessionService) CreateSession(
 	}
 
 	// Log login action
-	audit.LogAuthAction(&details.UserId, auditmodels.ActionLogin, nil, nil)
+	audit.LogAuthAction(&details.UserId, auditmodels.ActionLogin)
 
 	return sessionData, refreshToken, nil
 }
@@ -166,6 +166,6 @@ func (service *SessionService) RevokeSession(
 
 	// Log logout action if we found the user
 	if found {
-		audit.LogAuthAction(&userId, auditmodels.ActionLogout, nil, nil)
+		audit.LogAuthAction(&userId, auditmodels.ActionLogout)
 	}
 }

@@ -42,7 +42,7 @@ func (service *TagService) TagCreate(
 	}
 
 	// Log the action
-	audit.LogTagAction(&userId, id, auditmodels.ActionTagCreated, nil, nil)
+	audit.LogTagAction(&userId, id, auditmodels.ActionTagCreated)
 
 	return &responses.ResponseCreated{
 		Id: id,
@@ -112,7 +112,7 @@ func (service *TagService) TagUpdate(
 	}
 
 	// Log the action
-	audit.LogTagAction(&userId, tag.Id, auditmodels.ActionTagUpdated, nil, nil)
+	audit.LogTagAction(&userId, tag.Id, auditmodels.ActionTagUpdated)
 	return nil
 }
 
@@ -139,6 +139,6 @@ func (service *TagService) TagDelete(
 	}
 
 	// Log the action
-	audit.LogTagAction(&userId, tag.Id, auditmodels.ActionTagDeleted, nil, nil)
+	audit.LogTagAction(&userId, tag.Id, auditmodels.ActionTagDeleted)
 	return nil
 }

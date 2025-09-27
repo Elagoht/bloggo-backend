@@ -22,45 +22,43 @@ func GetGlobalAuditService() AuditService {
 }
 
 // Helper functions for easy access to audit logging
-func LogAction(userID *int64, entityType string, entityID int64, action string, oldValues, newValues map[string]interface{}) error {
+func LogAction(userID *int64, entityType string, entityID int64, action string) error {
 	service := GetGlobalAuditService()
 	entry := &models.AuditLogEntry{
 		UserID:     userID,
 		EntityType: entityType,
 		EntityID:   entityID,
 		Action:     action,
-		OldValues:  oldValues,
-		NewValues:  newValues,
 	}
 	return service.LogAction(entry)
 }
 
-func LogUserAction(userID, targetUserID *int64, action string, oldValues, newValues map[string]interface{}) error {
+func LogUserAction(userID, targetUserID *int64, action string) error {
 	service := GetGlobalAuditService()
-	return service.LogUserAction(userID, targetUserID, action, oldValues, newValues)
+	return service.LogUserAction(userID, targetUserID, action)
 }
 
-func LogPostAction(userID *int64, postID int64, action string, oldValues, newValues map[string]interface{}) error {
+func LogPostAction(userID *int64, postID int64, action string) error {
 	service := GetGlobalAuditService()
-	return service.LogPostAction(userID, postID, action, oldValues, newValues)
+	return service.LogPostAction(userID, postID, action)
 }
 
-func LogVersionAction(userID *int64, versionID int64, action string, oldValues, newValues map[string]interface{}, metadata map[string]interface{}) error {
+func LogVersionAction(userID *int64, versionID int64, action string, metadata map[string]interface{}) error {
 	service := GetGlobalAuditService()
-	return service.LogVersionAction(userID, versionID, action, oldValues, newValues, metadata)
+	return service.LogVersionAction(userID, versionID, action, metadata)
 }
 
-func LogCategoryAction(userID *int64, categoryID int64, action string, oldValues, newValues map[string]interface{}) error {
+func LogCategoryAction(userID *int64, categoryID int64, action string) error {
 	service := GetGlobalAuditService()
-	return service.LogCategoryAction(userID, categoryID, action, oldValues, newValues)
+	return service.LogCategoryAction(userID, categoryID, action)
 }
 
-func LogTagAction(userID *int64, tagID int64, action string, oldValues, newValues map[string]interface{}) error {
+func LogTagAction(userID *int64, tagID int64, action string) error {
 	service := GetGlobalAuditService()
-	return service.LogTagAction(userID, tagID, action, oldValues, newValues)
+	return service.LogTagAction(userID, tagID, action)
 }
 
-func LogAuthAction(userID *int64, action string, oldValues, newValues map[string]interface{}) error {
+func LogAuthAction(userID *int64, action string) error {
 	service := GetGlobalAuditService()
-	return service.LogAuthAction(userID, action, oldValues, newValues)
+	return service.LogAuthAction(userID, action)
 }

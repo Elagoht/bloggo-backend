@@ -114,42 +114,36 @@ func (service *AuditService) GetAuditLogsByUser(userID int64, limit, offset int)
 // Helper functions to create audit log entries
 
 // LogUserAction logs a user-related action
-func (service *AuditService) LogUserAction(userID, targetUserID *int64, action string, oldValues, newValues map[string]interface{}) error {
+func (service *AuditService) LogUserAction(userID, targetUserID *int64, action string) error {
 	entry := &models.AuditLogEntry{
 		UserID:     userID,
 		EntityType: models.EntityUser,
 		EntityID:   *targetUserID,
 		Action:     action,
-		OldValues:  oldValues,
-		NewValues:  newValues,
 	}
 
 	return service.LogAction(entry)
 }
 
 // LogPostAction logs a post-related action
-func (service *AuditService) LogPostAction(userID *int64, postID int64, action string, oldValues, newValues map[string]interface{}) error {
+func (service *AuditService) LogPostAction(userID *int64, postID int64, action string) error {
 	entry := &models.AuditLogEntry{
 		UserID:     userID,
 		EntityType: models.EntityPost,
 		EntityID:   postID,
 		Action:     action,
-		OldValues:  oldValues,
-		NewValues:  newValues,
 	}
 
 	return service.LogAction(entry)
 }
 
 // LogVersionAction logs a post version-related action
-func (service *AuditService) LogVersionAction(userID *int64, versionID int64, action string, oldValues, newValues map[string]interface{}, metadata map[string]interface{}) error {
+func (service *AuditService) LogVersionAction(userID *int64, versionID int64, action string, metadata map[string]interface{}) error {
 	entry := &models.AuditLogEntry{
 		UserID:     userID,
 		EntityType: models.EntityPostVersion,
 		EntityID:   versionID,
 		Action:     action,
-		OldValues:  oldValues,
-		NewValues:  newValues,
 		Metadata:   metadata,
 	}
 
@@ -157,35 +151,31 @@ func (service *AuditService) LogVersionAction(userID *int64, versionID int64, ac
 }
 
 // LogCategoryAction logs a category-related action
-func (service *AuditService) LogCategoryAction(userID *int64, categoryID int64, action string, oldValues, newValues map[string]interface{}) error {
+func (service *AuditService) LogCategoryAction(userID *int64, categoryID int64, action string) error {
 	entry := &models.AuditLogEntry{
 		UserID:     userID,
 		EntityType: models.EntityCategory,
 		EntityID:   categoryID,
 		Action:     action,
-		OldValues:  oldValues,
-		NewValues:  newValues,
 	}
 
 	return service.LogAction(entry)
 }
 
 // LogTagAction logs a tag-related action
-func (service *AuditService) LogTagAction(userID *int64, tagID int64, action string, oldValues, newValues map[string]interface{}) error {
+func (service *AuditService) LogTagAction(userID *int64, tagID int64, action string) error {
 	entry := &models.AuditLogEntry{
 		UserID:     userID,
 		EntityType: models.EntityTag,
 		EntityID:   tagID,
 		Action:     action,
-		OldValues:  oldValues,
-		NewValues:  newValues,
 	}
 
 	return service.LogAction(entry)
 }
 
 // LogAuthAction logs an authentication-related action
-func (service *AuditService) LogAuthAction(userID *int64, action string, oldValues, newValues map[string]interface{}) error {
+func (service *AuditService) LogAuthAction(userID *int64, action string) error {
 	// For auth actions, we use the userID as the entityID since auth is tied to a specific user
 	// If userID is nil (system action), we'll use 0 as placeholder
 	entityID := int64(0)
@@ -198,8 +188,6 @@ func (service *AuditService) LogAuthAction(userID *int64, action string, oldValu
 		EntityType: models.EntityAuth,
 		EntityID:   entityID,
 		Action:     action,
-		OldValues:  oldValues,
-		NewValues:  newValues,
 	}
 
 	return service.LogAction(entry)

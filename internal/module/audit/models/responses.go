@@ -10,8 +10,6 @@ type AuditLogResponse struct {
 	EntityID   int64                   `json:"entityId"`
 	EntityName *string                 `json:"entityName,omitempty"`
 	Action     string                  `json:"action"`
-	OldValues  *map[string]interface{} `json:"oldValues,omitempty"`
-	NewValues  *map[string]interface{} `json:"newValues,omitempty"`
 	Metadata   *map[string]interface{} `json:"metadata,omitempty"`
 	CreatedAt  time.Time               `json:"createdAt"`
 }

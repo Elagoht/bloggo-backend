@@ -45,7 +45,7 @@ func (service *CategoryService) CategoryCreate(
 	}
 
 	// Log the action
-	audit.LogCategoryAction(&userId, id, auditmodels.ActionCategoryCreated, nil, nil)
+	audit.LogCategoryAction(&userId, id, auditmodels.ActionCategoryCreated)
 
 	return &responses.ResponseCreated{
 		Id: id,
@@ -124,7 +124,7 @@ func (service *CategoryService) CategoryUpdate(
 	}
 
 	// Log the action
-	audit.LogCategoryAction(&userId, category.Id, auditmodels.ActionCategoryUpdated, nil, nil)
+	audit.LogCategoryAction(&userId, category.Id, auditmodels.ActionCategoryUpdated)
 	return nil
 }
 
@@ -151,7 +151,7 @@ func (service *CategoryService) CategoryDelete(
 	}
 
 	// Log the action
-	audit.LogCategoryAction(&userId, category.Id, auditmodels.ActionCategoryDeleted, nil, nil)
+	audit.LogCategoryAction(&userId, category.Id, auditmodels.ActionCategoryDeleted)
 	return nil
 }
 
