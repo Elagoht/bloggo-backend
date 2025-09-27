@@ -327,4 +327,8 @@ const (
 	SELECT COUNT(*)
 	FROM tags
 	WHERE id = ? AND deleted_at IS NULL;`
+	QueryCountPostVersions = `
+	SELECT COUNT(*)
+	FROM post_versions
+	WHERE post_id = ? AND deleted_at IS NULL;`
 )

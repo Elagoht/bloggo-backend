@@ -118,3 +118,8 @@ type ResponseVersionDetailsOfPost struct {
 		Slug *string `json:"slug"`
 	} `json:"category"`
 }
+
+// -- Version Deletion Response -- //
+type ResponseVersionDeleted struct {
+	PostDeleted bool `json:"postDeleted,omitempty"`
+}

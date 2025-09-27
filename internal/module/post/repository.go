@@ -1022,3 +1022,14 @@ func (repository *PostRepository) GetPostTags(postId int64) ([]models.TagCard, e
 
 	return tags, nil
 }
+
+func (repository *PostRepository) CountPostVersions(postId int64) (int, error) {
+	row := repository.database.QueryRow(QueryCountPostVersions, postId)
+
+	var count int
+	if err := row.Scan(&count); err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}

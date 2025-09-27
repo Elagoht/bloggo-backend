@@ -481,11 +481,11 @@ func (service *PostService) DeleteVersionById(
 	versionId int64,
 	userId int64,
 	roleId int64,
-) error {
+) (*models.ResponseVersionDeleted, error) {
 	// Get version details including creator and status
 	versionCreator, versionStatus, err := service.repository.GetVersionCreatorAndStatus(versionId)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// Check if user has editor permissions (can delete any version)
@@ -495,7 +495,7 @@ func (service *PostService) DeleteVersionById(
 	isOwner := versionCreator == userId
 
 	if !hasEditorPermission && !isOwner {
-		return apierrors.ErrForbidden
+		return nil, apierrors.ErrForbidden
 	}
 
 	// If user is owner but not editor, check status restrictions
@@ -504,32 +504,59 @@ func (service *PostService) DeleteVersionById(
 		if versionStatus != models.STATUS_DRAFT &&
 			versionStatus != models.STATUS_PENDING &&
 			versionStatus != models.STATUS_REJECTED {
-			return apierrors.ErrPreconditionFailed
+			return nil, apierrors.ErrPreconditionFailed
 		}
+	}
+
+	// Check if this is the last version of the post
+	versionCount, err := service.repository.CountPostVersions(postId)
+	if err != nil {
+		return nil, err
+	}
+
+	// If this is the last version, delete the entire post instead
+	if versionCount == 1 {
+		// Store cover photo paths before deleting post
+		coverPaths, err := service.repository.GetAllRelatedCovers(postId)
+		if err != nil {
+			return nil, err
+		}
+
+		// Delete the entire post (soft delete)
+		if err := service.repository.SoftDeletePostById(postId); err != nil {
+			return nil, err
+		}
+
+		// Delete all related images
+		for _, path := range coverPaths {
+			service.bucket.Delete(path)
+		}
+
+		return &models.ResponseVersionDeleted{PostDeleted: true}, nil
 	}
 
 	// Get the cover image path before deletion
 	coverImagePath, err := service.repository.GetVersionCoverImage(versionId)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// Check if this version is currently published
 	isCurrentlyPublished, err := service.repository.IsVersionCurrentlyPublished(versionId)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// If it's currently published, set the post's current_version_id to NULL
 	if isCurrentlyPublished {
 		if err := service.repository.SetPostCurrentVersionToNull(versionId); err != nil {
-			return err
+			return nil, err
 		}
 	}
 
 	// Perform soft delete
 	if err := service.repository.SoftDeleteVersionById(versionId); err != nil {
-		return err
+		return nil, err
 	}
 
 	// Check if the cover image is still referenced by other versions
@@ -541,7 +568,7 @@ func (service *PostService) DeleteVersionById(
 			)
 		if err != nil {
 			// Log error but don't fail the deletion
-			return nil
+			return &models.ResponseVersionDeleted{PostDeleted: false}, nil
 		}
 
 		// If image is not referenced by any other version, delete it from storage
@@ -550,7 +577,7 @@ func (service *PostService) DeleteVersionById(
 		}
 	}
 
-	return nil
+	return &models.ResponseVersionDeleted{PostDeleted: false}, nil
 }
 
 func (service *PostService) PublishVersion(

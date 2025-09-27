@@ -466,12 +466,13 @@ func (handler *PostHandler) DeleteVersionById(
 		return
 	}
 
-	if err := handler.service.DeleteVersionById(
+	response, err := handler.service.DeleteVersionById(
 		postId,
 		versionId,
 		userId,
 		roleId,
-	); err != nil {
+	)
+	if err != nil {
 		apierrors.MapErrors(err, writer, apierrors.HTTPErrorMapping{
 			apierrors.ErrPreconditionFailed: {
 				Message: "Only draft, pending, or rejected versions can be deleted by authors.",
@@ -485,7 +486,7 @@ func (handler *PostHandler) DeleteVersionById(
 		return
 	}
 
-	writer.WriteHeader(http.StatusNoContent)
+	json.NewEncoder(writer).Encode(response)
 }
 
 func (handler *PostHandler) PublishVersion(
