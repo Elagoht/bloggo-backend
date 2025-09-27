@@ -2,9 +2,10 @@ package tag
 
 import (
 	"bloggo/internal/infrastructure/permissions"
+	"bloggo/internal/module/audit"
+	auditmodels "bloggo/internal/module/audit/models"
 	"bloggo/internal/module/tag/models"
 	"bloggo/internal/utils/apierrors"
-	"bloggo/internal/utils/audit"
 	"bloggo/internal/utils/filter"
 	"bloggo/internal/utils/pagination"
 	"bloggo/internal/utils/schemas/responses"
@@ -41,7 +42,7 @@ func (service *TagService) TagCreate(
 	}
 
 	// Log the action
-	audit.LogAction(&userId, "tag", id, "created")
+	audit.LogTagAction(&userId, id, auditmodels.ActionTagCreated, nil, nil)
 
 	return &responses.ResponseCreated{
 		Id: id,
@@ -111,7 +112,7 @@ func (service *TagService) TagUpdate(
 	}
 
 	// Log the action
-	audit.LogAction(&userId, "tag", tag.Id, "updated")
+	audit.LogTagAction(&userId, tag.Id, auditmodels.ActionTagUpdated, nil, nil)
 	return nil
 }
 
@@ -138,6 +139,6 @@ func (service *TagService) TagDelete(
 	}
 
 	// Log the action
-	audit.LogAction(&userId, "tag", tag.Id, "deleted")
+	audit.LogTagAction(&userId, tag.Id, auditmodels.ActionTagDeleted, nil, nil)
 	return nil
 }

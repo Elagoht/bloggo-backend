@@ -6,7 +6,6 @@ import (
 	"bloggo/internal/utils/handlers"
 	"bloggo/internal/utils/pagination"
 	"database/sql"
-	"fmt"
 )
 
 type UserRepository struct {
@@ -111,7 +110,6 @@ func (repository *UserRepository) GetUserById(
 		&user.PublishedPostCount,
 	)
 	if err != nil {
-		fmt.Println(err)
 		return nil, err
 	}
 

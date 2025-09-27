@@ -5,6 +5,8 @@ import (
 	"bloggo/internal/infrastructure/permissions"
 	"bloggo/internal/module/ai"
 	aimodels "bloggo/internal/module/ai/models"
+	"bloggo/internal/module/audit"
+	auditmodels "bloggo/internal/module/audit/models"
 	"bloggo/internal/module/post/models"
 	"bloggo/internal/utils/apierrors"
 	"bloggo/internal/utils/cryptography"
@@ -216,6 +218,9 @@ func (service *PostService) CreatePostWithFirstVersion(
 		}
 		return nil, err
 	}
+
+	// Log post creation audit
+	audit.LogPostAction(&userId, createdId, auditmodels.ActionPostCreated, nil, nil)
 
 	return &responses.ResponseCreated{
 		Id: createdId,
@@ -532,6 +537,9 @@ func (service *PostService) DeleteVersionById(
 			service.bucket.Delete(path)
 		}
 
+		// Log post deletion audit
+		audit.LogPostAction(&userId, postId, auditmodels.ActionPostDeleted, nil, nil)
+
 		return &models.ResponseVersionDeleted{PostDeleted: true}, nil
 	}
 
@@ -576,6 +584,9 @@ func (service *PostService) DeleteVersionById(
 			service.bucket.Delete(*coverImagePath)
 		}
 	}
+
+	// Log version deletion audit
+	audit.LogVersionAction(&userId, versionId, auditmodels.ActionVersionDeleted, nil, nil, nil)
 
 	return &models.ResponseVersionDeleted{PostDeleted: false}, nil
 }
@@ -631,6 +642,9 @@ func (service *PostService) PublishVersion(
 	); err != nil {
 		return err
 	}
+
+	// Log version publication audit
+	audit.LogVersionAction(&userId, versionId, auditmodels.ActionVersionPublished, nil, nil, nil)
 
 	// Set this version as the current published version for the post
 	return service.repository.SetCurrentVersionForPost(postId, versionId)

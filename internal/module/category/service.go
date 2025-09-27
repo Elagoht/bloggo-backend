@@ -3,9 +3,10 @@ package category
 import (
 	"bloggo/internal/infrastructure/permissions"
 	"bloggo/internal/module/ai"
+	"bloggo/internal/module/audit"
+	auditmodels "bloggo/internal/module/audit/models"
 	"bloggo/internal/module/category/models"
 	"bloggo/internal/utils/apierrors"
-	"bloggo/internal/utils/audit"
 	"bloggo/internal/utils/filter"
 	"bloggo/internal/utils/pagination"
 	"bloggo/internal/utils/schemas/responses"
@@ -44,7 +45,7 @@ func (service *CategoryService) CategoryCreate(
 	}
 
 	// Log the action
-	audit.LogAction(&userId, "category", id, "created")
+	audit.LogCategoryAction(&userId, id, auditmodels.ActionCategoryCreated, nil, nil)
 
 	return &responses.ResponseCreated{
 		Id: id,
@@ -123,7 +124,7 @@ func (service *CategoryService) CategoryUpdate(
 	}
 
 	// Log the action
-	audit.LogAction(&userId, "category", category.Id, "updated")
+	audit.LogCategoryAction(&userId, category.Id, auditmodels.ActionCategoryUpdated, nil, nil)
 	return nil
 }
 
@@ -150,7 +151,7 @@ func (service *CategoryService) CategoryDelete(
 	}
 
 	// Log the action
-	audit.LogAction(&userId, "category", category.Id, "deleted")
+	audit.LogCategoryAction(&userId, category.Id, auditmodels.ActionCategoryDeleted, nil, nil)
 	return nil
 }
 

@@ -3,6 +3,8 @@ package session
 import (
 	"bloggo/internal/config"
 	"bloggo/internal/infrastructure/tokens"
+	"bloggo/internal/module/audit"
+	auditmodels "bloggo/internal/module/audit/models"
 	"bloggo/internal/module/session/models"
 	"bloggo/internal/utils/apierrors"
 	"bloggo/internal/utils/cryptography"
@@ -94,6 +96,9 @@ func (service *SessionService) CreateSession(
 		Permissions: permissions,
 	}
 
+	// Log login action
+	audit.LogAuthAction(&details.UserId, auditmodels.ActionLogin, nil, nil)
+
 	return sessionData, refreshToken, nil
 }
 
@@ -153,6 +158,14 @@ func (service *SessionService) RefreshSession(
 func (service *SessionService) RevokeSession(
 	refreshToken string,
 ) {
+	// Get user ID before deleting token for audit logging
+	userId, found := service.refreshStore.Get(refreshToken)
+
 	// Revoke refresh token
 	service.refreshStore.Delete(refreshToken)
+
+	// Log logout action if we found the user
+	if found {
+		audit.LogAuthAction(&userId, auditmodels.ActionLogout, nil, nil)
+	}
 }

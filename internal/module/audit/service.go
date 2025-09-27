@@ -1,62 +1,207 @@
 package audit
 
 import (
-	"bloggo/internal/infrastructure/permissions"
 	"bloggo/internal/module/audit/models"
-	"bloggo/internal/utils/apierrors"
-	"bloggo/internal/utils/pagination"
-	"bloggo/internal/utils/schemas/responses"
 )
 
 type AuditService struct {
-	repository  AuditRepository
-	permissions permissions.Store
+	repository AuditRepository
 }
 
-func NewAuditService(repository AuditRepository, permissions permissions.Store) AuditService {
+func NewAuditService(repository AuditRepository) AuditService {
 	return AuditService{
 		repository,
-		permissions,
 	}
 }
 
-func (service *AuditService) GetAuditLogs(
-	pagination *pagination.PaginationOptions,
-	userRoleId int64,
-) (*responses.PaginatedResponse[models.ResponseAuditLog], error) {
-	// Check if user has permission to view audit logs
-	hasPermission := service.permissions.HasPermission(userRoleId, "auditlog:view")
-	if !hasPermission {
-		return nil, apierrors.ErrForbidden
-	}
+// LogAction logs an audit event
+func (service *AuditService) LogAction(entry *models.AuditLogEntry) error {
+	return service.repository.LogAction(entry)
+}
 
-	// Get the audit logs data
-	auditLogs, err := service.repository.GetAuditLogs(pagination)
+// GetAuditLogs retrieves audit logs with pagination
+func (service *AuditService) GetAuditLogs(limit, offset int) (models.AuditLogListResponse, error) {
+	logs, err := service.repository.GetAuditLogs(limit, offset)
 	if err != nil {
-		return nil, err
+		return models.AuditLogListResponse{}, err
 	}
 
-	// Get the total count
-	total, err := service.repository.GetAuditLogsCount()
+	// Ensure logs is never nil
+	if logs == nil {
+		logs = []models.AuditLogResponse{}
+	}
+
+	total, err := service.repository.CountAuditLogs()
 	if err != nil {
-		return nil, err
+		return models.AuditLogListResponse{}, err
 	}
 
-	// Set default values for page and take if they're nil
-	page := 1
-	if pagination.Page != nil {
-		page = *pagination.Page
-	}
-
-	take := 20 // default take value
-	if pagination.Take != nil {
-		take = *pagination.Take
-	}
-
-	return &responses.PaginatedResponse[models.ResponseAuditLog]{
-		Data:  auditLogs,
-		Page:  page,
-		Take:  take,
-		Total: int64(total),
+	return models.AuditLogListResponse{
+		Logs:  logs,
+		Total: total,
 	}, nil
 }
+
+// GetAuditLogsWithFilters retrieves audit logs with filters and pagination
+func (service *AuditService) GetAuditLogsWithFilters(limit, offset int, userIDs []int64, entityTypes, actions []string) (models.AuditLogListResponse, error) {
+	logs, err := service.repository.GetAuditLogsWithFilters(limit, offset, userIDs, entityTypes, actions)
+	if err != nil {
+		return models.AuditLogListResponse{}, err
+	}
+
+	// Ensure logs is never nil
+	if logs == nil {
+		logs = []models.AuditLogResponse{}
+	}
+
+	total, err := service.repository.CountAuditLogsWithFilters(userIDs, entityTypes, actions)
+	if err != nil {
+		return models.AuditLogListResponse{}, err
+	}
+
+	return models.AuditLogListResponse{
+		Logs:  logs,
+		Total: total,
+	}, nil
+}
+
+// GetAuditLogsByEntity retrieves audit logs for a specific entity
+func (service *AuditService) GetAuditLogsByEntity(entityType string, entityID int64, limit, offset int) (models.AuditLogListResponse, error) {
+	logs, err := service.repository.GetAuditLogsByEntity(entityType, entityID, limit, offset)
+	if err != nil {
+		return models.AuditLogListResponse{}, err
+	}
+
+	// Ensure logs is never nil
+	if logs == nil {
+		logs = []models.AuditLogResponse{}
+	}
+
+	total, err := service.repository.CountAuditLogsByEntity(entityType, entityID)
+	if err != nil {
+		return models.AuditLogListResponse{}, err
+	}
+
+	return models.AuditLogListResponse{
+		Logs:  logs,
+		Total: total,
+	}, nil
+}
+
+// GetAuditLogsByUser retrieves audit logs for a specific user
+func (service *AuditService) GetAuditLogsByUser(userID int64, limit, offset int) (models.AuditLogListResponse, error) {
+	logs, err := service.repository.GetAuditLogsByUser(userID, limit, offset)
+	if err != nil {
+		return models.AuditLogListResponse{}, err
+	}
+
+	// Ensure logs is never nil
+	if logs == nil {
+		logs = []models.AuditLogResponse{}
+	}
+
+	total, err := service.repository.CountAuditLogsByUser(userID)
+	if err != nil {
+		return models.AuditLogListResponse{}, err
+	}
+
+	return models.AuditLogListResponse{
+		Logs:  logs,
+		Total: total,
+	}, nil
+}
+
+// Helper functions to create audit log entries
+
+// LogUserAction logs a user-related action
+func (service *AuditService) LogUserAction(userID, targetUserID *int64, action string, oldValues, newValues map[string]interface{}) error {
+	entry := &models.AuditLogEntry{
+		UserID:     userID,
+		EntityType: models.EntityUser,
+		EntityID:   *targetUserID,
+		Action:     action,
+		OldValues:  oldValues,
+		NewValues:  newValues,
+	}
+
+	return service.LogAction(entry)
+}
+
+// LogPostAction logs a post-related action
+func (service *AuditService) LogPostAction(userID *int64, postID int64, action string, oldValues, newValues map[string]interface{}) error {
+	entry := &models.AuditLogEntry{
+		UserID:     userID,
+		EntityType: models.EntityPost,
+		EntityID:   postID,
+		Action:     action,
+		OldValues:  oldValues,
+		NewValues:  newValues,
+	}
+
+	return service.LogAction(entry)
+}
+
+// LogVersionAction logs a post version-related action
+func (service *AuditService) LogVersionAction(userID *int64, versionID int64, action string, oldValues, newValues map[string]interface{}, metadata map[string]interface{}) error {
+	entry := &models.AuditLogEntry{
+		UserID:     userID,
+		EntityType: models.EntityPostVersion,
+		EntityID:   versionID,
+		Action:     action,
+		OldValues:  oldValues,
+		NewValues:  newValues,
+		Metadata:   metadata,
+	}
+
+	return service.LogAction(entry)
+}
+
+// LogCategoryAction logs a category-related action
+func (service *AuditService) LogCategoryAction(userID *int64, categoryID int64, action string, oldValues, newValues map[string]interface{}) error {
+	entry := &models.AuditLogEntry{
+		UserID:     userID,
+		EntityType: models.EntityCategory,
+		EntityID:   categoryID,
+		Action:     action,
+		OldValues:  oldValues,
+		NewValues:  newValues,
+	}
+
+	return service.LogAction(entry)
+}
+
+// LogTagAction logs a tag-related action
+func (service *AuditService) LogTagAction(userID *int64, tagID int64, action string, oldValues, newValues map[string]interface{}) error {
+	entry := &models.AuditLogEntry{
+		UserID:     userID,
+		EntityType: models.EntityTag,
+		EntityID:   tagID,
+		Action:     action,
+		OldValues:  oldValues,
+		NewValues:  newValues,
+	}
+
+	return service.LogAction(entry)
+}
+
+// LogAuthAction logs an authentication-related action
+func (service *AuditService) LogAuthAction(userID *int64, action string, oldValues, newValues map[string]interface{}) error {
+	// For auth actions, we use the userID as the entityID since auth is tied to a specific user
+	// If userID is nil (system action), we'll use 0 as placeholder
+	entityID := int64(0)
+	if userID != nil {
+		entityID = *userID
+	}
+
+	entry := &models.AuditLogEntry{
+		UserID:     userID,
+		EntityType: models.EntityAuth,
+		EntityID:   entityID,
+		Action:     action,
+		OldValues:  oldValues,
+		NewValues:  newValues,
+	}
+
+	return service.LogAction(entry)
+}
+

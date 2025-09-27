@@ -3,7 +3,6 @@ package audit
 import (
 	"bloggo/internal/config"
 	"bloggo/internal/db"
-	"bloggo/internal/infrastructure/permissions"
 	"bloggo/internal/middleware"
 	"github.com/go-chi/chi"
 )
@@ -17,16 +16,17 @@ func NewModule() *Module {
 func (m *Module) RegisterModule(router *chi.Mux) {
 	// Initialize dependencies
 	database := db.Get()
-	permissionStore := permissions.Get()
 	config := config.Get()
 
 	// Create layers
 	repository := NewAuditRepository(database)
-	service := NewAuditService(repository, permissionStore)
+	service := NewAuditService(repository)
 	handler := NewAuditHandler(service)
 
 	// Define routes
-	router.With(middleware.AuthMiddleware(&config)).Route("/audit", func(r chi.Router) {
-		r.Get("/logs", handler.GetAuditLogs)
+	router.With(middleware.AuthMiddleware(&config)).Route("/audit-logs", func(r chi.Router) {
+		r.Get("/", handler.GetAuditLogs)
+		r.Get("/entity/{type}/{id}", handler.GetAuditLogsByEntity)
+		r.Get("/user/{id}", handler.GetAuditLogsByUser)
 	})
 }
