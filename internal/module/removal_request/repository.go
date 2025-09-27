@@ -4,6 +4,8 @@ import (
 	"bloggo/internal/module/removal_request/models"
 	"bloggo/internal/utils/apierrors"
 	"database/sql"
+	"fmt"
+	"time"
 )
 
 type RemovalRequestRepository struct {
@@ -55,6 +57,8 @@ func (repository *RemovalRequestRepository) GetRemovalRequestList() (
 		var decidedById sql.NullInt64
 		var decidedByName sql.NullString
 		var decidedByAvatar sql.NullString
+		var decidedAtStr sql.NullString
+		var createdAtStr string
 
 		err := rows.Scan(
 			&request.Id,
@@ -68,18 +72,45 @@ func (repository *RemovalRequestRepository) GetRemovalRequestList() (
 			&decidedById,
 			&decidedByName,
 			&decidedByAvatar,
-			&request.DecidedAt,
-			&request.CreatedAt,
+			&decidedAtStr,
+			&createdAtStr,
 		)
 		if err != nil {
 			return nil, err
 		}
 
+		// Parse created_at timestamp
+		createdAt, err := time.Parse("2006-01-02 15:04:05", createdAtStr)
+		if err != nil {
+			return nil, err
+		}
+		request.CreatedAt = createdAt
+
+		// Parse decided_at timestamp if present
+		if decidedAtStr.Valid {
+			decidedAt, err := time.Parse("2006-01-02 15:04:05", decidedAtStr.String)
+			if err != nil {
+				return nil, err
+			}
+			request.DecidedAt = &decidedAt
+		}
+
+		// Format requested_by avatar URL
+		if request.RequestedBy.Avatar != nil && *request.RequestedBy.Avatar != "" {
+			avatarPath := fmt.Sprintf("/uploads/avatar/%s", *request.RequestedBy.Avatar)
+			request.RequestedBy.Avatar = &avatarPath
+		}
+
 		if decidedById.Valid {
+			var decidedByAvatarPath *string
+			if decidedByAvatar.Valid && decidedByAvatar.String != "" {
+				avatarPath := fmt.Sprintf("/uploads/avatar/%s", decidedByAvatar.String)
+				decidedByAvatarPath = &avatarPath
+			}
 			request.DecidedBy = &models.UserInfo{
 				Id:     decidedById.Int64,
 				Name:   decidedByName.String,
-				Avatar: &decidedByAvatar.String,
+				Avatar: decidedByAvatarPath,
 			}
 		}
 
@@ -98,6 +129,8 @@ func (repository *RemovalRequestRepository) GetRemovalRequestById(
 	var decidedById sql.NullInt64
 	var decidedByName sql.NullString
 	var decidedByAvatar sql.NullString
+	var decidedAtStr sql.NullString
+	var createdAtStr string
 
 	err := row.Scan(
 		&request.Id,
@@ -112,8 +145,8 @@ func (repository *RemovalRequestRepository) GetRemovalRequestById(
 		&decidedById,
 		&decidedByName,
 		&decidedByAvatar,
-		&request.DecidedAt,
-		&request.CreatedAt,
+		&decidedAtStr,
+		&createdAtStr,
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -122,11 +155,38 @@ func (repository *RemovalRequestRepository) GetRemovalRequestById(
 		return nil, err
 	}
 
+	// Parse created_at timestamp
+	createdAt, err := time.Parse("2006-01-02 15:04:05", createdAtStr)
+	if err != nil {
+		return nil, err
+	}
+	request.CreatedAt = createdAt
+
+	// Parse decided_at timestamp if present
+	if decidedAtStr.Valid {
+		decidedAt, err := time.Parse("2006-01-02 15:04:05", decidedAtStr.String)
+		if err != nil {
+			return nil, err
+		}
+		request.DecidedAt = &decidedAt
+	}
+
+	// Format requested_by avatar URL
+	if request.RequestedBy.Avatar != nil && *request.RequestedBy.Avatar != "" {
+		avatarPath := fmt.Sprintf("/uploads/avatar/%s", *request.RequestedBy.Avatar)
+		request.RequestedBy.Avatar = &avatarPath
+	}
+
 	if decidedById.Valid {
+		var decidedByAvatarPath *string
+		if decidedByAvatar.Valid && decidedByAvatar.String != "" {
+			avatarPath := fmt.Sprintf("/uploads/avatar/%s", decidedByAvatar.String)
+			decidedByAvatarPath = &avatarPath
+		}
 		request.DecidedBy = &models.UserInfo{
 			Id:     decidedById.Int64,
 			Name:   decidedByName.String,
-			Avatar: &decidedByAvatar.String,
+			Avatar: decidedByAvatarPath,
 		}
 	}
 
@@ -148,6 +208,8 @@ func (repository *RemovalRequestRepository) GetUserRemovalRequests(
 		var decidedById sql.NullInt64
 		var decidedByName sql.NullString
 		var decidedByAvatar sql.NullString
+		var decidedAtStr sql.NullString
+		var createdAtStr string
 
 		err := rows.Scan(
 			&request.Id,
@@ -161,18 +223,45 @@ func (repository *RemovalRequestRepository) GetUserRemovalRequests(
 			&decidedById,
 			&decidedByName,
 			&decidedByAvatar,
-			&request.DecidedAt,
-			&request.CreatedAt,
+			&decidedAtStr,
+			&createdAtStr,
 		)
 		if err != nil {
 			return nil, err
 		}
 
+		// Parse created_at timestamp
+		createdAt, err := time.Parse("2006-01-02 15:04:05", createdAtStr)
+		if err != nil {
+			return nil, err
+		}
+		request.CreatedAt = createdAt
+
+		// Parse decided_at timestamp if present
+		if decidedAtStr.Valid {
+			decidedAt, err := time.Parse("2006-01-02 15:04:05", decidedAtStr.String)
+			if err != nil {
+				return nil, err
+			}
+			request.DecidedAt = &decidedAt
+		}
+
+		// Format requested_by avatar URL
+		if request.RequestedBy.Avatar != nil && *request.RequestedBy.Avatar != "" {
+			avatarPath := fmt.Sprintf("/uploads/avatar/%s", *request.RequestedBy.Avatar)
+			request.RequestedBy.Avatar = &avatarPath
+		}
+
 		if decidedById.Valid {
+			var decidedByAvatarPath *string
+			if decidedByAvatar.Valid && decidedByAvatar.String != "" {
+				avatarPath := fmt.Sprintf("/uploads/avatar/%s", decidedByAvatar.String)
+				decidedByAvatarPath = &avatarPath
+			}
 			request.DecidedBy = &models.UserInfo{
 				Id:     decidedById.Int64,
 				Name:   decidedByName.String,
-				Avatar: &decidedByAvatar.String,
+				Avatar: decidedByAvatarPath,
 			}
 		}
 
@@ -264,13 +353,13 @@ func (repository *RemovalRequestRepository) IsVersionCurrentlyPublished(
 	versionId int64,
 ) (bool, error) {
 	row := repository.database.QueryRow(QueryCheckIfVersionIsCurrentlyPublished, versionId)
-	
+
 	var count int64
 	err := row.Scan(&count)
 	if err != nil {
 		return false, err
 	}
-	
+
 	return count > 0, nil
 }
 
@@ -288,16 +377,16 @@ func (repository *RemovalRequestRepository) SoftDeleteVersion(
 	if err != nil {
 		return err
 	}
-	
+
 	affected, err := result.RowsAffected()
 	if err != nil {
 		return err
 	}
-	
+
 	if affected < 1 {
 		return apierrors.ErrNotFound
 	}
-	
+
 	return nil
 }
 
@@ -305,7 +394,7 @@ func (repository *RemovalRequestRepository) GetVersionCoverImage(
 	versionId int64,
 ) (*string, error) {
 	row := repository.database.QueryRow(QueryGetVersionCoverImage, versionId)
-	
+
 	var coverImage sql.NullString
 	err := row.Scan(&coverImage)
 	if err != nil {
@@ -314,7 +403,7 @@ func (repository *RemovalRequestRepository) GetVersionCoverImage(
 		}
 		return nil, err
 	}
-	
+
 	if coverImage.Valid && coverImage.String != "" {
 		return &coverImage.String, nil
 	}
@@ -326,12 +415,12 @@ func (repository *RemovalRequestRepository) IsImageReferencedByOtherVersions(
 	excludeVersionId int64,
 ) (bool, error) {
 	row := repository.database.QueryRow(QueryCheckImageReferences, imagePath, excludeVersionId)
-	
+
 	var count int64
 	err := row.Scan(&count)
 	if err != nil {
 		return false, err
 	}
-	
+
 	return count > 0, nil
 }
