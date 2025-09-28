@@ -17,7 +17,7 @@ func NewSearchRepository(database *sql.DB) SearchRepository {
 }
 
 func (repository *SearchRepository) SearchAll(query string, limit int) ([]models.SearchResult, error) {
-	var results []models.SearchResult
+	results := []models.SearchResult{}
 	searchTerm := fmt.Sprintf("%%%s%%", query)
 	perTypeLimit := limit / 4 // Distribute limit across 4 types
 
@@ -156,7 +156,7 @@ func (repository *SearchRepository) countUsers(searchTerm string) (int, error) {
 }
 
 func (repository *SearchRepository) scanResults(rows *sql.Rows) ([]models.SearchResult, error) {
-	var results []models.SearchResult
+	results := []models.SearchResult{}
 
 	for rows.Next() {
 		var result models.SearchResult
