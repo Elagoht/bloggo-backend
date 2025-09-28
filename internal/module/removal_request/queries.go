@@ -72,6 +72,11 @@ const (
 	SET status = 2, decided_by = ?, decision_note = ?, decided_at = CURRENT_TIMESTAMP
 	WHERE id = ? AND status = 0;`
 
+	QueryAutoApproveOtherRemovalRequests = `
+	UPDATE removal_requests
+	SET status = 1, decided_by = ?, decision_note = ?, decided_at = CURRENT_TIMESTAMP
+	WHERE post_version_id = ? AND status = 0 AND id != ?;`
+
 	QueryDeleteRemovalRequestsByVersionId = `
 	DELETE FROM removal_requests
 	WHERE post_version_id = ?;`

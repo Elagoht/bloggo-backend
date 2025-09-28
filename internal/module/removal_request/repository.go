@@ -508,6 +508,22 @@ func (repository *RemovalRequestRepository) RejectRemovalRequest(
 	return nil
 }
 
+func (repository *RemovalRequestRepository) AutoApproveOtherRemovalRequests(
+	postVersionId int64,
+	excludeRequestId int64,
+	decidedBy int64,
+	decisionNote *string,
+) error {
+	_, err := repository.database.Exec(
+		QueryAutoApproveOtherRemovalRequests,
+		decidedBy,
+		decisionNote,
+		postVersionId,
+		excludeRequestId,
+	)
+	return err
+}
+
 func (repository *RemovalRequestRepository) IsVersionCurrentlyPublished(
 	versionId int64,
 ) (bool, error) {

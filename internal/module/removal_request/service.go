@@ -169,6 +169,19 @@ func (service *RemovalRequestService) ApproveRemovalRequest(
 		return err
 	}
 
+	// Auto-approve all other pending removal requests for the same post version
+	autoApprovalNote := "Automatically approved - post version was already deleted"
+	err = service.repository.AutoApproveOtherRemovalRequests(
+		request.PostVersionId,
+		id,
+		decidedBy,
+		&autoApprovalNote,
+	)
+	if err != nil {
+		// Log error but don't fail the operation
+		// The main request was already approved successfully
+	}
+
 	// Log the audit events
 	audit.LogAction(&decidedBy, "removal_request", id, "approved")
 	audit.LogAction(&decidedBy, "post_version", request.PostVersionId, "deleted")
