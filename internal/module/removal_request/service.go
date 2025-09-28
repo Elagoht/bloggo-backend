@@ -6,6 +6,8 @@ import (
 	postmodels "bloggo/internal/module/post/models"
 	"bloggo/internal/module/removal_request/models"
 	"bloggo/internal/utils/apierrors"
+	"bloggo/internal/utils/filter"
+	"bloggo/internal/utils/pagination"
 	"bloggo/internal/utils/schemas/responses"
 )
 
@@ -70,14 +72,17 @@ func (service *RemovalRequestService) CreateRemovalRequest(
 
 func (service *RemovalRequestService) GetRemovalRequestList(
 	userRoleId int64,
-) ([]models.RemovalRequestCard, error) {
+	paginate *pagination.PaginationOptions,
+	search *filter.SearchOptions,
+	status *int,
+) (*responses.PaginatedResponse[models.RemovalRequestCard], error) {
 	// Check if user has permission to view all removal requests (editors/admins)
 	hasPermission := service.permissions.HasPermission(userRoleId, "post:delete")
 	if !hasPermission {
 		return nil, apierrors.ErrForbidden
 	}
 
-	return service.repository.GetRemovalRequestList()
+	return service.repository.GetRemovalRequestList(paginate, search, status)
 }
 
 func (service *RemovalRequestService) GetRemovalRequestById(

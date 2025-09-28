@@ -3,6 +3,9 @@ package removal_request
 import (
 	"bloggo/internal/module/removal_request/models"
 	"bloggo/internal/utils/apierrors"
+	"bloggo/internal/utils/filter"
+	"bloggo/internal/utils/pagination"
+	"bloggo/internal/utils/schemas/responses"
 	"database/sql"
 	"fmt"
 	"path/filepath"
@@ -43,11 +46,88 @@ func (repository *RemovalRequestRepository) CreateRemovalRequest(
 	return id, nil
 }
 
-func (repository *RemovalRequestRepository) GetRemovalRequestList() (
-	[]models.RemovalRequestCard,
-	error,
-) {
-	rows, err := repository.database.Query(QueryGetRemovalRequestList)
+func (repository *RemovalRequestRepository) GetRemovalRequestList(
+	paginate *pagination.PaginationOptions,
+	search *filter.SearchOptions,
+	status *int,
+) (*responses.PaginatedResponse[models.RemovalRequestCard], error) {
+	// Build the base query
+	baseQuery := `
+	SELECT
+		rr.id, rr.post_version_id, pv.title as post_title,
+		u1.id as requested_by_id, u1.name as requested_by_name, u1.avatar as requested_by_avatar,
+		rr.note, rr.status,
+		u2.id as decided_by_id, u2.name as decided_by_name, u2.avatar as decided_by_avatar,
+		rr.decided_at, rr.created_at
+	FROM removal_requests rr
+	JOIN post_versions pv ON rr.post_version_id = pv.id
+	JOIN users u1 ON rr.requested_by = u1.id
+	LEFT JOIN users u2 ON rr.decided_by = u2.id
+	WHERE 1=1`
+
+	var args []any
+	var conditions []string
+
+	// Add status filter
+	if status != nil {
+		conditions = append(conditions, "rr.status = ?")
+		args = append(args, *status)
+	}
+
+	// Add search filter
+	if search != nil && search.Q != nil {
+		searchClause, searchArgs := filter.BuildSearchClause(search, []string{
+			"pv.title", "u1.name", "rr.note",
+		})
+		if searchClause != "" {
+			conditions = append(conditions, strings.TrimPrefix(searchClause, "AND "))
+			args = append(args, searchArgs...)
+		}
+	}
+
+	// Add conditions to query
+	if len(conditions) > 0 {
+		baseQuery += " AND " + strings.Join(conditions, " AND ")
+	}
+
+	// Add ordering
+	orderClause := "ORDER BY rr.created_at DESC"
+	if paginate != nil && paginate.OrderBy != nil {
+		direction := "ASC"
+		if paginate.Direction != nil && *paginate.Direction == "desc" {
+			direction = "DESC"
+		}
+
+		switch *paginate.OrderBy {
+		case "created_at":
+			orderClause = "ORDER BY rr.created_at " + direction
+		case "decided_at":
+			orderClause = "ORDER BY rr.decided_at " + direction
+		case "post_title":
+			orderClause = "ORDER BY pv.title " + direction
+		case "requested_by_name":
+			orderClause = "ORDER BY u1.name " + direction
+		case "status":
+			orderClause = "ORDER BY rr.status " + direction
+		}
+	}
+
+	baseQuery += " " + orderClause
+
+	// Add pagination
+	var limit, offset int = 10, 0
+	if paginate != nil {
+		if paginate.Take != nil {
+			limit = *paginate.Take
+		}
+		if paginate.Page != nil {
+			offset = (*paginate.Page - 1) * limit
+		}
+	}
+	baseQuery += fmt.Sprintf(" LIMIT %d OFFSET %d", limit, offset)
+
+	// Execute the query
+	rows, err := repository.database.Query(baseQuery, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -119,7 +199,37 @@ func (repository *RemovalRequestRepository) GetRemovalRequestList() (
 		requests = append(requests, request)
 	}
 
-	return requests, nil
+	// Get total count for pagination
+	countQuery := `
+	SELECT COUNT(*)
+	FROM removal_requests rr
+	JOIN post_versions pv ON rr.post_version_id = pv.id
+	JOIN users u1 ON rr.requested_by = u1.id
+	LEFT JOIN users u2 ON rr.decided_by = u2.id
+	WHERE 1=1`
+
+	if len(conditions) > 0 {
+		countQuery += " AND " + strings.Join(conditions, " AND ")
+	}
+
+	var total int64
+	err = repository.database.QueryRow(countQuery, args...).Scan(&total)
+	if err != nil {
+		return nil, err
+	}
+
+	// Calculate pagination info
+	currentPage := 1
+	if paginate != nil && paginate.Page != nil {
+		currentPage = *paginate.Page
+	}
+
+	return &responses.PaginatedResponse[models.RemovalRequestCard]{
+		Data:  requests,
+		Total: total,
+		Page:  currentPage,
+		Take:  limit,
+	}, nil
 }
 
 func (repository *RemovalRequestRepository) GetRemovalRequestById(

@@ -3,7 +3,9 @@ package removal_request
 import (
 	"bloggo/internal/module/removal_request/models"
 	"bloggo/internal/utils/apierrors"
+	"bloggo/internal/utils/filter"
 	"bloggo/internal/utils/handlers"
+	"bloggo/internal/utils/pagination"
 	"encoding/json"
 	"net/http"
 )
@@ -75,7 +77,25 @@ func (handler *RemovalRequestHandler) GetRemovalRequestList(
 		return
 	}
 
-	requests, err := handler.service.GetRemovalRequestList(roleId)
+	paginate, ok := pagination.GetPaginationOptions(writer, request, []string{
+		"created_at", "decided_at", "post_title", "requested_by_name", "status",
+	})
+	if !ok {
+		return
+	}
+
+	search, ok := filter.GetSearchOptions(writer, request)
+	if !ok {
+		return
+	}
+
+	status, okStatus := handlers.GetQuery[int](writer, request, "status")
+	var statusPtr *int
+	if okStatus {
+		statusPtr = &status
+	}
+
+	requests, err := handler.service.GetRemovalRequestList(roleId, paginate, search, statusPtr)
 	if err != nil {
 		apierrors.MapErrors(err, writer, nil)
 		return
