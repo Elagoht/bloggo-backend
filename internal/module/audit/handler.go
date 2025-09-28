@@ -34,8 +34,16 @@ func (handler *AuditHandler) GetAuditLogs(
 		return
 	}
 
-	// Calculate offset
-	offset := (*paginationOptions.Page - 1) * *paginationOptions.Take
+	// Set defaults and calculate offset
+	page := 1
+	take := 20
+	if paginationOptions.Page != nil {
+		page = *paginationOptions.Page
+	}
+	if paginationOptions.Take != nil {
+		take = *paginationOptions.Take
+	}
+	offset := (page - 1) * take
 
 	// Get filter parameters
 	query := request.URL.Query()
@@ -75,7 +83,7 @@ func (handler *AuditHandler) GetAuditLogs(
 		}
 	}
 
-	logs, err := handler.service.GetAuditLogsWithFilters(*paginationOptions.Take, offset, userIDs, entityTypes, actions)
+	logs, err := handler.service.GetAuditLogsWithFilters(take, offset, userIDs, entityTypes, actions)
 	if err != nil {
 		http.Error(writer, "Failed to retrieve audit logs", http.StatusInternalServerError)
 		return
@@ -109,8 +117,16 @@ func (handler *AuditHandler) GetAuditLogsByEntity(
 		return
 	}
 
-	// Calculate offset
-	offset := (*paginationOptions.Page - 1) * *paginationOptions.Take
+	// Set defaults and calculate offset
+	page := 1
+	take := 20
+	if paginationOptions.Page != nil {
+		page = *paginationOptions.Page
+	}
+	if paginationOptions.Take != nil {
+		take = *paginationOptions.Take
+	}
+	offset := (page - 1) * take
 
 	logs, err := handler.service.GetAuditLogsByEntity(entityType, entityID, *paginationOptions.Take, offset)
 	if err != nil {
@@ -141,8 +157,16 @@ func (handler *AuditHandler) GetAuditLogsByUser(
 		return
 	}
 
-	// Calculate offset
-	offset := (*paginationOptions.Page - 1) * *paginationOptions.Take
+	// Set defaults and calculate offset
+	page := 1
+	take := 20
+	if paginationOptions.Page != nil {
+		page = *paginationOptions.Page
+	}
+	if paginationOptions.Take != nil {
+		take = *paginationOptions.Take
+	}
+	offset := (page - 1) * take
 
 	logs, err := handler.service.GetAuditLogsByUser(userID, *paginationOptions.Take, offset)
 	if err != nil {
