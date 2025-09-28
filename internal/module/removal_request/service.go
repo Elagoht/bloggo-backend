@@ -34,15 +34,10 @@ func (service *RemovalRequestService) CreateRemovalRequest(
 	requestedBy int64,
 	note *string,
 ) (*responses.ResponseCreated, error) {
-	// Check if the version exists and get its owner and status
+	// Check if the version exists and get its status
 	versionInfo, err := service.repository.GetVersionOwnerAndStatus(postVersionId)
 	if err != nil {
 		return nil, err
-	}
-
-	// Check if the requester is the owner of the version
-	if versionInfo.CreatedBy != requestedBy {
-		return nil, apierrors.ErrForbidden
 	}
 
 	// Check if the version is published or approved (can only request removal for these)

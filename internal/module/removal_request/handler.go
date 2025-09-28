@@ -49,10 +49,6 @@ func (handler *RemovalRequestHandler) CreateRemovalRequest(
 	)
 	if err != nil {
 		apierrors.MapErrors(err, writer, apierrors.HTTPErrorMapping{
-			apierrors.ErrForbidden: {
-				Message: "You can only request removal of your own published or approved versions.",
-				Status:  http.StatusForbidden,
-			},
 			apierrors.ErrPreconditionFailed: {
 				Message: "Only published or approved versions can be requested for removal.",
 				Status:  http.StatusPreconditionFailed,
