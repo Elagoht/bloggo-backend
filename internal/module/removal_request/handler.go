@@ -49,10 +49,6 @@ func (handler *RemovalRequestHandler) CreateRemovalRequest(
 	)
 	if err != nil {
 		apierrors.MapErrors(err, writer, apierrors.HTTPErrorMapping{
-			apierrors.ErrPreconditionFailed: {
-				Message: "Only published or approved versions can be requested for removal.",
-				Status:  http.StatusPreconditionFailed,
-			},
 			apierrors.ErrConflict: {
 				Message: "You already have a pending removal request for this version.",
 				Status:  http.StatusConflict,

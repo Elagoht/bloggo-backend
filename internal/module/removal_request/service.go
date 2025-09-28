@@ -3,7 +3,6 @@ package removal_request
 import (
 	"bloggo/internal/infrastructure/bucket"
 	"bloggo/internal/infrastructure/permissions"
-	postmodels "bloggo/internal/module/post/models"
 	"bloggo/internal/module/removal_request/models"
 	"bloggo/internal/utils/apierrors"
 	"bloggo/internal/utils/audit"
@@ -35,15 +34,10 @@ func (service *RemovalRequestService) CreateRemovalRequest(
 	requestedBy int64,
 	note *string,
 ) (*responses.ResponseCreated, error) {
-	// Check if the version exists and get its status
-	versionInfo, err := service.repository.GetVersionOwnerAndStatus(postVersionId)
+	// Check if the version exists (but allow all statuses)
+	_, err := service.repository.GetVersionOwnerAndStatus(postVersionId)
 	if err != nil {
 		return nil, err
-	}
-
-	// Check if the version is published or approved (can only request removal for these)
-	if versionInfo.Status != postmodels.STATUS_PUBLISHED && versionInfo.Status != postmodels.STATUS_APPROVED {
-		return nil, apierrors.ErrPreconditionFailed
 	}
 
 	// Check if there's already a pending removal request for this version by this user
