@@ -19,6 +19,7 @@ const (
 			WHEN al.entity_type = 'tag' THEN (SELECT name FROM tags WHERE id = al.entity_id)
 			WHEN al.entity_type = 'post' THEN (SELECT pv.title FROM post_versions pv JOIN posts p ON p.current_version_id = pv.id WHERE p.id = al.entity_id)
 			WHEN al.entity_type = 'post_version' THEN (SELECT title FROM post_versions WHERE id = al.entity_id)
+			WHEN al.entity_type = 'removal_request' THEN (SELECT pv.title FROM post_versions pv JOIN removal_requests rr ON rr.post_version_id = pv.id WHERE rr.id = al.entity_id)
 			ELSE NULL
 		END as entity_name
 	FROM audit_logs al
@@ -38,6 +39,7 @@ const (
 			WHEN al.entity_type = 'tag' THEN (SELECT name FROM tags WHERE id = al.entity_id)
 			WHEN al.entity_type = 'post' THEN (SELECT pv.title FROM post_versions pv JOIN posts p ON p.current_version_id = pv.id WHERE p.id = al.entity_id)
 			WHEN al.entity_type = 'post_version' THEN (SELECT title FROM post_versions WHERE id = al.entity_id)
+			WHEN al.entity_type = 'removal_request' THEN (SELECT pv.title FROM post_versions pv JOIN removal_requests rr ON rr.post_version_id = pv.id WHERE rr.id = al.entity_id)
 			ELSE NULL
 		END as entity_name
 	FROM audit_logs al
@@ -58,6 +60,7 @@ const (
 			WHEN al.entity_type = 'tag' THEN (SELECT name FROM tags WHERE id = al.entity_id)
 			WHEN al.entity_type = 'post' THEN (SELECT pv.title FROM post_versions pv JOIN posts p ON p.current_version_id = pv.id WHERE p.id = al.entity_id)
 			WHEN al.entity_type = 'post_version' THEN (SELECT title FROM post_versions WHERE id = al.entity_id)
+			WHEN al.entity_type = 'removal_request' THEN (SELECT pv.title FROM post_versions pv JOIN removal_requests rr ON rr.post_version_id = pv.id WHERE rr.id = al.entity_id)
 			ELSE NULL
 		END as entity_name
 	FROM audit_logs al
@@ -89,6 +92,7 @@ const (
 			WHEN al.entity_type = 'tag' THEN (SELECT name FROM tags WHERE id = al.entity_id)
 			WHEN al.entity_type = 'post' THEN (SELECT pv.title FROM post_versions pv JOIN posts p ON p.current_version_id = pv.id WHERE p.id = al.entity_id)
 			WHEN al.entity_type = 'post_version' THEN (SELECT title FROM post_versions WHERE id = al.entity_id)
+			WHEN al.entity_type = 'removal_request' THEN (SELECT pv.title FROM post_versions pv JOIN removal_requests rr ON rr.post_version_id = pv.id WHERE rr.id = al.entity_id)
 			ELSE NULL
 		END as entity_name
 	FROM audit_logs al

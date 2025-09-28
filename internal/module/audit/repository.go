@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"strings"
+	"time"
 )
 
 type AuditRepository struct {
@@ -202,6 +203,7 @@ func (repository *AuditRepository) scanAuditLogs(rows *sql.Rows) ([]models.Audit
 	for rows.Next() {
 		var log models.AuditLogResponse
 		var metadataJSON sql.NullString
+		var createdAtStr string
 
 		err := rows.Scan(
 			&log.ID,
@@ -211,12 +213,17 @@ func (repository *AuditRepository) scanAuditLogs(rows *sql.Rows) ([]models.Audit
 			&log.EntityID,
 			&log.Action,
 			&metadataJSON,
-			&log.CreatedAt,
+			&createdAtStr,
 			&log.EntityName,
 		)
 
 		if err != nil {
 			return nil, err
+		}
+
+		// Parse the timestamp string to time.Time
+		if parsedTime, err := time.Parse("2006-01-02 15:04:05", createdAtStr); err == nil {
+			log.CreatedAt = parsedTime
 		}
 
 		// Parse JSON strings back to maps

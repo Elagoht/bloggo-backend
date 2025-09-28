@@ -6,5 +6,5 @@ type RequestCreateRemovalRequest struct {
 }
 
 type RequestDecideRemovalRequest struct {
-	DecisionNote string `json:"decisionNote" validate:"max=500"`
+	DecisionNote string `json:"decisionNote" validate:"required,max=500"`
 }
