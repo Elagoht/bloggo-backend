@@ -91,24 +91,8 @@ func (repository *AuditRepository) CountAuditLogsByUser(userID int64) (int, erro
 	return count, err
 }
 
-func (repository *AuditRepository) GetAuditLogsWithFilters(limit, offset int, userIDs []int64, entityTypes, actions []string) ([]models.AuditLogResponse, error) {
-	var query string = `
-	SELECT
-		al.id, al.user_id, u.name as user_name,
-		al.entity_type, al.entity_id, al.action,
-		al.metadata,
-		al.created_at,
-		CASE
-			WHEN al.entity_type = 'user' THEN (SELECT name FROM users WHERE id = al.entity_id)
-			WHEN al.entity_type = 'category' THEN (SELECT name FROM categories WHERE id = al.entity_id)
-			WHEN al.entity_type = 'tag' THEN (SELECT name FROM tags WHERE id = al.entity_id)
-			WHEN al.entity_type = 'post' THEN (SELECT pv.title FROM post_versions pv JOIN posts p ON p.current_version_id = pv.id WHERE p.id = al.entity_id)
-			WHEN al.entity_type = 'post_version' THEN (SELECT title FROM post_versions WHERE id = al.entity_id)
-			ELSE NULL
-		END as entity_name
-	FROM audit_logs al
-	LEFT JOIN users u ON al.user_id = u.id
-	WHERE 1=1`
+func (repository *AuditRepository) GetAuditLogsWithFilters(limit, offset int, userIDs []int64, entityTypes, actions []string, sortBy, sortOrder string) ([]models.AuditLogResponse, error) {
+	query := QueryGetAuditLogsWithFiltersBase
 
 	var args []interface{}
 
@@ -143,7 +127,23 @@ func (repository *AuditRepository) GetAuditLogsWithFilters(limit, offset int, us
 	}
 
 
-	query += " ORDER BY al.created_at DESC LIMIT ? OFFSET ?"
+	// Validate sort parameters to prevent SQL injection
+	validSortColumns := map[string]bool{
+		"created_at": true,
+	}
+	validSortOrders := map[string]bool{
+		"asc":  true,
+		"desc": true,
+	}
+
+	if !validSortColumns[sortBy] {
+		sortBy = "created_at"
+	}
+	if !validSortOrders[sortOrder] {
+		sortOrder = "desc"
+	}
+
+	query += " ORDER BY al." + sortBy + " " + strings.ToUpper(sortOrder) + " LIMIT ? OFFSET ?"
 	args = append(args, limit, offset)
 
 	rows, err := repository.database.Query(query, args...)
@@ -156,7 +156,7 @@ func (repository *AuditRepository) GetAuditLogsWithFilters(limit, offset int, us
 }
 
 func (repository *AuditRepository) CountAuditLogsWithFilters(userIDs []int64, entityTypes, actions []string) (int, error) {
-	var query string = "SELECT COUNT(*) FROM audit_logs WHERE 1=1"
+	query := QueryCountAuditLogsWithFiltersBase
 	var args []interface{}
 
 	// Handle user ID array filter

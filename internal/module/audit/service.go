@@ -43,8 +43,8 @@ func (service *AuditService) GetAuditLogs(limit, offset int) (models.AuditLogLis
 }
 
 // GetAuditLogsWithFilters retrieves audit logs with filters and pagination
-func (service *AuditService) GetAuditLogsWithFilters(limit, offset int, userIDs []int64, entityTypes, actions []string) (models.AuditLogListResponse, error) {
-	logs, err := service.repository.GetAuditLogsWithFilters(limit, offset, userIDs, entityTypes, actions)
+func (service *AuditService) GetAuditLogsWithFilters(limit, offset int, userIDs []int64, entityTypes, actions []string, sortBy, sortOrder string) (models.AuditLogListResponse, error) {
+	logs, err := service.repository.GetAuditLogsWithFilters(limit, offset, userIDs, entityTypes, actions, sortBy, sortOrder)
 	if err != nil {
 		return models.AuditLogListResponse{}, err
 	}

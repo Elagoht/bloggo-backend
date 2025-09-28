@@ -83,7 +83,17 @@ func (handler *AuditHandler) GetAuditLogs(
 		}
 	}
 
-	logs, err := handler.service.GetAuditLogsWithFilters(take, offset, userIDs, entityTypes, actions)
+	// Get sort parameters
+	sortBy := "created_at"
+	sortOrder := "desc"
+	if paginationOptions.OrderBy != nil {
+		sortBy = *paginationOptions.OrderBy
+	}
+	if paginationOptions.Direction != nil {
+		sortOrder = *paginationOptions.Direction
+	}
+
+	logs, err := handler.service.GetAuditLogsWithFilters(take, offset, userIDs, entityTypes, actions, sortBy, sortOrder)
 	if err != nil {
 		http.Error(writer, "Failed to retrieve audit logs", http.StatusInternalServerError)
 		return
