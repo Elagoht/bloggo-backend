@@ -19,14 +19,18 @@ const (
 	ORDER BY rr.created_at DESC;`
 
 	QueryGetRemovalRequestById = `
-	SELECT 
-		rr.id, rr.post_version_id, pv.title as post_title, pv.content as post_content,
+	SELECT
+		rr.id, rr.post_version_id, pv.title as post_title,
+		u_writer.id as writer_id, u_writer.name as writer_name, u_writer.avatar as writer_avatar,
+		pv.cover_image as post_cover_url, c.name as post_category,
 		u1.id as requested_by_id, u1.name as requested_by_name, u1.avatar as requested_by_avatar,
 		rr.note, rr.status,
 		u2.id as decided_by_id, u2.name as decided_by_name, u2.avatar as decided_by_avatar,
 		rr.decided_at, rr.created_at
 	FROM removal_requests rr
 	JOIN post_versions pv ON rr.post_version_id = pv.id
+	JOIN users u_writer ON pv.created_by = u_writer.id
+	LEFT JOIN categories c ON pv.category_id = c.id
 	JOIN users u1 ON rr.requested_by = u1.id
 	LEFT JOIN users u2 ON rr.decided_by = u2.id
 	WHERE rr.id = ?;`

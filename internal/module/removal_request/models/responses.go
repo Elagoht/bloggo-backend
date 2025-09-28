@@ -18,7 +18,9 @@ type RemovalRequestDetails struct {
 	Id            int64      `json:"id"`
 	PostVersionId int64      `json:"postVersionId"`
 	PostTitle     string     `json:"postTitle"`
-	PostContent   string     `json:"postContent"`
+	PostWriter    UserInfo   `json:"postWriter"`
+	PostCoverUrl  *string    `json:"postCoverUrl"`
+	PostCategory  *string    `json:"postCategory"`
 	RequestedBy   UserInfo   `json:"requestedBy"`
 	Note          *string    `json:"note"`
 	Status        int64      `json:"status"`

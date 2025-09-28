@@ -131,12 +131,18 @@ func (repository *RemovalRequestRepository) GetRemovalRequestById(
 	var decidedByAvatar sql.NullString
 	var decidedAtStr sql.NullString
 	var createdAtStr string
+	var postCoverUrl sql.NullString
+	var postCategory sql.NullString
 
 	err := row.Scan(
 		&request.Id,
 		&request.PostVersionId,
 		&request.PostTitle,
-		&request.PostContent,
+		&request.PostWriter.Id,
+		&request.PostWriter.Name,
+		&request.PostWriter.Avatar,
+		&postCoverUrl,
+		&postCategory,
 		&request.RequestedBy.Id,
 		&request.RequestedBy.Name,
 		&request.RequestedBy.Avatar,
@@ -169,6 +175,23 @@ func (repository *RemovalRequestRepository) GetRemovalRequestById(
 			return nil, err
 		}
 		request.DecidedAt = &decidedAt
+	}
+
+	// Format post writer avatar URL
+	if request.PostWriter.Avatar != nil && *request.PostWriter.Avatar != "" {
+		avatarPath := fmt.Sprintf("/uploads/avatar/%s", *request.PostWriter.Avatar)
+		request.PostWriter.Avatar = &avatarPath
+	}
+
+	// Format post cover URL
+	if postCoverUrl.Valid && postCoverUrl.String != "" {
+		coverPath := fmt.Sprintf("/uploads/covers/%s", postCoverUrl.String)
+		request.PostCoverUrl = &coverPath
+	}
+
+	// Set post category
+	if postCategory.Valid {
+		request.PostCategory = &postCategory.String
 	}
 
 	// Format requested_by avatar URL
