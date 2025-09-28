@@ -6,6 +6,7 @@ import (
 	postmodels "bloggo/internal/module/post/models"
 	"bloggo/internal/module/removal_request/models"
 	"bloggo/internal/utils/apierrors"
+	"bloggo/internal/utils/audit"
 	"bloggo/internal/utils/filter"
 	"bloggo/internal/utils/pagination"
 	"bloggo/internal/utils/schemas/responses"
@@ -59,6 +60,9 @@ func (service *RemovalRequestService) CreateRemovalRequest(
 	if err != nil {
 		return nil, err
 	}
+
+	// Log the audit event
+	audit.LogAction(&requestedBy, "removal_request", id, "requested")
 
 	return &responses.ResponseCreated{
 		Id: id,
@@ -166,7 +170,16 @@ func (service *RemovalRequestService) ApproveRemovalRequest(
 	}
 
 	// Finally, approve the removal request
-	return service.repository.ApproveRemovalRequest(id, decidedBy, decisionNote)
+	err = service.repository.ApproveRemovalRequest(id, decidedBy, decisionNote)
+	if err != nil {
+		return err
+	}
+
+	// Log the audit events
+	audit.LogAction(&decidedBy, "removal_request", id, "approved")
+	audit.LogAction(&decidedBy, "post_version", request.PostVersionId, "deleted")
+
+	return nil
 }
 
 func (service *RemovalRequestService) RejectRemovalRequest(
@@ -193,5 +206,13 @@ func (service *RemovalRequestService) RejectRemovalRequest(
 	}
 
 	// Reject the request
-	return service.repository.RejectRemovalRequest(id, decidedBy, decisionNote)
+	err = service.repository.RejectRemovalRequest(id, decidedBy, decisionNote)
+	if err != nil {
+		return err
+	}
+
+	// Log the audit event
+	audit.LogAction(&decidedBy, "removal_request", id, "rejected")
+
+	return nil
 }

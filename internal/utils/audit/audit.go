@@ -16,7 +16,7 @@ func NewAuditLogger(db *sql.DB) *AuditLogger {
 }
 
 func (a *AuditLogger) LogAction(userID *int64, entity string, entityID int64, action string) {
-	query := `INSERT INTO audit_logs (user_id, entity, entity_id, action) VALUES (?, ?, ?, ?)`
+	query := `INSERT INTO audit_logs (user_id, entity_type, entity_id, action) VALUES (?, ?, ?, ?)`
 
 	_, err := a.db.Exec(query, userID, entity, entityID, action)
 	if err != nil {
