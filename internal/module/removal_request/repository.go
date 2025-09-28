@@ -5,6 +5,8 @@ import (
 	"bloggo/internal/utils/apierrors"
 	"database/sql"
 	"fmt"
+	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -185,7 +187,8 @@ func (repository *RemovalRequestRepository) GetRemovalRequestById(
 
 	// Format post cover URL
 	if postCoverUrl.Valid && postCoverUrl.String != "" {
-		coverPath := fmt.Sprintf("/uploads/covers/%s", postCoverUrl.String)
+		nameWithoutExt := strings.TrimSuffix(postCoverUrl.String, filepath.Ext(postCoverUrl.String))
+		coverPath := fmt.Sprintf("/uploads/cover/%s", nameWithoutExt)
 		request.PostCoverUrl = &coverPath
 	}
 
