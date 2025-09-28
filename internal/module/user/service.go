@@ -2,7 +2,9 @@ package user
 
 import (
 	"bloggo/internal/infrastructure/bucket"
+	auditmodels "bloggo/internal/module/audit/models"
 	"bloggo/internal/module/user/models"
+	"bloggo/internal/utils/audit"
 	"bloggo/internal/utils/cryptography"
 	"bloggo/internal/utils/file/transformfile"
 	"bloggo/internal/utils/file/validatefile"
@@ -95,6 +97,7 @@ func (service *UserService) GetUserById(
 
 func (service *UserService) UserCreate(
 	model *models.RequestUserCreate,
+	createdBy int64,
 ) (*responses.ResponseCreated, error) {
 	processed, err := model.HashUserPassphrase()
 	if err != nil {
@@ -106,6 +109,8 @@ func (service *UserService) UserCreate(
 		return nil, err
 	}
 
+	audit.LogAction(&createdBy, auditmodels.EntityUser, id, auditmodels.ActionUserCreated)
+
 	return &responses.ResponseCreated{
 		Id: id,
 	}, nil
@@ -115,6 +120,7 @@ func (service *UserService) UpdateAvatarById(
 	userId int64,
 	file multipart.File,
 	header *multipart.FileHeader,
+	updatedBy int64,
 ) (string, error) {
 	// Check if file is an image
 	if err := service.imageValidator.Validate(file, header); err != nil {
@@ -152,6 +158,9 @@ func (service *UserService) UpdateAvatarById(
 		return "", fmt.Errorf("failed to update avatar in database: %w", err)
 	}
 
+	// Log audit action
+	audit.LogAction(&updatedBy, auditmodels.EntityUser, userId, auditmodels.ActionUpdated)
+
 	// Return the avatar path without .webp suffix
 	avatarPath := fmt.Sprintf("/uploads/avatar/%s", imageId)
 	return avatarPath, nil
@@ -160,19 +169,39 @@ func (service *UserService) UpdateAvatarById(
 func (service *UserService) UpdateUserById(
 	userId int64,
 	model *models.RequestUserUpdate,
+	updatedBy int64,
 ) error {
-	return service.repository.UpdateUserById(userId, model)
+	err := service.repository.UpdateUserById(userId, model)
+	if err != nil {
+		return err
+	}
+
+	audit.LogAction(&updatedBy, auditmodels.EntityUser, userId, auditmodels.ActionUserUpdated)
+	return nil
 }
 
 func (service *UserService) AssignRole(
 	userId int64,
 	model *models.RequestUserAssignRole,
+	assignedBy int64,
 ) error {
-	return service.repository.AssignRole(userId, model.RoleId)
+	err := service.repository.AssignRole(userId, model.RoleId)
+	if err != nil {
+		return err
+	}
+
+	audit.LogAction(&assignedBy, auditmodels.EntityUser, userId, auditmodels.ActionAssigned)
+	return nil
 }
 
-func (service *UserService) DeleteUser(userId int64) error {
-	return service.repository.DeleteUser(userId)
+func (service *UserService) DeleteUser(userId int64, deletedBy int64) error {
+	err := service.repository.DeleteUser(userId)
+	if err != nil {
+		return err
+	}
+
+	audit.LogAction(&deletedBy, auditmodels.EntityUser, userId, auditmodels.ActionUserDeleted)
+	return nil
 }
 
 func (service *UserService) UpdateLastLogin(userId int64) error {
@@ -182,16 +211,23 @@ func (service *UserService) UpdateLastLogin(userId int64) error {
 func (service *UserService) ChangePassword(
 	userId int64,
 	model *models.RequestUserChangePassword,
+	changedBy int64,
 ) error {
 	hashedPassword, err := model.HashNewPassword()
 	if err != nil {
 		return err
 	}
 
-	return service.repository.UpdatePasswordById(userId, hashedPassword)
+	err = service.repository.UpdatePasswordById(userId, hashedPassword)
+	if err != nil {
+		return err
+	}
+
+	audit.LogAction(&changedBy, auditmodels.EntityUser, userId, auditmodels.ActionUpdated)
+	return nil
 }
 
-func (service *UserService) DeleteAvatarById(userId int64) error {
+func (service *UserService) DeleteAvatarById(userId int64, deletedBy int64) error {
 	// Delete all avatar files for this user
 	if err := service.bucket.DeleteMatching(
 		fmt.Sprintf("%d_*.webp", userId),
@@ -205,6 +241,7 @@ func (service *UserService) DeleteAvatarById(userId int64) error {
 		return fmt.Errorf("failed to update avatar in database: %w", err)
 	}
 
+	audit.LogAction(&deletedBy, auditmodels.EntityUser, userId, auditmodels.ActionUpdated)
 	return nil
 }
 

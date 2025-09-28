@@ -91,12 +91,17 @@ func (handler *UserHandler) UserCreate(
 	writer http.ResponseWriter,
 	request *http.Request,
 ) {
+	userId, ok := handlers.GetContextValue[int64](writer, request, handlers.TokenUserId)
+	if !ok {
+		return
+	}
+
 	body, ok := handlers.BindAndValidate[*models.RequestUserCreate](writer, request)
 	if !ok {
 		return
 	}
 
-	created, err := handler.service.UserCreate(body)
+	created, err := handler.service.UserCreate(body, userId)
 	if err != nil {
 		apierrors.MapErrors(err, writer, nil)
 		return
@@ -120,7 +125,7 @@ func (handler *UserHandler) UpdateSelfAvatar(
 	}
 	defer file.Close()
 
-	avatarPath, err := handler.service.UpdateAvatarById(userId, file, fileHeader)
+	avatarPath, err := handler.service.UpdateAvatarById(userId, file, fileHeader, userId)
 	if err != nil {
 		apierrors.MapErrors(err, writer, nil)
 		return
@@ -134,12 +139,17 @@ func (handler *UserHandler) DeleteUserAvatar(
 	writer http.ResponseWriter,
 	request *http.Request,
 ) {
+	deleterId, ok := handlers.GetContextValue[int64](writer, request, handlers.TokenUserId)
+	if !ok {
+		return
+	}
+
 	id, ok := handlers.GetParam[int64](writer, request, "id")
 	if !ok {
 		return
 	}
 
-	err := handler.service.DeleteAvatarById(id)
+	err := handler.service.DeleteAvatarById(id, deleterId)
 	if err != nil {
 		apierrors.MapErrors(err, writer, nil)
 		return
@@ -157,7 +167,7 @@ func (handler *UserHandler) DeleteSelfAvatar(
 		return
 	}
 
-	err := handler.service.DeleteAvatarById(userId)
+	err := handler.service.DeleteAvatarById(userId, userId)
 	if err != nil {
 		apierrors.MapErrors(err, writer, nil)
 		return
@@ -170,6 +180,11 @@ func (handler *UserHandler) UpdateUserById(
 	writer http.ResponseWriter,
 	request *http.Request,
 ) {
+	updaterId, ok := handlers.GetContextValue[int64](writer, request, handlers.TokenUserId)
+	if !ok {
+		return
+	}
+
 	id, ok := handlers.GetParam[int64](writer, request, "id")
 	if !ok {
 		return
@@ -180,7 +195,7 @@ func (handler *UserHandler) UpdateUserById(
 		return
 	}
 
-	err := handler.service.UpdateUserById(id, body)
+	err := handler.service.UpdateUserById(id, body, updaterId)
 	if err != nil {
 		apierrors.MapErrors(err, writer, nil)
 		return
@@ -193,6 +208,11 @@ func (handler *UserHandler) UpdateUserAvatar(
 	writer http.ResponseWriter,
 	request *http.Request,
 ) {
+	updaterId, ok := handlers.GetContextValue[int64](writer, request, handlers.TokenUserId)
+	if !ok {
+		return
+	}
+
 	id, ok := handlers.GetParam[int64](writer, request, "id")
 	if !ok {
 		return
@@ -204,7 +224,7 @@ func (handler *UserHandler) UpdateUserAvatar(
 	}
 	defer file.Close()
 
-	avatarPath, err := handler.service.UpdateAvatarById(id, file, fileHeader)
+	avatarPath, err := handler.service.UpdateAvatarById(id, file, fileHeader, updaterId)
 	if err != nil {
 		apierrors.MapErrors(err, writer, nil)
 		return
@@ -218,6 +238,11 @@ func (handler *UserHandler) AssignRole(
 	writer http.ResponseWriter,
 	request *http.Request,
 ) {
+	assignerId, ok := handlers.GetContextValue[int64](writer, request, handlers.TokenUserId)
+	if !ok {
+		return
+	}
+
 	id, ok := handlers.GetParam[int64](writer, request, "id")
 	if !ok {
 		return
@@ -228,7 +253,7 @@ func (handler *UserHandler) AssignRole(
 		return
 	}
 
-	err := handler.service.AssignRole(id, body)
+	err := handler.service.AssignRole(id, body, assignerId)
 	if err != nil {
 		apierrors.MapErrors(err, writer, nil)
 		return
@@ -241,6 +266,11 @@ func (handler *UserHandler) ChangePassword(
 	writer http.ResponseWriter,
 	request *http.Request,
 ) {
+	changerId, ok := handlers.GetContextValue[int64](writer, request, handlers.TokenUserId)
+	if !ok {
+		return
+	}
+
 	id, ok := handlers.GetParam[int64](writer, request, "id")
 	if !ok {
 		return
@@ -251,7 +281,7 @@ func (handler *UserHandler) ChangePassword(
 		return
 	}
 
-	err := handler.service.ChangePassword(id, body)
+	err := handler.service.ChangePassword(id, body, changerId)
 	if err != nil {
 		apierrors.MapErrors(err, writer, nil)
 		return
@@ -264,12 +294,17 @@ func (handler *UserHandler) DeleteUser(
 	writer http.ResponseWriter,
 	request *http.Request,
 ) {
+	deleterId, ok := handlers.GetContextValue[int64](writer, request, handlers.TokenUserId)
+	if !ok {
+		return
+	}
+
 	id, ok := handlers.GetParam[int64](writer, request, "id")
 	if !ok {
 		return
 	}
 
-	err := handler.service.DeleteUser(id)
+	err := handler.service.DeleteUser(id, deleterId)
 	if err != nil {
 		apierrors.MapErrors(err, writer, nil)
 		return
