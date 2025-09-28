@@ -58,7 +58,7 @@ func (repository *RemovalRequestRepository) GetRemovalRequestList(
 		u1.id as requested_by_id, u1.name as requested_by_name, u1.avatar as requested_by_avatar,
 		rr.note, rr.status,
 		u2.id as decided_by_id, u2.name as decided_by_name, u2.avatar as decided_by_avatar,
-		rr.decided_at, rr.created_at
+		rr.decision_note, rr.decided_at, rr.created_at
 	FROM removal_requests rr
 	JOIN post_versions pv ON rr.post_version_id = pv.id
 	JOIN users u1 ON rr.requested_by = u1.id
@@ -139,6 +139,7 @@ func (repository *RemovalRequestRepository) GetRemovalRequestList(
 		var decidedById sql.NullInt64
 		var decidedByName sql.NullString
 		var decidedByAvatar sql.NullString
+		var decisionNote sql.NullString
 		var decidedAtStr sql.NullString
 		var createdAtStr string
 
@@ -154,6 +155,7 @@ func (repository *RemovalRequestRepository) GetRemovalRequestList(
 			&decidedById,
 			&decidedByName,
 			&decidedByAvatar,
+			&decisionNote,
 			&decidedAtStr,
 			&createdAtStr,
 		)
@@ -194,6 +196,11 @@ func (repository *RemovalRequestRepository) GetRemovalRequestList(
 				Name:   decidedByName.String,
 				Avatar: decidedByAvatarPath,
 			}
+		}
+
+		// Set decision note
+		if decisionNote.Valid {
+			request.DecisionNote = &decisionNote.String
 		}
 
 		requests = append(requests, request)
@@ -241,6 +248,7 @@ func (repository *RemovalRequestRepository) GetRemovalRequestById(
 	var decidedById sql.NullInt64
 	var decidedByName sql.NullString
 	var decidedByAvatar sql.NullString
+	var decisionNote sql.NullString
 	var decidedAtStr sql.NullString
 	var createdAtStr string
 	var postCoverUrl sql.NullString
@@ -263,6 +271,7 @@ func (repository *RemovalRequestRepository) GetRemovalRequestById(
 		&decidedById,
 		&decidedByName,
 		&decidedByAvatar,
+		&decisionNote,
 		&decidedAtStr,
 		&createdAtStr,
 	)
@@ -326,6 +335,11 @@ func (repository *RemovalRequestRepository) GetRemovalRequestById(
 		}
 	}
 
+	// Set decision note
+	if decisionNote.Valid {
+		request.DecisionNote = &decisionNote.String
+	}
+
 	return &request, nil
 }
 
@@ -344,6 +358,7 @@ func (repository *RemovalRequestRepository) GetUserRemovalRequests(
 		var decidedById sql.NullInt64
 		var decidedByName sql.NullString
 		var decidedByAvatar sql.NullString
+		var decisionNote sql.NullString
 		var decidedAtStr sql.NullString
 		var createdAtStr string
 
@@ -359,6 +374,7 @@ func (repository *RemovalRequestRepository) GetUserRemovalRequests(
 			&decidedById,
 			&decidedByName,
 			&decidedByAvatar,
+			&decisionNote,
 			&decidedAtStr,
 			&createdAtStr,
 		)
@@ -399,6 +415,11 @@ func (repository *RemovalRequestRepository) GetUserRemovalRequests(
 				Name:   decidedByName.String,
 				Avatar: decidedByAvatarPath,
 			}
+		}
+
+		// Set decision note
+		if decisionNote.Valid {
+			request.DecisionNote = &decisionNote.String
 		}
 
 		requests = append(requests, request)
@@ -446,8 +467,9 @@ func (repository *RemovalRequestRepository) CheckExistingRemovalRequest(
 func (repository *RemovalRequestRepository) ApproveRemovalRequest(
 	id int64,
 	decidedBy int64,
+	decisionNote *string,
 ) error {
-	result, err := repository.database.Exec(QueryApproveRemovalRequest, decidedBy, id)
+	result, err := repository.database.Exec(QueryApproveRemovalRequest, decidedBy, decisionNote, id)
 	if err != nil {
 		return err
 	}
@@ -467,8 +489,9 @@ func (repository *RemovalRequestRepository) ApproveRemovalRequest(
 func (repository *RemovalRequestRepository) RejectRemovalRequest(
 	id int64,
 	decidedBy int64,
+	decisionNote *string,
 ) error {
-	result, err := repository.database.Exec(QueryRejectRemovalRequest, decidedBy, id)
+	result, err := repository.database.Exec(QueryRejectRemovalRequest, decidedBy, decisionNote, id)
 	if err != nil {
 		return err
 	}

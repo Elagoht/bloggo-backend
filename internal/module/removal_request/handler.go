@@ -165,7 +165,20 @@ func (handler *RemovalRequestHandler) ApproveRemovalRequest(
 		return
 	}
 
-	if err := handler.service.ApproveRemovalRequest(id, userId, roleId); err != nil {
+	body, ok := handlers.BindAndValidate[*models.RequestDecideRemovalRequest](
+		writer,
+		request,
+	)
+	if !ok {
+		return
+	}
+
+	var decisionNote *string
+	if body.DecisionNote != "" {
+		decisionNote = &body.DecisionNote
+	}
+
+	if err := handler.service.ApproveRemovalRequest(id, userId, roleId, decisionNote); err != nil {
 		apierrors.MapErrors(err, writer, apierrors.HTTPErrorMapping{
 			apierrors.ErrForbidden: {
 				Message: "You don't have permission to approve removal requests.",
@@ -201,7 +214,20 @@ func (handler *RemovalRequestHandler) RejectRemovalRequest(
 		return
 	}
 
-	if err := handler.service.RejectRemovalRequest(id, userId, roleId); err != nil {
+	body, ok := handlers.BindAndValidate[*models.RequestDecideRemovalRequest](
+		writer,
+		request,
+	)
+	if !ok {
+		return
+	}
+
+	var decisionNote *string
+	if body.DecisionNote != "" {
+		decisionNote = &body.DecisionNote
+	}
+
+	if err := handler.service.RejectRemovalRequest(id, userId, roleId, decisionNote); err != nil {
 		apierrors.MapErrors(err, writer, apierrors.HTTPErrorMapping{
 			apierrors.ErrForbidden: {
 				Message: "You don't have permission to reject removal requests.",

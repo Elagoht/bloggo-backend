@@ -154,8 +154,6 @@ const (
 		entity_type TEXT NOT NULL,
 		entity_id INTEGER NOT NULL,
 		action TEXT NOT NULL,
-		old_values TEXT NULL,
-		new_values TEXT NULL,
 		metadata TEXT NULL,
 		created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
 		FOREIGN KEY (user_id) REFERENCES users(id)
@@ -176,6 +174,7 @@ const (
 		note TEXT,
 		status INTEGER NOT NULL DEFAULT 0,
 		decided_by INTEGER,
+		decision_note TEXT,
 		decided_at TIMESTAMP WITH TIME ZONE,
 		created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
 		FOREIGN KEY (post_version_id) REFERENCES post_versions(id) ON DELETE CASCADE,

@@ -111,6 +111,7 @@ func (service *RemovalRequestService) ApproveRemovalRequest(
 	id int64,
 	decidedBy int64,
 	userRoleId int64,
+	decisionNote *string,
 ) error {
 	// Check if user has permission to approve removal requests (editors/admins)
 	hasPermission := service.permissions.HasPermission(userRoleId, "post:delete")
@@ -165,13 +166,14 @@ func (service *RemovalRequestService) ApproveRemovalRequest(
 	}
 
 	// Finally, approve the removal request
-	return service.repository.ApproveRemovalRequest(id, decidedBy)
+	return service.repository.ApproveRemovalRequest(id, decidedBy, decisionNote)
 }
 
 func (service *RemovalRequestService) RejectRemovalRequest(
 	id int64,
 	decidedBy int64,
 	userRoleId int64,
+	decisionNote *string,
 ) error {
 	// Check if user has permission to reject removal requests (editors/admins)
 	hasPermission := service.permissions.HasPermission(userRoleId, "post:delete")
@@ -191,5 +193,5 @@ func (service *RemovalRequestService) RejectRemovalRequest(
 	}
 
 	// Reject the request
-	return service.repository.RejectRemovalRequest(id, decidedBy)
+	return service.repository.RejectRemovalRequest(id, decidedBy, decisionNote)
 }

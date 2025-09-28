@@ -6,12 +6,12 @@ const (
 	VALUES (?, ?, ?);`
 
 	QueryGetRemovalRequestList = `
-	SELECT 
+	SELECT
 		rr.id, rr.post_version_id, pv.title as post_title,
 		u1.id as requested_by_id, u1.name as requested_by_name, u1.avatar as requested_by_avatar,
 		rr.note, rr.status,
 		u2.id as decided_by_id, u2.name as decided_by_name, u2.avatar as decided_by_avatar,
-		rr.decided_at, rr.created_at
+		rr.decision_note, rr.decided_at, rr.created_at
 	FROM removal_requests rr
 	JOIN post_versions pv ON rr.post_version_id = pv.id
 	JOIN users u1 ON rr.requested_by = u1.id
@@ -26,7 +26,7 @@ const (
 		u1.id as requested_by_id, u1.name as requested_by_name, u1.avatar as requested_by_avatar,
 		rr.note, rr.status,
 		u2.id as decided_by_id, u2.name as decided_by_name, u2.avatar as decided_by_avatar,
-		rr.decided_at, rr.created_at
+		rr.decision_note, rr.decided_at, rr.created_at
 	FROM removal_requests rr
 	JOIN post_versions pv ON rr.post_version_id = pv.id
 	JOIN users u_writer ON pv.created_by = u_writer.id
@@ -36,12 +36,12 @@ const (
 	WHERE rr.id = ?;`
 
 	QueryGetUserRemovalRequests = `
-	SELECT 
+	SELECT
 		rr.id, rr.post_version_id, pv.title as post_title,
 		u1.id as requested_by_id, u1.name as requested_by_name, u1.avatar as requested_by_avatar,
 		rr.note, rr.status,
 		u2.id as decided_by_id, u2.name as decided_by_name, u2.avatar as decided_by_avatar,
-		rr.decided_at, rr.created_at
+		rr.decision_note, rr.decided_at, rr.created_at
 	FROM removal_requests rr
 	JOIN post_versions pv ON rr.post_version_id = pv.id
 	JOIN users u1 ON rr.requested_by = u1.id
@@ -64,12 +64,12 @@ const (
 
 	QueryApproveRemovalRequest = `
 	UPDATE removal_requests
-	SET status = 1, decided_by = ?, decided_at = CURRENT_TIMESTAMP
+	SET status = 1, decided_by = ?, decision_note = ?, decided_at = CURRENT_TIMESTAMP
 	WHERE id = ? AND status = 0;`
 
 	QueryRejectRemovalRequest = `
 	UPDATE removal_requests
-	SET status = 2, decided_by = ?, decided_at = CURRENT_TIMESTAMP
+	SET status = 2, decided_by = ?, decision_note = ?, decided_at = CURRENT_TIMESTAMP
 	WHERE id = ? AND status = 0;`
 
 	QueryDeleteRemovalRequestsByVersionId = `

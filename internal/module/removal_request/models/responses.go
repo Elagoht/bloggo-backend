@@ -10,6 +10,7 @@ type RemovalRequestCard struct {
 	Note          *string    `json:"note"`
 	Status        int64      `json:"status"`
 	DecidedBy     *UserInfo  `json:"decidedBy"`
+	DecisionNote  *string    `json:"decisionNote"`
 	DecidedAt     *time.Time `json:"decidedAt"`
 	CreatedAt     time.Time  `json:"createdAt"`
 }
@@ -25,6 +26,7 @@ type RemovalRequestDetails struct {
 	Note          *string    `json:"note"`
 	Status        int64      `json:"status"`
 	DecidedBy     *UserInfo  `json:"decidedBy"`
+	DecisionNote  *string    `json:"decisionNote"`
 	DecidedAt     *time.Time `json:"decidedAt"`
 	CreatedAt     time.Time  `json:"createdAt"`
 }
