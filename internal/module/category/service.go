@@ -139,17 +139,13 @@ func (service *CategoryService) CategoryDelete(
 		return apierrors.ErrForbidden
 	}
 
-	// First get the category details to check for published blogs
+	// First get the category details for audit logging
 	category, err := service.repository.GetCategoryBySlug(slug)
 	if err != nil {
 		return err
 	}
 
-	// Check if category has published blogs
-	if category.BlogCount > 0 {
-		return apierrors.ErrCategoryHasPublishedBlogs
-	}
-
+	// Soft delete the category (posts will keep reference but show as archived)
 	err = service.repository.CategoryDelete(slug)
 	if err != nil {
 		return err

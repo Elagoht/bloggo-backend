@@ -20,9 +20,10 @@ type ResponsePostDetails struct {
 	CreatedAt   *string `json:"createdAt"`
 	UpdatedAt   *string `json:"updatedAt"`
 	Category    struct {
-		Id   *string `json:"id"`
-		Name *string `json:"name"`
-		Slug *string `json:"slug"`
+		Id        *string `json:"id"`
+		Name      *string `json:"name"`
+		Slug      *string `json:"slug"`
+		DeletedAt *string `json:"deletedAt"`
 	} `json:"category"`
 	Tags []TagCard `json:"tags"`
 }
@@ -50,9 +51,10 @@ type ResponsePostCard struct {
 	CreatedAt  string  `json:"createdAt"`
 	UpdatedAt  string  `json:"updatedAt"`
 	Category   struct {
-		Id   *string `json:"id"`
-		Name *string `json:"name"`
-		Slug *string `json:"slug"`
+		Id        *string `json:"id"`
+		Name      *string `json:"name"`
+		Slug      *string `json:"slug"`
+		DeletedAt *string `json:"deletedAt"`
 	} `json:"category"`
 }
 
@@ -69,9 +71,10 @@ type PostVersionsCard struct {
 	Status     int64   `json:"status"`
 	UpdatedAt  string  `json:"updatedAt"`
 	Category   struct {
-		Id   *string `json:"id"`
-		Name *string `json:"name"`
-		Slug *string `json:"slug"`
+		Id        *string `json:"id"`
+		Name      *string `json:"name"`
+		Slug      *string `json:"slug"`
+		DeletedAt *string `json:"deletedAt"`
 	} `json:"category"`
 }
 
@@ -113,9 +116,10 @@ type ResponseVersionDetailsOfPost struct {
 	CreatedAt        *string `json:"createdAt"`
 	UpdatedAt        *string `json:"updatedAt"`
 	Category         struct {
-		Id   *string `json:"id"`
-		Name *string `json:"name"`
-		Slug *string `json:"slug"`
+		Id        *string `json:"id"`
+		Name      *string `json:"name"`
+		Slug      *string `json:"slug"`
+		DeletedAt *string `json:"deletedAt"`
 	} `json:"category"`
 }
 

@@ -64,6 +64,7 @@ func (repository *PostRepository) GetPostList() (
 			&post.Category.Slug,
 			&post.Category.Id,
 			&post.Category.Name,
+			&post.Category.DeletedAt,
 		)
 		if err != nil {
 			return nil, err
@@ -200,6 +201,7 @@ func (repository *PostRepository) GetPostListPaginated(
 			&post.Category.Slug,
 			&post.Category.Id,
 			&post.Category.Name,
+			&post.Category.DeletedAt,
 		)
 		if err != nil {
 			return nil, err
@@ -245,6 +247,7 @@ func (repository *PostRepository) GetPostById(
 		&post.Category.Slug,
 		&post.Category.Id,
 		&post.Category.Name,
+		&post.Category.DeletedAt,
 	)
 	if err != nil {
 		return nil, err
@@ -282,6 +285,7 @@ func (repository *PostRepository) GetPostGetByCurrentVersionSlug(
 		&post.Category.Slug,
 		&post.Category.Id,
 		&post.Category.Name,
+		&post.Category.DeletedAt,
 	)
 	if err != nil {
 		return nil, err
@@ -403,6 +407,7 @@ func (repository *PostRepository) ListPostVersionsGetByPostId(
 			&version.Category.Id,
 			&version.Category.Name,
 			&version.Category.Slug,
+			&version.Category.DeletedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -448,6 +453,7 @@ func (repository *PostRepository) GetPostVersionById(
 		&result.Category.Id,
 		&result.Category.Name,
 		&result.Category.Slug,
+		&result.Category.DeletedAt,
 		&statusChangedById,
 		&statusChangedByName,
 		&statusChangedByAvatar,

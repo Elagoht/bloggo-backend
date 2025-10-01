@@ -16,7 +16,7 @@ const (
 		p.read_count,
 		COALESCE(current_pv.created_at, best_pv.created_at) as created_at,
 		COALESCE(current_pv.updated_at, best_pv.updated_at) as updated_at,
-		c.slug AS category_slug, c.id AS category_id, c.name AS category_name
+		c.slug AS category_slug, c.id AS category_id, c.name AS category_name, c.deleted_at AS category_deleted_at
 	FROM posts p
 	LEFT JOIN post_versions current_pv ON current_pv.id = p.current_version_id AND current_pv.deleted_at IS NULL
 	LEFT JOIN post_versions best_pv ON best_pv.post_id = p.id
@@ -57,7 +57,7 @@ const (
 		p.read_count,
 		COALESCE(current_pv.created_at, best_pv.created_at) as created_at,
 		COALESCE(current_pv.updated_at, best_pv.updated_at) as updated_at,
-		c.slug AS category_slug, c.id AS category_id, c.name AS category_name
+		c.slug AS category_slug, c.id AS category_id, c.name AS category_name, c.deleted_at AS category_deleted_at
 	FROM posts p
 	LEFT JOIN post_versions current_pv ON current_pv.id = p.current_version_id AND current_pv.deleted_at IS NULL
 	LEFT JOIN post_versions best_pv ON best_pv.post_id = p.id
@@ -95,7 +95,7 @@ const (
 		p.read_count,
 		COALESCE(current_pv.created_at, best_pv.created_at) as created_at,
 		COALESCE(current_pv.updated_at, best_pv.updated_at) as updated_at,
-		c.slug AS category_slug, c.id AS category_id, c.name AS category_name
+		c.slug AS category_slug, c.id AS category_id, c.name AS category_name, c.deleted_at AS category_deleted_at
 	FROM posts p
 	LEFT JOIN post_versions current_pv ON current_pv.id = p.current_version_id AND current_pv.deleted_at IS NULL
 	LEFT JOIN post_versions best_pv ON best_pv.post_id = p.id
@@ -126,7 +126,7 @@ const (
 		pv.title, pv.slug, pv.content, pv.cover_image, pv.description, pv.spot,
 		pv.status, pv.status_changed_at, pv.status_change_note,
 		pv.created_at, pv.updated_at,
-		c.id AS category_id, c.name AS category_name, c.slug AS category_slug,
+		c.id AS category_id, c.name AS category_name, c.slug AS category_slug, c.deleted_at AS category_deleted_at,
 		scb.id as status_changed_by_id, scb.name as status_changed_by_name, scb.avatar as status_changed_by_avatar
 	FROM posts p
 	JOIN post_versions pv
@@ -164,7 +164,7 @@ const (
 		pv.id,
 		u.id as author_id, u.name as author_name, u.avatar as author_avatar,
 		pv.title, pv.cover_image, pv.status, pv.updated_at,
-		c.id as category_id, c.name as category_name, c.slug as category_slug
+		c.id as category_id, c.name as category_name, c.slug as category_slug, c.deleted_at as category_deleted_at
 	FROM post_versions pv
 	LEFT JOIN users u ON pv.created_by = u.id
 	LEFT JOIN categories c ON pv.category_id = c.id
