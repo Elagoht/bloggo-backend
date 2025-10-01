@@ -4,6 +4,7 @@ import (
 	"bloggo/internal/app"
 	"bloggo/internal/middleware"
 	"bloggo/internal/module"
+	"bloggo/internal/module/api"
 	"bloggo/internal/module/audit"
 	"bloggo/internal/module/category"
 	"bloggo/internal/module/dashboard"
@@ -33,6 +34,7 @@ func main() {
 
 	// Register modules
 	modules := []module.Module{
+		api.NewModule(), // Public API module (must be first)
 		category.NewModule(),
 		tag.NewModule(),
 		post.NewModule(),
