@@ -831,5 +831,10 @@ func (service *PostService) UpdateVersionCategory(
 	}
 
 	// Update the category
-	return service.repository.UpdateVersionCategoryOnly(versionId, categoryId)
+	if err := service.repository.UpdateVersionCategoryOnly(versionId, categoryId); err != nil {
+		return err
+	}
+
+	// Automatically publish the version after updating the category
+	return service.PublishVersion(postId, versionId, userId, roleId)
 }
