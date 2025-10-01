@@ -174,6 +174,10 @@ func (handler *CategoryHandler) CategoryDelete(
 				Message: "Only editors and admins can manage categories.",
 				Status:  http.StatusForbidden,
 			},
+			apierrors.ErrCategoryHasPublishedBlogs: {
+				Message: "Cannot delete category with published blogs.",
+				Status:  http.StatusConflict,
+			},
 		})
 		return
 	}

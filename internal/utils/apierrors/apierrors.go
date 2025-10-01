@@ -154,6 +154,7 @@ var (
 	ErrUnsupportedMediaType = errors.New("unsupported media type")
 	ErrPreconditionFailed   = errors.New("precondition failed")
 	ErrEncryptionError      = errors.New("encyption failed")
+	ErrCategoryHasPublishedBlogs = errors.New("category has published blogs")
 )
 
 var DefaultErrorMapping = &HTTPErrorMapping{
