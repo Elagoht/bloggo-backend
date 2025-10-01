@@ -1039,3 +1039,35 @@ func (repository *PostRepository) CountPostVersions(postId int64) (int, error) {
 
 	return count, nil
 }
+
+func (repository *PostRepository) CheckIfVersionCategoryIsDeleted(versionId int64) (bool, error) {
+	row := repository.database.QueryRow(QueryCheckIfVersionCategoryIsDeleted, versionId)
+
+	var isDeleted bool
+	if err := row.Scan(&isDeleted); err != nil {
+		if err == sql.ErrNoRows {
+			return false, apierrors.ErrNotFound
+		}
+		return false, err
+	}
+
+	return isDeleted, nil
+}
+
+func (repository *PostRepository) UpdateVersionCategoryOnly(versionId int64, categoryId int64) error {
+	result, err := repository.database.Exec(QueryUpdateVersionCategoryOnly, categoryId, versionId)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return apierrors.ErrNotFound
+	}
+
+	return nil
+}

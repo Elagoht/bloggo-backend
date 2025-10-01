@@ -331,4 +331,13 @@ const (
 	SELECT COUNT(*)
 	FROM post_versions
 	WHERE post_id = ? AND deleted_at IS NULL;`
+	QueryCheckIfVersionCategoryIsDeleted = `
+	SELECT c.deleted_at IS NOT NULL as is_deleted
+	FROM post_versions pv
+	LEFT JOIN categories c ON c.id = pv.category_id
+	WHERE pv.id = ? AND pv.deleted_at IS NULL;`
+	QueryUpdateVersionCategoryOnly = `
+	UPDATE post_versions
+	SET category_id = ?, updated_at = CURRENT_TIMESTAMP
+	WHERE id = ? AND deleted_at IS NULL;`
 )

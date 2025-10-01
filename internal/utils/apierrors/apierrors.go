@@ -153,6 +153,7 @@ var (
 	ErrServiceUnavailable   = errors.New("service unavailable")
 	ErrUnsupportedMediaType = errors.New("unsupported media type")
 	ErrPreconditionFailed   = errors.New("precondition failed")
+	ErrPreconditionRequired = errors.New("precondition required")
 	ErrEncryptionError      = errors.New("encyption failed")
 	ErrCategoryHasPublishedBlogs = errors.New("category has published blogs")
 )
@@ -172,6 +173,7 @@ var DefaultErrorMapping = &HTTPErrorMapping{
 	ErrServiceUnavailable:   {ErrServiceUnavailable.Error(), http.StatusServiceUnavailable},
 	ErrUnsupportedMediaType: {ErrUnsupportedMediaType.Error(), http.StatusUnsupportedMediaType},
 	ErrPreconditionFailed:   {ErrPreconditionFailed.Error(), http.StatusPreconditionFailed},
+	ErrPreconditionRequired: {ErrPreconditionRequired.Error(), http.StatusPreconditionRequired},
 	// Standard SQL errors
 	sql.ErrNoRows: {ErrNotFound.Error(), http.StatusNotFound},
 }

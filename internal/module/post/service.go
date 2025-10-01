@@ -614,6 +614,20 @@ func (service *PostService) PublishVersion(
 		return apierrors.ErrPreconditionFailed
 	}
 
+	// Check if the version's category is deleted
+	categoryIsDeleted, err := service.repository.CheckIfVersionCategoryIsDeleted(versionId)
+	if err != nil {
+		return err
+	}
+
+	if categoryIsDeleted {
+		// Return 428 Precondition Required status to indicate category needs to be updated
+		return apierrors.NewAPIError(
+			"This version's category has been deleted. Please select a new category before publishing.",
+			apierrors.ErrPreconditionRequired,
+		)
+	}
+
 	// Get the slug of the version being published
 	slug, err := service.repository.GetVersionSlug(versionId)
 	if err != nil {
@@ -777,4 +791,45 @@ func (service *PostService) AssignTagsToPost(
 	}
 
 	return service.repository.AssignTagsToPost(postId, tagIds)
+}
+
+func (service *PostService) UpdateVersionCategory(
+	postId int64,
+	versionId int64,
+	categoryId int64,
+	userId int64,
+	roleId int64,
+) error {
+	// Check if user has publish permission (required to update approved version category)
+	hasPublishPermission := service.permissions.HasPermission(roleId, "post:publish")
+	if !hasPublishPermission {
+		return apierrors.ErrForbidden
+	}
+
+	// Check if version exists and get current status
+	_, versionStatus, err := service.repository.GetVersionCreatorAndStatus(versionId)
+	if err != nil {
+		return err
+	}
+
+	// Only approved versions should need category updates (this is the special case)
+	if versionStatus != models.STATUS_APPROVED {
+		return apierrors.ErrPreconditionFailed
+	}
+
+	// Check if the version's category is actually deleted (prevent abuse)
+	categoryIsDeleted, err := service.repository.CheckIfVersionCategoryIsDeleted(versionId)
+	if err != nil {
+		return err
+	}
+
+	if !categoryIsDeleted {
+		return apierrors.NewAPIError(
+			"The version's category is not deleted. This endpoint is only for updating categories when the original has been deleted.",
+			apierrors.ErrPreconditionFailed,
+		)
+	}
+
+	// Update the category
+	return service.repository.UpdateVersionCategoryOnly(versionId, categoryId)
 }

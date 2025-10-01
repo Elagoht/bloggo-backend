@@ -7,6 +7,7 @@ import (
 	"bloggo/internal/utils/handlers"
 	"bloggo/internal/utils/pagination"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strings"
 )
@@ -518,6 +519,14 @@ func (handler *PostHandler) PublishVersion(
 		userId,
 		roleId,
 	); err != nil {
+		// Handle API errors (like category deleted) specially
+		if apiErr, ok := err.(*apierrors.APIError); ok {
+			if errors.Is(apiErr.Stack, apierrors.ErrPreconditionRequired) {
+				handlers.WriteError(writer, apiErr, http.StatusPreconditionRequired)
+				return
+			}
+		}
+
 		apierrors.MapErrors(err, writer, apierrors.HTTPErrorMapping{
 			apierrors.ErrPreconditionFailed: {
 				Message: "Only approved versions can be published.",
@@ -614,6 +623,53 @@ func (handler *PostHandler) AssignTagsToPost(
 			apierrors.ErrForbidden: {
 				Message: "You don't have permission to assign tags to posts.",
 				Status:  http.StatusForbidden,
+			},
+		})
+		return
+	}
+
+	writer.WriteHeader(http.StatusNoContent)
+}
+
+func (handler *PostHandler) UpdateVersionCategory(
+	writer http.ResponseWriter,
+	request *http.Request,
+) {
+	userId, ok := handlers.GetContextValue[int64](writer, request, handlers.TokenUserId)
+	if !ok {
+		return
+	}
+
+	roleId, ok := handlers.GetContextValue[int64](writer, request, handlers.TokenRoleId)
+	if !ok {
+		return
+	}
+
+	postId, ok := handlers.GetParam[int64](writer, request, "id")
+	if !ok {
+		return
+	}
+
+	versionId, ok := handlers.GetParam[int64](writer, request, "versionId")
+	if !ok {
+		return
+	}
+
+	body, ok := handlers.BindAndValidate[models.RequestUpdateVersionCategory](writer, request)
+	if !ok {
+		return
+	}
+
+	err := handler.service.UpdateVersionCategory(postId, versionId, body.CategoryId, userId, roleId)
+	if err != nil {
+		apierrors.MapErrors(err, writer, apierrors.HTTPErrorMapping{
+			apierrors.ErrForbidden: {
+				Message: "You don't have permission to update version categories.",
+				Status:  http.StatusForbidden,
+			},
+			apierrors.ErrPreconditionFailed: {
+				Message: "This version's category cannot be updated in this way.",
+				Status:  http.StatusPreconditionFailed,
 			},
 		})
 		return

@@ -51,3 +51,8 @@ type PostSubmissionValidation struct {
 type RequestAssignTagsToPost struct {
 	TagIds []int64 `json:"tagIds" validate:"required"`
 }
+
+// -- Update Version Category (for approved versions with deleted categories) -- //
+type RequestUpdateVersionCategory struct {
+	CategoryId int64 `json:"categoryId" validate:"required"`
+}
