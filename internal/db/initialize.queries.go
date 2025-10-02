@@ -181,6 +181,14 @@ const (
 		FOREIGN KEY (requested_by) REFERENCES users(id) ON DELETE CASCADE,
 		FOREIGN KEY (decided_by) REFERENCES users(id) ON DELETE SET NULL
 	);`
+	// KEY-VALUE STORE
+	QueryCreateTableKeyValueStore = `
+	CREATE TABLE IF NOT EXISTS key_value_store (
+		key VARCHAR(255) PRIMARY KEY NOT NULL,
+		value TEXT NOT NULL,
+		created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+		updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+	);`
 )
 
 var InitializeQueries = []string{
@@ -196,4 +204,5 @@ var InitializeQueries = []string{
 	QueryCreateTableViews,
 	QueryCreateTableAuditLogs,
 	QueryCreateTableRemovalRequests,
+	QueryCreateTableKeyValueStore,
 }
