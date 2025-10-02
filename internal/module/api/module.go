@@ -4,6 +4,7 @@ import (
 	"bloggo/internal/module"
 	"bloggo/internal/module/api/authors"
 	"bloggo/internal/module/api/categories"
+	"bloggo/internal/module/api/keyvalues"
 	"bloggo/internal/module/api/posts"
 	"bloggo/internal/module/api/tags"
 
@@ -15,6 +16,7 @@ type APIModule struct {
 	CategoriesModule categories.CategoriesAPIModule
 	TagsModule       tags.TagsAPIModule
 	AuthorsModule    authors.AuthorsAPIModule
+	KeyValuesModule  keyvalues.KeyValuesAPIModule
 }
 
 func NewModule() APIModule {
@@ -22,12 +24,14 @@ func NewModule() APIModule {
 	categoriesModule := categories.NewModule()
 	tagsModule := tags.NewModule()
 	authorsModule := authors.NewModule()
+	keyValuesModule := keyvalues.NewModule()
 
 	return APIModule{
 		PostsModule:      postsModule,
 		CategoriesModule: categoriesModule,
 		TagsModule:       tagsModule,
 		AuthorsModule:    authorsModule,
+		KeyValuesModule:  keyValuesModule,
 	}
 }
 
@@ -38,6 +42,7 @@ func (apiModule APIModule) RegisterModule(router *chi.Mux) {
 		apiModule.CategoriesModule,
 		apiModule.TagsModule,
 		apiModule.AuthorsModule,
+		apiModule.KeyValuesModule,
 	}
 
 	for _, subModule := range subModules {
