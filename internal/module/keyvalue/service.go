@@ -4,6 +4,8 @@ import (
 	"bloggo/internal/infrastructure/permissions"
 	"bloggo/internal/module/keyvalue/models"
 	"bloggo/internal/utils/apierrors"
+	"bloggo/internal/utils/audit"
+	auditmodels "bloggo/internal/module/audit/models"
 )
 
 type KeyValueService struct {
@@ -31,6 +33,7 @@ func (service *KeyValueService) GetAll(userRoleId int64) ([]models.KeyValue, err
 func (service *KeyValueService) BulkUpsert(
 	items []models.RequestKeyValueUpsert,
 	userRoleId int64,
+	userId int64,
 ) error {
 	// Check if user has permission to manage key-values
 	hasPermission := service.permissions.HasPermission(userRoleId, "keyvalue:manage")
@@ -45,5 +48,13 @@ func (service *KeyValueService) BulkUpsert(
 	}
 
 	// Then insert/update all items
-	return service.repository.BulkUpsert(items)
+	err = service.repository.BulkUpsert(items)
+	if err != nil {
+		return err
+	}
+
+	// Log the audit event (using 0 as entity ID since it's a bulk operation)
+	audit.LogAction(&userId, auditmodels.EntityKeyValue, 0, auditmodels.ActionUpdated)
+
+	return nil
 }

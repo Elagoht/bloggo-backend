@@ -46,6 +46,11 @@ func (handler *KeyValueHandler) BulkUpsert(
 	writer http.ResponseWriter,
 	request *http.Request,
 ) {
+	userId, ok := handlers.GetContextValue[int64](writer, request, handlers.TokenUserId)
+	if !ok {
+		return
+	}
+
 	roleId, ok := handlers.GetContextValue[int64](writer, request, handlers.TokenRoleId)
 	if !ok {
 		return
@@ -56,7 +61,7 @@ func (handler *KeyValueHandler) BulkUpsert(
 		return
 	}
 
-	err := handler.service.BulkUpsert(body.Items, roleId)
+	err := handler.service.BulkUpsert(body.Items, roleId, userId)
 	if err != nil {
 		apierrors.MapErrors(err, writer, apierrors.HTTPErrorMapping{
 			apierrors.ErrForbidden: {

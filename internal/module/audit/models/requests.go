@@ -88,4 +88,5 @@ const (
 	EntityRole           = "role"
 	EntityPermission     = "permission"
 	EntityRemovalRequest = "removal_request"
+	EntityKeyValue       = "keyvalue"
 )
