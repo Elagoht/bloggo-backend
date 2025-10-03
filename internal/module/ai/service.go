@@ -145,7 +145,7 @@ Return only valid JSON, no additional text or formatting.`,
 	}
 
 	url := fmt.Sprintf(
-		"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=%s",
+		"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=%s",
 		service.apiKey,
 	)
 
@@ -260,7 +260,7 @@ Return only valid JSON, no additional text or formatting.`,
 	}
 
 	url := fmt.Sprintf(
-		"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=%s",
+		"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=%s",
 		service.apiKey,
 	)
 
