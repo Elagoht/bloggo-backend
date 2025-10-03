@@ -8,6 +8,7 @@ import (
 	"bloggo/internal/module/audit"
 	auditmodels "bloggo/internal/module/audit/models"
 	"bloggo/internal/module/post/models"
+	"bloggo/internal/module/webhook"
 	"bloggo/internal/utils/apierrors"
 	"bloggo/internal/utils/cryptography"
 	"bloggo/internal/utils/file/transformfile"
@@ -279,6 +280,13 @@ func (service *PostService) DeletePostById(
 		return err
 	}
 
+	// Get post details before deletion to get the slug
+	post, err := service.repository.GetPostById(id)
+	slug := ""
+	if err == nil && post != nil && post.Slug != nil && *post.Slug != "" {
+		slug = *post.Slug
+	}
+
 	if err := service.repository.SoftDeletePostById(id); err != nil {
 		return err
 	}
@@ -286,6 +294,13 @@ func (service *PostService) DeletePostById(
 	// If delete is succeed, delete photos
 	for _, path := range coverPaths {
 		service.bucket.Delete(path)
+	}
+
+	// Trigger webhook for post deletion
+	if slug != "" {
+		go func() {
+			webhook.TriggerPostDeleted(id, slug)
+		}()
 	}
 
 	return nil
@@ -661,7 +676,20 @@ func (service *PostService) PublishVersion(
 	audit.LogVersionAction(&userId, versionId, auditmodels.ActionVersionPublished, nil)
 
 	// Set this version as the current published version for the post
-	return service.repository.SetCurrentVersionForPost(postId, versionId)
+	err = service.repository.SetCurrentVersionForPost(postId, versionId)
+	if err != nil {
+		return err
+	}
+
+	// Trigger webhook for post publish
+	go func() {
+		webhook.TriggerPostUpdated(postId, slug, map[string]interface{}{
+			"versionId": versionId,
+			"slug":      slug,
+		})
+	}()
+
+	return nil
 }
 
 func (service *PostService) TrackView(model *models.RequestTrackView) error {

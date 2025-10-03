@@ -4,6 +4,7 @@ import (
 	"bloggo/internal/infrastructure/bucket"
 	auditmodels "bloggo/internal/module/audit/models"
 	"bloggo/internal/module/user/models"
+	"bloggo/internal/module/webhook"
 	"bloggo/internal/utils/audit"
 	"bloggo/internal/utils/cryptography"
 	"bloggo/internal/utils/file/transformfile"
@@ -111,6 +112,9 @@ func (service *UserService) UserCreate(
 
 	audit.LogAction(&createdBy, auditmodels.EntityUser, id, auditmodels.ActionUserCreated)
 
+	// Trigger webhook
+	go func() { webhook.TriggerAuthorCreated(id, map[string]interface{}{"name": model.Name, "email": model.Email}) }()
+
 	return &responses.ResponseCreated{
 		Id: id,
 	}, nil
@@ -177,6 +181,10 @@ func (service *UserService) UpdateUserById(
 	}
 
 	audit.LogAction(&updatedBy, auditmodels.EntityUser, userId, auditmodels.ActionUserUpdated)
+
+	// Trigger webhook
+	go func() { webhook.TriggerAuthorUpdated(userId, map[string]interface{}{"name": model.Name, "email": model.Email}) }()
+
 	return nil
 }
 
@@ -201,6 +209,10 @@ func (service *UserService) DeleteUser(userId int64, deletedBy int64) error {
 	}
 
 	audit.LogAction(&deletedBy, auditmodels.EntityUser, userId, auditmodels.ActionUserDeleted)
+
+	// Trigger webhook
+	go func() { webhook.TriggerAuthorDeleted(userId) }()
+
 	return nil
 }
 

@@ -18,6 +18,7 @@ import (
 	"bloggo/internal/module/storage"
 	"bloggo/internal/module/tag"
 	"bloggo/internal/module/user"
+	"bloggo/internal/module/webhook"
 	"net/http"
 )
 
@@ -49,6 +50,7 @@ func main() {
 		search.NewModule(),
 		health.NewModule(),
 		keyvalue.NewModule(),
+		webhook.NewModule(),
 	}
 	application.RegisterModules(modules)
 

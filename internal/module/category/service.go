@@ -6,6 +6,7 @@ import (
 	"bloggo/internal/module/audit"
 	auditmodels "bloggo/internal/module/audit/models"
 	"bloggo/internal/module/category/models"
+	"bloggo/internal/module/webhook"
 	"bloggo/internal/utils/apierrors"
 	"bloggo/internal/utils/filter"
 	"bloggo/internal/utils/pagination"
@@ -37,15 +38,24 @@ func (service *CategoryService) CategoryCreate(
 		return nil, apierrors.ErrForbidden
 	}
 
-	id, err := service.repository.CategoryCreate(
-		models.ToCreateCategoryParams(model),
-	)
+	params := models.ToCreateCategoryParams(model)
+	id, err := service.repository.CategoryCreate(params)
 	if err != nil {
 		return nil, err
 	}
 
 	// Log the action
 	audit.LogCategoryAction(&userId, id, auditmodels.ActionCategoryCreated)
+
+	// Trigger webhook
+	go func() {
+		webhook.TriggerCategoryCreated(id, params.Slug, map[string]interface{}{
+			"name":        params.Name,
+			"slug":        params.Slug,
+			"spot":        params.Spot,
+			"description": params.Description,
+		})
+	}()
 
 	return &responses.ResponseCreated{
 		Id: id,
@@ -115,16 +125,29 @@ func (service *CategoryService) CategoryUpdate(
 		return err
 	}
 
-	err = service.repository.CategoryUpdate(
-		slug,
-		models.ToUpdateCategoryParams(model),
-	)
+	params := models.ToUpdateCategoryParams(model)
+	err = service.repository.CategoryUpdate(slug, params)
 	if err != nil {
 		return err
 	}
 
 	// Log the action
 	audit.LogCategoryAction(&userId, category.Id, auditmodels.ActionCategoryUpdated)
+
+	// Trigger webhook with updated slug
+	newSlug := slug
+	if params.Slug != nil {
+		newSlug = *params.Slug
+	}
+	go func() {
+		webhook.TriggerCategoryUpdated(category.Id, newSlug, map[string]interface{}{
+			"name":        model.Name,
+			"slug":        newSlug,
+			"spot":        model.Spot,
+			"description": model.Description,
+		})
+	}()
+
 	return nil
 }
 
@@ -153,6 +176,12 @@ func (service *CategoryService) CategoryDelete(
 
 	// Log the action
 	audit.LogCategoryAction(&userId, category.Id, auditmodels.ActionCategoryDeleted)
+
+	// Trigger webhook
+	go func() {
+		webhook.TriggerCategoryDeleted(category.Id, category.Slug)
+	}()
+
 	return nil
 }
 

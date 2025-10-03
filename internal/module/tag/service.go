@@ -5,6 +5,7 @@ import (
 	"bloggo/internal/module/audit"
 	auditmodels "bloggo/internal/module/audit/models"
 	"bloggo/internal/module/tag/models"
+	"bloggo/internal/module/webhook"
 	"bloggo/internal/utils/apierrors"
 	"bloggo/internal/utils/filter"
 	"bloggo/internal/utils/pagination"
@@ -34,15 +35,17 @@ func (service *TagService) TagCreate(
 		return nil, apierrors.ErrForbidden
 	}
 
-	id, err := service.repository.TagCreate(
-		models.ToCreateTagParams(model),
-	)
+	params := models.ToCreateTagParams(model)
+	id, err := service.repository.TagCreate(params)
 	if err != nil {
 		return nil, err
 	}
 
 	// Log the action
 	audit.LogTagAction(&userId, id, auditmodels.ActionTagCreated)
+
+	// Trigger webhook
+	go func() { webhook.TriggerTagCreated(id, params.Slug, map[string]interface{}{"name": params.Name, "slug": params.Slug}) }()
 
 	return &responses.ResponseCreated{
 		Id: id,
@@ -103,16 +106,24 @@ func (service *TagService) TagUpdate(
 		return err
 	}
 
-	err = service.repository.TagUpdate(
-		slug,
-		models.ToUpdateTagParams(model),
-	)
+	params := models.ToUpdateTagParams(model)
+	err = service.repository.TagUpdate(slug, params)
 	if err != nil {
 		return err
 	}
 
 	// Log the action
 	audit.LogTagAction(&userId, tag.Id, auditmodels.ActionTagUpdated)
+
+	// Trigger webhook with updated slug
+	newSlug := slug
+	if params.Slug != nil {
+		newSlug = *params.Slug
+	}
+	go func() {
+		webhook.TriggerTagUpdated(tag.Id, newSlug, map[string]interface{}{"name": model.Name, "slug": newSlug})
+	}()
+
 	return nil
 }
 
@@ -140,5 +151,9 @@ func (service *TagService) TagDelete(
 
 	// Log the action
 	audit.LogTagAction(&userId, tag.Id, auditmodels.ActionTagDeleted)
+
+	// Trigger webhook
+	go func() { webhook.TriggerTagDeleted(tag.Id, tag.Slug) }()
+
 	return nil
 }

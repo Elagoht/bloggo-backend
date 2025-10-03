@@ -62,3 +62,14 @@ func LogAuthAction(userID *int64, action string) error {
 	service := GetGlobalAuditService()
 	return service.LogAuthAction(userID, action)
 }
+
+func LogWebhookAction(userID *int64, action string) error {
+	service := GetGlobalAuditService()
+	entry := &models.AuditLogEntry{
+		UserID:     userID,
+		EntityType: "webhook",
+		EntityID:   1, // Webhook config is always ID 1
+		Action:     action,
+	}
+	return service.LogAction(entry)
+}

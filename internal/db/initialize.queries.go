@@ -189,6 +189,41 @@ const (
 		created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
 		updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 	);`
+	// WEBHOOK
+	QueryCreateTableWebhookConfig = `
+	CREATE TABLE IF NOT EXISTS webhook_config (
+		id INTEGER PRIMARY KEY CHECK (id = 1),
+		url TEXT NOT NULL,
+		updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+	);`
+	QueryCreateTableWebhookHeaders = `
+	CREATE TABLE IF NOT EXISTS webhook_headers (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		key VARCHAR(255) NOT NULL UNIQUE,
+		value TEXT NOT NULL,
+		created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+		updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+	);`
+	QueryCreateTableWebhookRequests = `
+	CREATE TABLE IF NOT EXISTS webhook_requests (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		event VARCHAR(100) NOT NULL,
+		entity VARCHAR(50) NOT NULL,
+		entity_id INTEGER,
+		slug VARCHAR(250),
+		request_body TEXT NOT NULL,
+		response_status INTEGER,
+		response_body TEXT,
+		attempt_count INTEGER NOT NULL DEFAULT 1,
+		error_message TEXT,
+		created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+	);
+	CREATE INDEX IF NOT EXISTS idx_webhook_requests_event
+	ON webhook_requests(event);
+	CREATE INDEX IF NOT EXISTS idx_webhook_requests_entity
+	ON webhook_requests(entity, entity_id);
+	CREATE INDEX IF NOT EXISTS idx_webhook_requests_created_at
+	ON webhook_requests(created_at);`
 )
 
 var InitializeQueries = []string{
@@ -205,4 +240,7 @@ var InitializeQueries = []string{
 	QueryCreateTableAuditLogs,
 	QueryCreateTableRemovalRequests,
 	QueryCreateTableKeyValueStore,
+	QueryCreateTableWebhookConfig,
+	QueryCreateTableWebhookHeaders,
+	QueryCreateTableWebhookRequests,
 }

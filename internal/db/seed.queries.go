@@ -38,7 +38,10 @@ const (
     ('statistics:view-total'),
     ('statistics:view-others'),
     ('statistics:view-self'),
-    ('auditlog:view')
+    ('auditlog:view'),
+    ('keyvalue:manage'),
+    ('webhook:manage'),
+    ('apidoc:view')
 	ON CONFLICT(name)
   DO NOTHING;`
 	InsertPermissionToRoleSQL = `
@@ -76,6 +79,7 @@ var (
 			"category:list", "category:view", "category:create", "category:update", "category:delete",
 			"user:list", "user:view",
 			"statistics:view-self", "statistics:view-others",
+			"keyvalue:manage", "webhook:manage",
 		},
 		"Admin": {
 			"post:create", "post:delete", "post:publish", "post:view", "post:list",
@@ -83,7 +87,7 @@ var (
 			"category:list", "category:view", "category:create", "category:update", "category:delete",
 			"user:list", "user:view", "user:register", "user:update", "user:delete", "user:change_passphrase", "user:assign_role",
 			"statistics:view-self", "statistics:view-others", "statistics:view-total",
-			"auditlog:view",
+			"keyvalue:manage", "auditlog:view", "webhook:manage", "apidoc:view",
 		},
 	}
 	SeedQueries = []string{
