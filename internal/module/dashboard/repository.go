@@ -28,7 +28,7 @@ func (repo *DashboardRepository) GetPendingVersions() ([]models.PendingVersion, 
 	var versions []models.PendingVersion
 	for rows.Next() {
 		var version models.PendingVersion
-		err := rows.Scan(&version.Id, &version.Title, &version.AuthorId, &version.AuthorName, &version.AuthorAvatar, &version.CreatedAt)
+		err := rows.Scan(&version.Id, &version.PostId, &version.Title, &version.AuthorId, &version.AuthorName, &version.AuthorAvatar, &version.CreatedAt)
 		if err != nil {
 			return nil, err
 		}

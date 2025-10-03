@@ -15,6 +15,7 @@ type ResponseDashboardStats struct {
 
 type PendingVersion struct {
 	Id           int64   `json:"id"`
+	PostId       int64   `json:"postId"`
 	Title        string  `json:"title"`
 	AuthorId     int64   `json:"authorId"`
 	AuthorName   string  `json:"authorName"`

@@ -1,13 +1,13 @@
 package dashboard
 
 const (
-	// Get pending versions (status = 0 is draft)
+	// Get pending versions (status = 1 is pending/submitted for review)
 	QueryGetPendingVersions = `
 	SELECT
-		pv.id, pv.title, pv.created_by, u.name as author_name, u.avatar as author_avatar, pv.created_at
+		pv.id, pv.post_id, pv.title, pv.created_by, u.name as author_name, u.avatar as author_avatar, pv.created_at
 	FROM post_versions pv
 	JOIN users u ON pv.created_by = u.id
-	WHERE pv.status = 0
+	WHERE pv.status = 1
 		AND pv.deleted_at IS NULL
 	ORDER BY pv.created_at DESC
 	LIMIT 10`

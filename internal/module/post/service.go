@@ -756,10 +756,6 @@ func (service *PostService) getValidationErrorMessage(
 ) string {
 	// Custom field name mapping for better UX
 	fieldName := fieldError.Field()
-	switch fieldName {
-	case "CoverImage":
-		fieldName = "Cover"
-	}
 
 	switch fieldError.Tag() {
 	case "required":
