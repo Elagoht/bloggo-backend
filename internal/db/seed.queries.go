@@ -79,7 +79,7 @@ var (
 			"category:list", "category:view", "category:create", "category:update", "category:delete",
 			"user:list", "user:view",
 			"statistics:view-self", "statistics:view-others",
-			"keyvalue:manage", "webhook:manage",
+			"keyvalue:manage",
 		},
 		"Admin": {
 			"post:create", "post:delete", "post:publish", "post:view", "post:list",
