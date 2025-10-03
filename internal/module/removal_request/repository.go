@@ -599,3 +599,102 @@ func (repository *RemovalRequestRepository) IsImageReferencedByOtherVersions(
 
 	return count > 0, nil
 }
+
+// GetPostIdFromVersionId gets the post ID from a version ID
+func (repository *RemovalRequestRepository) GetPostIdFromVersionId(
+	versionId int64,
+) (int64, error) {
+	row := repository.database.QueryRow(QueryGetPostIdFromVersionId, versionId)
+
+	var postId int64
+	err := row.Scan(&postId)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return 0, apierrors.ErrNotFound
+		}
+		return 0, err
+	}
+
+	return postId, nil
+}
+
+// VersionInfo holds minimal version information for image cleanup
+type VersionInfo struct {
+	CoverImage *string
+}
+
+// GetAllVersionsForPost gets all versions for a post
+func (repository *RemovalRequestRepository) GetAllVersionsForPost(
+	postId int64,
+) ([]VersionInfo, error) {
+	rows, err := repository.database.Query(QueryGetAllVersionsForPost, postId)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	versions := []VersionInfo{}
+	for rows.Next() {
+		var version VersionInfo
+		var coverImage sql.NullString
+
+		err := rows.Scan(&coverImage)
+		if err != nil {
+			return nil, err
+		}
+
+		if coverImage.Valid && coverImage.String != "" {
+			version.CoverImage = &coverImage.String
+		}
+
+		versions = append(versions, version)
+	}
+
+	return versions, nil
+}
+
+// SoftDeleteAllVersionsForPost soft deletes all versions of a post
+func (repository *RemovalRequestRepository) SoftDeleteAllVersionsForPost(
+	postId int64,
+) error {
+	_, err := repository.database.Exec(QuerySoftDeleteAllVersionsForPost, postId)
+	return err
+}
+
+// SoftDeletePost soft deletes a post
+func (repository *RemovalRequestRepository) SoftDeletePost(
+	postId int64,
+) error {
+	result, err := repository.database.Exec(QuerySoftDeletePost, postId)
+	if err != nil {
+		return err
+	}
+
+	affected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if affected < 1 {
+		return apierrors.ErrNotFound
+	}
+
+	return nil
+}
+
+// AutoApproveOtherRemovalRequestsForPost auto-approves all other pending removal requests for the same post
+func (repository *RemovalRequestRepository) AutoApproveOtherRemovalRequestsForPost(
+	postId int64,
+	excludeRequestId int64,
+	decidedBy int64,
+	decisionNote *string,
+) error {
+	_, err := repository.database.Exec(
+		QueryAutoApproveOtherRemovalRequestsForPost,
+		decidedBy,
+		decisionNote,
+		postId,
+		excludeRequestId,
+	)
+	return err
+}

@@ -111,4 +111,37 @@ const (
 	WHERE cover_image = ?
 	AND id != ?
 	AND deleted_at IS NULL;`
+
+	QueryGetPostIdFromVersionId = `
+	SELECT post_id
+	FROM post_versions
+	WHERE id = ?
+	AND deleted_at IS NULL;`
+
+	QueryGetAllVersionsForPost = `
+	SELECT cover_image
+	FROM post_versions
+	WHERE post_id = ?
+	AND deleted_at IS NULL;`
+
+	QuerySoftDeleteAllVersionsForPost = `
+	UPDATE post_versions
+	SET deleted_at = CURRENT_TIMESTAMP
+	WHERE post_id = ?
+	AND deleted_at IS NULL;`
+
+	QuerySoftDeletePost = `
+	UPDATE posts
+	SET deleted_at = CURRENT_TIMESTAMP
+	WHERE id = ?
+	AND deleted_at IS NULL;`
+
+	QueryAutoApproveOtherRemovalRequestsForPost = `
+	UPDATE removal_requests
+	SET status = 1, decided_by = ?, decision_note = ?, decided_at = CURRENT_TIMESTAMP
+	WHERE post_version_id IN (
+		SELECT id FROM post_versions WHERE post_id = ?
+	)
+	AND status = 0
+	AND id != ?;`
 )

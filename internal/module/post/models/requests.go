@@ -45,6 +45,7 @@ type PostSubmissionValidation struct {
 	Description string `validate:"required,max=155"`
 	Spot        string `validate:"required,max=75"`
 	CategoryId  int64  `validate:"required"`
+	CoverImage  string `validate:"required"`
 }
 
 // -- Assign Tags to Post -- //

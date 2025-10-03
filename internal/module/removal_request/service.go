@@ -128,39 +128,40 @@ func (service *RemovalRequestService) ApproveRemovalRequest(
 		return apierrors.ErrPreconditionFailed
 	}
 
-	// Get the cover image before deletion for cleanup
-	coverImagePath, err := service.repository.GetVersionCoverImage(request.PostVersionId)
+	// Get the post ID from the version ID
+	postId, err := service.repository.GetPostIdFromVersionId(request.PostVersionId)
 	if err != nil {
 		return err
 	}
 
-	// Check if this version is currently published
-	isCurrentlyPublished, err := service.repository.IsVersionCurrentlyPublished(request.PostVersionId)
+	// Get all versions for this post to collect cover images
+	versions, err := service.repository.GetAllVersionsForPost(postId)
 	if err != nil {
 		return err
 	}
 
-	// If it's currently published, set the post's current_version_id to NULL
-	if isCurrentlyPublished {
-		if err := service.repository.SetPostCurrentVersionToNull(request.PostVersionId); err != nil {
-			return err
+	// Collect all unique cover images for later cleanup
+	coverImages := make(map[string]bool)
+	for _, version := range versions {
+		if version.CoverImage != nil && *version.CoverImage != "" {
+			coverImages[*version.CoverImage] = true
 		}
 	}
 
-	// Soft delete the version
-	if err := service.repository.SoftDeleteVersion(request.PostVersionId); err != nil {
+	// Soft delete all versions of the post
+	if err := service.repository.SoftDeleteAllVersionsForPost(postId); err != nil {
 		return err
 	}
 
-	// Clean up cover image if not referenced by other versions
-	if coverImagePath != nil {
-		isImageStillReferenced, err := service.repository.IsImageReferencedByOtherVersions(*coverImagePath, request.PostVersionId)
-		if err != nil {
-			// Log error but don't fail the operation
-		} else if !isImageStillReferenced {
-			// Delete the image from storage
-			service.bucket.Delete(*coverImagePath)
-		}
+	// Soft delete the post itself
+	if err := service.repository.SoftDeletePost(postId); err != nil {
+		return err
+	}
+
+	// Clean up all cover images from storage
+	for imagePath := range coverImages {
+		// Delete the image from storage
+		service.bucket.Delete(imagePath)
 	}
 
 	// Finally, approve the removal request
@@ -169,10 +170,10 @@ func (service *RemovalRequestService) ApproveRemovalRequest(
 		return err
 	}
 
-	// Auto-approve all other pending removal requests for the same post version
-	autoApprovalNote := "Automatically approved - post version was already deleted"
-	err = service.repository.AutoApproveOtherRemovalRequests(
-		request.PostVersionId,
+	// Auto-approve all other pending removal requests for the same post
+	autoApprovalNote := "Automatically approved - post was already deleted"
+	err = service.repository.AutoApproveOtherRemovalRequestsForPost(
+		postId,
 		id,
 		decidedBy,
 		&autoApprovalNote,
@@ -184,7 +185,7 @@ func (service *RemovalRequestService) ApproveRemovalRequest(
 
 	// Log the audit events
 	audit.LogAction(&decidedBy, "removal_request", id, "approved")
-	audit.LogAction(&decidedBy, "post_version", request.PostVersionId, "deleted")
+	audit.LogAction(&decidedBy, "post", postId, "deleted")
 
 	return nil
 }

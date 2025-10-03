@@ -726,6 +726,9 @@ func (service *PostService) validateVersionForSubmission(postId int64, versionId
 			validationData.CategoryId = categoryId
 		}
 	}
+	if version.CoverImage != nil {
+		validationData.CoverImage = strings.TrimSpace(*version.CoverImage)
+	}
 
 	// Use the validator to validate the struct
 	validatorInstance := validate.GetValidator()
@@ -751,15 +754,22 @@ func (service *PostService) validateVersionForSubmission(postId int64, versionId
 func (service *PostService) getValidationErrorMessage(
 	fieldError validator.FieldError,
 ) string {
+	// Custom field name mapping for better UX
+	fieldName := fieldError.Field()
+	switch fieldName {
+	case "CoverImage":
+		fieldName = "Cover"
+	}
+
 	switch fieldError.Tag() {
 	case "required":
-		return fieldError.Field() + " is required"
+		return fieldName + " is required"
 	case "min":
-		return fieldError.Field() + " must be at least " + fieldError.Param() + " characters"
+		return fieldName + " must be at least " + fieldError.Param() + " characters"
 	case "max":
-		return fieldError.Field() + " must be " + fieldError.Param() + " characters or less"
+		return fieldName + " must be " + fieldError.Param() + " characters or less"
 	default:
-		return fieldError.Field() + " is invalid"
+		return fieldName + " is invalid"
 	}
 }
 
