@@ -42,13 +42,14 @@ func TriggerPostCreated(postID int64, slug string, data map[string]interface{}) 
 }
 
 // TriggerPostUpdated fires a webhook for post update
-func TriggerPostUpdated(postID int64, slug string, data map[string]interface{}) {
+func TriggerPostUpdated(postID int64, slug string, oldSlug *string, data map[string]interface{}) {
 	service := GetGlobalWebhookService()
 	payload := models.WebhookPayload{
 		Event:     "post.updated",
 		Entity:    "post",
 		ID:        &postID,
 		Slug:      &slug,
+		OldSlug:   oldSlug,
 		Action:    "updated",
 		Timestamp: time.Now().UTC().Format(time.RFC3339),
 		Data:      data,
@@ -87,13 +88,14 @@ func TriggerCategoryCreated(categoryID int64, slug string, data map[string]inter
 }
 
 // TriggerCategoryUpdated fires a webhook for category update
-func TriggerCategoryUpdated(categoryID int64, slug string, data map[string]interface{}) {
+func TriggerCategoryUpdated(categoryID int64, slug string, oldSlug *string, data map[string]interface{}) {
 	service := GetGlobalWebhookService()
 	payload := models.WebhookPayload{
 		Event:     "category.updated",
 		Entity:    "category",
 		ID:        &categoryID,
 		Slug:      &slug,
+		OldSlug:   oldSlug,
 		Action:    "updated",
 		Timestamp: time.Now().UTC().Format(time.RFC3339),
 		Data:      data,
@@ -132,13 +134,14 @@ func TriggerTagCreated(tagID int64, slug string, data map[string]interface{}) {
 }
 
 // TriggerTagUpdated fires a webhook for tag update
-func TriggerTagUpdated(tagID int64, slug string, data map[string]interface{}) {
+func TriggerTagUpdated(tagID int64, slug string, oldSlug *string, data map[string]interface{}) {
 	service := GetGlobalWebhookService()
 	payload := models.WebhookPayload{
 		Event:     "tag.updated",
 		Entity:    "tag",
 		ID:        &tagID,
 		Slug:      &slug,
+		OldSlug:   oldSlug,
 		Action:    "updated",
 		Timestamp: time.Now().UTC().Format(time.RFC3339),
 		Data:      data,

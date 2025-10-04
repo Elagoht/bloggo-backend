@@ -34,9 +34,9 @@ const (
 	QueryInsertRequest = `
 	INSERT INTO webhook_requests (
 		event, entity, entity_id, slug, request_body,
-		response_status, response_body, attempt_count, error_message, created_at
+		response_status, response_body, attempt_count, error_message, webhook_url, webhook_headers, created_at
 	)
-	VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP);`
+	VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP);`
 
 	QueryUpdateRequest = `
 	UPDATE webhook_requests
@@ -45,14 +45,14 @@ const (
 
 	QueryGetAllRequests = `
 	SELECT id, event, entity, entity_id, slug, request_body,
-		response_status, response_body, attempt_count, error_message, created_at
+		response_status, response_body, attempt_count, error_message, webhook_url, webhook_headers, created_at
 	FROM webhook_requests
 	ORDER BY created_at DESC
 	LIMIT ? OFFSET ?;`
 
 	QueryGetRequestsBySearch = `
 	SELECT id, event, entity, entity_id, slug, request_body,
-		response_status, response_body, attempt_count, error_message, created_at
+		response_status, response_body, attempt_count, error_message, webhook_url, webhook_headers, created_at
 	FROM webhook_requests
 	WHERE event LIKE ? OR entity LIKE ?
 	ORDER BY created_at DESC
@@ -60,7 +60,7 @@ const (
 
 	QueryGetRequestByID = `
 	SELECT id, event, entity, entity_id, slug, request_body,
-		response_status, response_body, attempt_count, error_message, created_at
+		response_status, response_body, attempt_count, error_message, webhook_url, webhook_headers, created_at
 	FROM webhook_requests
 	WHERE id = ?;`
 

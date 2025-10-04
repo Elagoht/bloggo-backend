@@ -649,6 +649,15 @@ func (service *PostService) PublishVersion(
 		return err
 	}
 
+	// Get the old slug (from currently published version) if it exists
+	var oldSlug *string
+	if currentVersionId != nil && currentStatus != nil && *currentStatus == models.STATUS_PUBLISHED {
+		oldSlugValue, err := service.repository.GetVersionSlug(*currentVersionId)
+		if err == nil {
+			oldSlug = &oldSlugValue
+		}
+	}
+
 	// If there's a current version that's published and it's different from the one being published
 	if currentVersionId != nil && currentStatus != nil &&
 		*currentStatus == models.STATUS_PUBLISHED && *currentVersionId != versionId {
@@ -698,7 +707,7 @@ func (service *PostService) PublishVersion(
 
 	// Trigger webhook for post publish
 	go func() {
-		webhook.TriggerPostUpdated(postId, slug, map[string]interface{}{
+		webhook.TriggerPostUpdated(postId, slug, oldSlug, map[string]interface{}{
 			"versionId": versionId,
 			"slug":      slug,
 		})

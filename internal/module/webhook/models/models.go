@@ -28,6 +28,8 @@ type WebhookRequest struct {
 	ResponseBody   *string `json:"responseBody"`
 	AttemptCount   int     `json:"attemptCount"`
 	ErrorMessage   *string `json:"errorMessage"`
+	WebhookURL     *string `json:"webhookUrl"`
+	WebhookHeaders *string `json:"webhookHeaders"`
 	CreatedAt      string  `json:"createdAt"`
 }
 
@@ -37,6 +39,7 @@ type WebhookPayload struct {
 	Entity    string                 `json:"entity"`
 	ID        *int64                 `json:"id"`
 	Slug      *string                `json:"slug"`
+	OldSlug   *string                `json:"oldSlug,omitempty"`
 	Action    string                 `json:"action"`
 	Timestamp string                 `json:"timestamp"`
 	Data      map[string]interface{} `json:"data"`

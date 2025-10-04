@@ -137,14 +137,23 @@ func (service *WebhookService) FireWebhook(payload models.WebhookPayload) {
 		return
 	}
 
+	// Serialize headers for storage
+	headersJSON, err := json.Marshal(headers)
+	if err != nil {
+		headersJSON = []byte("[]")
+	}
+	headersStr := string(headersJSON)
+
 	// Create initial request record
 	requestRecord := &models.WebhookRequest{
-		Event:        payload.Event,
-		Entity:       payload.Entity,
-		EntityID:     payload.ID,
-		Slug:         payload.Slug,
-		RequestBody:  string(payloadBytes),
-		AttemptCount: 0,
+		Event:          payload.Event,
+		Entity:         payload.Entity,
+		EntityID:       payload.ID,
+		Slug:           payload.Slug,
+		RequestBody:    string(payloadBytes),
+		AttemptCount:   0,
+		WebhookURL:     &config.URL,
+		WebhookHeaders: &headersStr,
 	}
 
 	requestID, err := service.repository.InsertRequest(requestRecord)

@@ -122,6 +122,8 @@ func (repository *WebhookRepository) InsertRequest(req *models.WebhookRequest) (
 		req.ResponseBody,
 		req.AttemptCount,
 		req.ErrorMessage,
+		req.WebhookURL,
+		req.WebhookHeaders,
 	)
 	if err != nil {
 		return 0, err
@@ -175,6 +177,8 @@ func (repository *WebhookRepository) GetRequestByID(id int) (*models.WebhookRequ
 		&req.ResponseBody,
 		&req.AttemptCount,
 		&req.ErrorMessage,
+		&req.WebhookURL,
+		&req.WebhookHeaders,
 		&req.CreatedAt,
 	)
 	if err == sql.ErrNoRows {
@@ -215,6 +219,8 @@ func (repository *WebhookRepository) scanRequests(rows *sql.Rows) ([]models.Webh
 			&req.ResponseBody,
 			&req.AttemptCount,
 			&req.ErrorMessage,
+			&req.WebhookURL,
+			&req.WebhookHeaders,
 			&req.CreatedAt,
 		)
 		if err != nil {

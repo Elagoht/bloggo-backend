@@ -216,6 +216,8 @@ const (
 		response_body TEXT,
 		attempt_count INTEGER NOT NULL DEFAULT 1,
 		error_message TEXT,
+		webhook_url TEXT,
+		webhook_headers TEXT,
 		created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 	);
 	CREATE INDEX IF NOT EXISTS idx_webhook_requests_event

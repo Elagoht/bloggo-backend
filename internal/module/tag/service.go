@@ -117,11 +117,15 @@ func (service *TagService) TagUpdate(
 
 	// Trigger webhook with updated slug
 	newSlug := slug
+	var oldSlug *string
 	if params.Slug != nil {
 		newSlug = *params.Slug
+		if slug != newSlug {
+			oldSlug = &slug
+		}
 	}
 	go func() {
-		webhook.TriggerTagUpdated(tag.Id, newSlug, map[string]interface{}{"name": model.Name, "slug": newSlug})
+		webhook.TriggerTagUpdated(tag.Id, newSlug, oldSlug, map[string]interface{}{"name": model.Name, "slug": newSlug})
 	}()
 
 	return nil

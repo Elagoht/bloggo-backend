@@ -136,11 +136,15 @@ func (service *CategoryService) CategoryUpdate(
 
 	// Trigger webhook with updated slug
 	newSlug := slug
+	var oldSlug *string
 	if params.Slug != nil {
 		newSlug = *params.Slug
+		if slug != newSlug {
+			oldSlug = &slug
+		}
 	}
 	go func() {
-		webhook.TriggerCategoryUpdated(category.Id, newSlug, map[string]interface{}{
+		webhook.TriggerCategoryUpdated(category.Id, newSlug, oldSlug, map[string]interface{}{
 			"name":        model.Name,
 			"slug":        newSlug,
 			"spot":        model.Spot,
