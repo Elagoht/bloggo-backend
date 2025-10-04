@@ -140,40 +140,43 @@ func MapErrors(
 }
 
 var (
-	ErrConflict             = errors.New("resource conflict")
-	ErrNotFound             = errors.New("resource not found")
-	ErrUnauthorized         = errors.New("unauthorized")
-	ErrForbidden            = errors.New("forbidden")
-	ErrBadRequest           = errors.New("bad request")
-	ErrInternalServer       = errors.New("internal server error")
-	ErrRequestTimeout       = errors.New("request timeout")
-	ErrTooManyRequests      = errors.New("too many requests")
-	ErrUnprocessableEntity  = errors.New("unprocessable entity")
-	ErrNotImplemented       = errors.New("not implemented")
-	ErrServiceUnavailable   = errors.New("service unavailable")
-	ErrUnsupportedMediaType = errors.New("unsupported media type")
-	ErrPreconditionFailed   = errors.New("precondition failed")
-	ErrPreconditionRequired = errors.New("precondition required")
-	ErrEncryptionError      = errors.New("encyption failed")
+	ErrConflict                  = errors.New("resource conflict")
+	ErrNotFound                  = errors.New("resource not found")
+	ErrUnauthorized              = errors.New("unauthorized")
+	ErrForbidden                 = errors.New("forbidden")
+	ErrBadRequest                = errors.New("bad request")
+	ErrInternalServer            = errors.New("internal server error")
+	ErrRequestTimeout            = errors.New("request timeout")
+	ErrTooManyRequests           = errors.New("too many requests")
+	ErrUnprocessableEntity       = errors.New("unprocessable entity")
+	ErrNotImplemented            = errors.New("not implemented")
+	ErrServiceUnavailable        = errors.New("service unavailable")
+	ErrUnsupportedMediaType      = errors.New("unsupported media type")
+	ErrPreconditionFailed        = errors.New("precondition failed")
+	ErrPreconditionRequired      = errors.New("precondition required")
+	ErrEncryptionError           = errors.New("encyption failed")
 	ErrCategoryHasPublishedBlogs = errors.New("category has published blogs")
+	ErrCannotLowerOwnRole        = errors.New("admins cannot lower their own role")
 )
 
 var DefaultErrorMapping = &HTTPErrorMapping{
 	// Standard Errors
-	ErrConflict:             {ErrConflict.Error(), http.StatusConflict},
-	ErrNotFound:             {ErrNotFound.Error(), http.StatusNotFound},
-	ErrUnauthorized:         {ErrUnauthorized.Error(), http.StatusUnauthorized},
-	ErrForbidden:            {ErrForbidden.Error(), http.StatusForbidden},
-	ErrBadRequest:           {ErrBadRequest.Error(), http.StatusBadRequest},
-	ErrInternalServer:       {ErrInternalServer.Error(), http.StatusInternalServerError},
-	ErrRequestTimeout:       {ErrRequestTimeout.Error(), http.StatusRequestTimeout},
-	ErrTooManyRequests:      {ErrTooManyRequests.Error(), http.StatusTooManyRequests},
-	ErrUnprocessableEntity:  {ErrUnprocessableEntity.Error(), http.StatusUnprocessableEntity},
-	ErrNotImplemented:       {ErrNotImplemented.Error(), http.StatusNotImplemented},
-	ErrServiceUnavailable:   {ErrServiceUnavailable.Error(), http.StatusServiceUnavailable},
-	ErrUnsupportedMediaType: {ErrUnsupportedMediaType.Error(), http.StatusUnsupportedMediaType},
-	ErrPreconditionFailed:   {ErrPreconditionFailed.Error(), http.StatusPreconditionFailed},
-	ErrPreconditionRequired: {ErrPreconditionRequired.Error(), http.StatusPreconditionRequired},
+	ErrConflict:                  {ErrConflict.Error(), http.StatusConflict},
+	ErrNotFound:                  {ErrNotFound.Error(), http.StatusNotFound},
+	ErrUnauthorized:              {ErrUnauthorized.Error(), http.StatusUnauthorized},
+	ErrForbidden:                 {ErrForbidden.Error(), http.StatusForbidden},
+	ErrBadRequest:                {ErrBadRequest.Error(), http.StatusBadRequest},
+	ErrInternalServer:            {ErrInternalServer.Error(), http.StatusInternalServerError},
+	ErrRequestTimeout:            {ErrRequestTimeout.Error(), http.StatusRequestTimeout},
+	ErrTooManyRequests:           {ErrTooManyRequests.Error(), http.StatusTooManyRequests},
+	ErrUnprocessableEntity:       {ErrUnprocessableEntity.Error(), http.StatusUnprocessableEntity},
+	ErrNotImplemented:            {ErrNotImplemented.Error(), http.StatusNotImplemented},
+	ErrServiceUnavailable:        {ErrServiceUnavailable.Error(), http.StatusServiceUnavailable},
+	ErrUnsupportedMediaType:      {ErrUnsupportedMediaType.Error(), http.StatusUnsupportedMediaType},
+	ErrPreconditionFailed:        {ErrPreconditionFailed.Error(), http.StatusPreconditionFailed},
+	ErrPreconditionRequired:      {ErrPreconditionRequired.Error(), http.StatusPreconditionRequired},
+	ErrCannotLowerOwnRole:        {ErrCannotLowerOwnRole.Error(), http.StatusForbidden},
+	ErrCategoryHasPublishedBlogs: {ErrCategoryHasPublishedBlogs.Error(), http.StatusConflict},
 	// Standard SQL errors
 	sql.ErrNoRows: {ErrNotFound.Error(), http.StatusNotFound},
 }

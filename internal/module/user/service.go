@@ -5,6 +5,7 @@ import (
 	auditmodels "bloggo/internal/module/audit/models"
 	"bloggo/internal/module/user/models"
 	"bloggo/internal/module/webhook"
+	"bloggo/internal/utils/apierrors"
 	"bloggo/internal/utils/audit"
 	"bloggo/internal/utils/cryptography"
 	"bloggo/internal/utils/file/transformfile"
@@ -204,7 +205,7 @@ func (service *UserService) AssignRole(
 		// Admin role ID is 3 (based on seed order: Author=1, Editor=2, Admin=3)
 		const adminRoleId = 3
 		if currentRoleId == adminRoleId && model.RoleId != adminRoleId {
-			return fmt.Errorf("admins cannot lower their own role")
+			return apierrors.ErrCannotLowerOwnRole
 		}
 	}
 

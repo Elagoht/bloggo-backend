@@ -8,13 +8,14 @@ import (
 	"strings"
 
 	"bloggo/internal/utils/apierrors"
+	"bloggo/internal/utils/validate"
 
 	"github.com/go-playground/validator/v10"
 )
 
 // BindAndValidateMultipart parses multipart/form-data into a struct (T can be struct or *struct),
 // fills *multipart.FileHeader fields, converts basic types (int, bool, float, string, []string),
-// performs validation (bindValidater) and writes errors to the provided writer.
+// performs validation and writes errors to the provided writer.
 // Returns the populated body and a bool success flag.
 func BindAndValidateMultipart[T any](
 	writer http.ResponseWriter,
@@ -286,8 +287,8 @@ func BindAndValidateMultipart[T any](
 		}
 	}
 
-	// run validation (uses package-level bindValidater from your handlers package)
-	if err := bindValidater.Struct(body); err != nil {
+	// run validation
+	if err := validate.GetValidator().Struct(body); err != nil {
 		if validationErrors, ok := err.(validator.ValidationErrors); ok {
 			var vErrs []apierrors.ValidationError
 			for _, validationError := range validationErrors {

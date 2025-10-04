@@ -9,8 +9,6 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-var bindValidater = validate.GetValidator()
-
 func BindAndValidate[T any](
 	writer http.ResponseWriter,
 	request *http.Request,
@@ -25,7 +23,7 @@ func BindAndValidate[T any](
 		return body, false
 	}
 
-	if err := bindValidater.Struct(body); err != nil {
+	if err := validate.GetValidator().Struct(body); err != nil {
 		if validationErrors, ok := err.(validator.ValidationErrors); ok {
 			var errors []apierrors.ValidationError
 			for _, validationError := range validationErrors {
