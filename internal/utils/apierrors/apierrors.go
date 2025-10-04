@@ -157,6 +157,7 @@ var (
 	ErrEncryptionError           = errors.New("encyption failed")
 	ErrCategoryHasPublishedBlogs = errors.New("category has published blogs")
 	ErrCannotLowerOwnRole        = errors.New("admins cannot lower their own role")
+	ErrAIFeaturesDisabled        = errors.New("generative ai features are currently unavailable, please contact your administrator to enable this feature")
 )
 
 var DefaultErrorMapping = &HTTPErrorMapping{
@@ -177,6 +178,7 @@ var DefaultErrorMapping = &HTTPErrorMapping{
 	ErrPreconditionRequired:      {ErrPreconditionRequired.Error(), http.StatusPreconditionRequired},
 	ErrCannotLowerOwnRole:        {ErrCannotLowerOwnRole.Error(), http.StatusForbidden},
 	ErrCategoryHasPublishedBlogs: {ErrCategoryHasPublishedBlogs.Error(), http.StatusConflict},
+	ErrAIFeaturesDisabled:        {ErrAIFeaturesDisabled.Error(), http.StatusPreconditionFailed},
 	// Standard SQL errors
 	sql.ErrNoRows: {ErrNotFound.Error(), http.StatusNotFound},
 }

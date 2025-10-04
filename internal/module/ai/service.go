@@ -3,6 +3,7 @@ package ai
 import (
 	"bloggo/internal/config"
 	"bloggo/internal/module/ai/models"
+	"bloggo/internal/utils/apierrors"
 	"bytes"
 	"encoding/json"
 	"errors"
@@ -47,17 +48,13 @@ func (service *DisabledAIService) GenerateContentMetadata(
 	content string,
 	availableCategories []string,
 ) (*models.ResponseGenerativeFill, error) {
-	return nil, errors.New(
-		"generative ai features are currently unavailable, please contact your administrator to enable this feature,",
-	)
+	return nil, apierrors.ErrAIFeaturesDisabled
 }
 
 func (service *DisabledAIService) GenerateCategoryMetadata(
 	categoryName string,
 ) (*models.ResponseCategoryGenerativeFill, error) {
-	return nil, errors.New(
-		"generative ai features are currently unavailable, please contact your administrator to enable this feature,",
-	)
+	return nil, apierrors.ErrAIFeaturesDisabled
 }
 
 type GeminiRequest struct {
