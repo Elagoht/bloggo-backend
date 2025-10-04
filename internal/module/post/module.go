@@ -8,7 +8,7 @@ import (
 	"bloggo/internal/middleware"
 	"bloggo/internal/utils/file/transformfile"
 	"bloggo/internal/utils/file/validatefile"
-	"log"
+	"fmt"
 
 	"github.com/go-chi/chi"
 )
@@ -23,7 +23,7 @@ func NewModule() PostModule {
 	database := db.Get()
 	bucket, err := bucket.NewFileSystemBucket("posts/versions/covers")
 	if err != nil {
-		log.Fatalln("Post module cannot created file storage")
+		panic(fmt.Sprintf("Post module failed to create file storage: %v", err))
 	}
 	imageValidator := validatefile.NewImageValidator(10 << 20) // 5MB
 	coverResizer := transformfile.NewImageTransformer(1280, 720)

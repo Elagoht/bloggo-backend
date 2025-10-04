@@ -8,7 +8,7 @@ import (
 	"bloggo/internal/module/user"
 	"bloggo/internal/utils/file/transformfile"
 	"bloggo/internal/utils/file/validatefile"
-	"log"
+	"fmt"
 
 	"github.com/go-chi/chi"
 )
@@ -27,7 +27,7 @@ func NewModule() SessionModule {
 	// Create user service for updating last login
 	bucket, err := bucket.NewFileSystemBucket("users/avatars")
 	if err != nil {
-		log.Fatalln("Session module cannot create file storage for user service")
+		panic(fmt.Sprintf("Session module failed to create file storage for user service: %v", err))
 	}
 	imageValidator := validatefile.NewImageValidator(5 << 20) // 5MB
 	avatarResizer := transformfile.NewImageTransformer(512, 512)

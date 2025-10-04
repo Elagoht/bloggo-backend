@@ -3,15 +3,16 @@ package db
 import (
 	"bloggo/internal/utils/cryptography"
 	"database/sql"
+	"fmt"
 	"log"
 )
 
-func SeedDatabase(database *sql.DB) {
+func SeedDatabase(database *sql.DB) error {
 	// -- Roles and Permissions Seeding -- //
 	for _, query := range SeedQueries {
 		_, err := database.Exec(query)
 		if err != nil {
-			log.Fatal("Database cannot be seeded.")
+			return fmt.Errorf("database cannot be seeded: %w", err)
 		}
 	}
 
@@ -24,7 +25,7 @@ func SeedDatabase(database *sql.DB) {
 
 	rows, err := database.Query(GetRolesSQL)
 	if err != nil {
-		log.Fatal("Cannot query roles.")
+		return fmt.Errorf("cannot query roles: %w", err)
 	}
 	defer rows.Close()
 	for rows.Next() {
@@ -37,7 +38,7 @@ func SeedDatabase(database *sql.DB) {
 
 	rows, err = database.Query(GetPermissionsSQL)
 	if err != nil {
-		log.Fatal("Cannot query permissions.")
+		return fmt.Errorf("cannot query permissions: %w", err)
 	}
 	defer rows.Close()
 	for rows.Next() {
@@ -93,4 +94,6 @@ func SeedDatabase(database *sql.DB) {
 			}
 		}
 	}
+
+	return nil
 }

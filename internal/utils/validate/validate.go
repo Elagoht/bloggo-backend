@@ -1,7 +1,7 @@
 package validate
 
 import (
-	"log"
+	"fmt"
 	"mime/multipart"
 	"path/filepath"
 	"reflect"
@@ -14,19 +14,26 @@ import (
 var (
 	validatorInstance *validator.Validate
 	once              sync.Once
+	initErr           error
 )
 
-// Get singleton instance
-func GetValidator() *validator.Validate {
+// MustInitialize initializes the validator and returns an error if it fails
+func MustInitialize() error {
 	once.Do(func() {
 		validatorInstance = validator.New()
 		for key, validateFunction := range customValidator {
 			err := validatorInstance.RegisterValidation(key, validateFunction)
 			if err != nil {
-				log.Fatal(err)
+				initErr = fmt.Errorf("failed to register validator %s: %w", key, err)
+				return
 			}
 		}
 	})
+	return initErr
+}
+
+// GetValidator returns the singleton instance
+func GetValidator() *validator.Validate {
 	return validatorInstance
 }
 

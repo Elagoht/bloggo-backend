@@ -6,7 +6,7 @@ import (
 	"bloggo/internal/infrastructure/bucket"
 	"bloggo/internal/infrastructure/permissions"
 	"bloggo/internal/middleware"
-	"log"
+	"fmt"
 
 	"github.com/go-chi/chi"
 )
@@ -24,7 +24,7 @@ func NewModule() RemovalRequestModule {
 	// Use the same bucket as posts for cover image cleanup
 	bucketInstance, err := bucket.NewFileSystemBucket("posts/versions/covers")
 	if err != nil {
-		log.Fatalln("Removal request module cannot create file storage")
+		panic(fmt.Sprintf("Removal request module failed to create file storage: %v", err))
 	}
 
 	repository := NewRemovalRequestRepository(database)

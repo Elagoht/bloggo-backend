@@ -3,7 +3,6 @@ package config
 import (
 	"bloggo/internal/utils/validate"
 	"fmt"
-	"log"
 	"os"
 	"strconv"
 	"sync"
@@ -23,13 +22,19 @@ type Config struct {
 var (
 	instance Config
 	once     sync.Once
+	loadErr  error
 )
 
-// Get returns the singleton Config instance, loading it from environment variables.
-func Get() Config {
+// MustLoad loads configuration from environment variables and returns an error if it fails
+func MustLoad() error {
 	once.Do(func() {
-		instance = load()
+		instance, loadErr = load()
 	})
+	return loadErr
+}
+
+// Get returns the singleton Config instance
+func Get() Config {
 	return instance
 }
 
@@ -37,24 +42,33 @@ func IsGeminiEnabled() bool {
 	return Get().GeminiAPIKey != ""
 }
 
-func load() Config {
+func load() (Config, error) {
 	// Load .env file if it exists (optional - for local development)
 	_ = godotenv.Load()
 
 	// Get port from environment variable, default to 8723
-	port := getEnvAsInt("PORT", 8723)
+	port, err := getEnvAsInt("PORT", 8723)
+	if err != nil {
+		return Config{}, err
+	}
 
 	// Get JWT secret - REQUIRED
 	jwtSecret := os.Getenv("JWT_SECRET")
 	if jwtSecret == "" {
-		log.Fatal("JWT_SECRET environment variable is required")
+		return Config{}, fmt.Errorf("JWT_SECRET environment variable is required")
 	}
 
 	// Get access token duration - default to 900 seconds (15 minutes)
-	accessTokenDuration := getEnvAsInt("ACCESS_TOKEN_DURATION", 900)
+	accessTokenDuration, err := getEnvAsInt("ACCESS_TOKEN_DURATION", 900)
+	if err != nil {
+		return Config{}, err
+	}
 
 	// Get refresh token duration - default to 604800 seconds (7 days)
-	refreshTokenDuration := getEnvAsInt("REFRESH_TOKEN_DURATION", 604800)
+	refreshTokenDuration, err := getEnvAsInt("REFRESH_TOKEN_DURATION", 604800)
+	if err != nil {
+		return Config{}, err
+	}
 
 	// Get Gemini API key - optional
 	geminiAPIKey := os.Getenv("GEMINI_API_KEY")
@@ -62,7 +76,7 @@ func load() Config {
 	// Get trusted frontend key - REQUIRED
 	trustedFrontendKey := os.Getenv("TRUSTED_FRONTEND_KEY")
 	if trustedFrontendKey == "" {
-		log.Fatal("TRUSTED_FRONTEND_KEY environment variable is required")
+		return Config{}, fmt.Errorf("TRUSTED_FRONTEND_KEY environment variable is required")
 	}
 
 	result := Config{
@@ -75,26 +89,24 @@ func load() Config {
 	}
 
 	// Validate configuration
-	err := validate.GetValidator().Struct(result)
-	if err != nil {
-		fmt.Println(err)
-		log.Fatal("Configuration is not valid")
+	if err := validate.GetValidator().Struct(result); err != nil {
+		return Config{}, fmt.Errorf("configuration is not valid: %w", err)
 	}
 
-	return result
+	return result, nil
 }
 
 // getEnvAsInt reads an environment variable as an integer with a default fallback
-func getEnvAsInt(key string, defaultValue int) int {
+func getEnvAsInt(key string, defaultValue int) (int, error) {
 	valueStr := os.Getenv(key)
 	if valueStr == "" {
-		return defaultValue
+		return defaultValue, nil
 	}
 
 	value, err := strconv.Atoi(valueStr)
 	if err != nil {
-		log.Fatalf("Invalid value for %s: %s", key, valueStr)
+		return 0, fmt.Errorf("invalid value for %s: %s", key, valueStr)
 	}
 
-	return value
+	return value, nil
 }

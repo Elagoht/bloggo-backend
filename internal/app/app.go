@@ -57,7 +57,7 @@ func (app *Application) RegisterGlobalMiddlewares(
 	}
 }
 
-func (app *Application) Bootstrap() {
+func (app *Application) Bootstrap() error {
 	config := config.Get()
 	portString := strconv.Itoa(config.Port)
 	// Start the server
@@ -66,7 +66,5 @@ func (app *Application) Bootstrap() {
 		Handler: app.Router,
 	}
 	log.Printf("Starting server on http://localhost:%s", portString)
-	if err := server.ListenAndServe(); err != nil {
-		log.Fatalf("Server failed to start: %v", err)
-	}
+	return server.ListenAndServe()
 }

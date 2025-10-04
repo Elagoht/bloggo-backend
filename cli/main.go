@@ -2,6 +2,8 @@ package main
 
 import (
 	"bloggo/internal/app"
+	"bloggo/internal/config"
+	"bloggo/internal/db"
 	embedpkg "bloggo/internal/embed"
 	"bloggo/internal/middleware"
 	"bloggo/internal/module"
@@ -21,13 +23,34 @@ import (
 	"bloggo/internal/module/tag"
 	"bloggo/internal/module/user"
 	"bloggo/internal/module/webhook"
+	"bloggo/internal/utils/validate"
+	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/go-chi/chi"
 )
 
 func main() {
+	// Initialize validator
+	if err := validate.MustInitialize(); err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to initialize validator: %v\n", err)
+		os.Exit(1)
+	}
+
+	// Load configuration
+	if err := config.MustLoad(); err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to load configuration: %v\n", err)
+		os.Exit(1)
+	}
+
+	// Connect to database
+	if err := db.MustConnect(); err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to connect to database: %v\n", err)
+		os.Exit(1)
+	}
+
 	// Get singleton application
 	application := app.Get()
 
@@ -114,5 +137,8 @@ func main() {
 	}
 
 	// Start app
-	application.Bootstrap()
+	if err := application.Bootstrap(); err != nil {
+		fmt.Fprintf(os.Stderr, "Server failed to start: %v\n", err)
+		os.Exit(1)
+	}
 }
