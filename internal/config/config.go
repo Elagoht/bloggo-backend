@@ -1,54 +1,34 @@
 package config
 
 import (
-	"bloggo/internal/utils/cryptography"
 	"bloggo/internal/utils/validate"
-	"encoding/json"
 	"fmt"
 	"log"
 	"os"
-	"path/filepath"
+	"strconv"
 	"sync"
+
+	"github.com/joho/godotenv"
 )
 
 type Config struct {
-	Port                 int    `json:"port" validate:"required,port"`
-	JWTSecret            string `json:"JWTSecret" validate:"required,min=32,max=32"`
-	AccessTokenDuration  int    `json:"accessTokenDuration" validate:"required"`
-	RefreshTokenDuration int    `json:"refreshTokenDuration" validate:"required"`
-	GeminiAPIKey         string `json:"geminiApiKey"`
-	TrustedFrontendKey   string `json:"trustedFrontendKey" validate:"required,min=32,max=32"`
+	Port                 int    `validate:"required,port"`
+	JWTSecret            string `validate:"required,min=32"`
+	AccessTokenDuration  int    `validate:"required"`
+	RefreshTokenDuration int    `validate:"required"`
+	GeminiAPIKey         string
+	TrustedFrontendKey   string `validate:"required,min=32"`
 }
 
 var (
-	instance   Config
-	once       sync.Once
-	configFile = "bloggo-config.json"
+	instance Config
+	once     sync.Once
 )
 
-func (conf Config) Save(file string) {
-	// Ensure the directory exists
-	dir := filepath.Dir(file)
-	if err := os.MkdirAll(dir, 0755); err != nil {
-		log.Fatal(err)
-	}
-
-	// Marshal config to JSON
-	data, err := json.MarshalIndent(conf, "", "  ")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// Write to file
-	if err := os.WriteFile(file, data, 0644); err != nil {
-		log.Fatal(err)
-	}
-}
-
-// Get returns the singleton Config instance, loading it from file if necessary.
+// Get returns the singleton Config instance, loading it from environment variables.
 func Get() Config {
 	once.Do(func() {
-		instance = load(configFile)
+		instance = load()
 	})
 	return instance
 }
@@ -57,50 +37,64 @@ func IsGeminiEnabled() bool {
 	return Get().GeminiAPIKey != ""
 }
 
-func load(file string) Config {
-	// If a config file doesn't exist, generate one.
-	if _, err := os.Stat(file); os.IsNotExist(err) {
-		generateConfig().Save(file)
+func load() Config {
+	// Load .env file if it exists (optional - for local development)
+	_ = godotenv.Load()
+
+	// Get port from environment variable, default to 8723
+	port := getEnvAsInt("PORT", 8723)
+
+	// Get JWT secret - REQUIRED
+	jwtSecret := os.Getenv("JWT_SECRET")
+	if jwtSecret == "" {
+		log.Fatal("JWT_SECRET environment variable is required")
 	}
 
-	// Read config
-	content, err := os.ReadFile(file)
-	if err != nil {
-		log.Fatal(err)
+	// Get access token duration - default to 900 seconds (15 minutes)
+	accessTokenDuration := getEnvAsInt("ACCESS_TOKEN_DURATION", 900)
+
+	// Get refresh token duration - default to 604800 seconds (7 days)
+	refreshTokenDuration := getEnvAsInt("REFRESH_TOKEN_DURATION", 604800)
+
+	// Get Gemini API key - optional
+	geminiAPIKey := os.Getenv("GEMINI_API_KEY")
+
+	// Get trusted frontend key - REQUIRED
+	trustedFrontendKey := os.Getenv("TRUSTED_FRONTEND_KEY")
+	if trustedFrontendKey == "" {
+		log.Fatal("TRUSTED_FRONTEND_KEY environment variable is required")
 	}
 
-	// Bind file content to config
-	result := Config{}
-	if err := json.Unmarshal(content, &result); err != nil {
-		log.Fatal("Error while parsing configuration.")
+	result := Config{
+		Port:                 port,
+		JWTSecret:            jwtSecret,
+		AccessTokenDuration:  accessTokenDuration,
+		RefreshTokenDuration: refreshTokenDuration,
+		GeminiAPIKey:         geminiAPIKey,
+		TrustedFrontendKey:   trustedFrontendKey,
 	}
 
-	// Validate binded data
-	err = validate.GetValidator().Struct(result)
+	// Validate configuration
+	err := validate.GetValidator().Struct(result)
 	if err != nil {
 		fmt.Println(err)
-		log.Fatal("Configuration loaded but is not valid.")
+		log.Fatal("Configuration is not valid")
 	}
+
 	return result
 }
 
-func generateConfig() *Config {
-	secret, err := cryptography.GenerateRandomHS256Secret()
-	if err != nil {
-		log.Fatal("Couldn't generate secret key.")
+// getEnvAsInt reads an environment variable as an integer with a default fallback
+func getEnvAsInt(key string, defaultValue int) int {
+	valueStr := os.Getenv(key)
+	if valueStr == "" {
+		return defaultValue
 	}
 
-	trustedFrontendKey, err := cryptography.GenerateRandomHS256Secret()
+	value, err := strconv.Atoi(valueStr)
 	if err != nil {
-		log.Fatal("Couldn't generate trusted frontend key.")
+		log.Fatalf("Invalid value for %s: %s", key, valueStr)
 	}
 
-	return &Config{
-		Port:                 8723,               // Default port
-		JWTSecret:            secret,             // Random secret key per distributed instance
-		AccessTokenDuration:  60 * 15,            // 15 minutes for access token
-		RefreshTokenDuration: 60 * 60 * 24 * 7,   // Defaults 7 days for refresh token
-		GeminiAPIKey:         "",                 // Empty by default - users can add their key
-		TrustedFrontendKey:   trustedFrontendKey, // Random key for trusted frontend requests
-	}
+	return value
 }

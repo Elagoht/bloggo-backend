@@ -16,3 +16,6 @@ bloggo-config.json
 
 # Filesystem bucket files
 uploads/
+
+# Embedded frontend
+internal/embed/dist/

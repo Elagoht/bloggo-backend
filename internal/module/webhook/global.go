@@ -205,3 +205,18 @@ func TriggerAuthorDeleted(authorID int64) {
 	}
 	service.FireWebhook(payload)
 }
+
+// TriggerKeyValueUpdated fires a webhook for key-value configuration update
+func TriggerKeyValueUpdated(data map[string]interface{}) {
+	service := GetGlobalWebhookService()
+	payload := models.WebhookPayload{
+		Event:     "keyvalue.updated",
+		Entity:    "keyvalue",
+		ID:        nil,
+		Slug:      nil,
+		Action:    "updated",
+		Timestamp: time.Now().UTC().Format(time.RFC3339),
+		Data:      data,
+	}
+	service.FireWebhook(payload)
+}

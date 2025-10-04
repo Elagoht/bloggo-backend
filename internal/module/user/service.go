@@ -193,6 +193,21 @@ func (service *UserService) AssignRole(
 	model *models.RequestUserAssignRole,
 	assignedBy int64,
 ) error {
+	// Prevent admins from lowering their own role
+	if userId == assignedBy {
+		// Get the current user's role
+		currentRoleId, err := service.repository.GetUserRoleById(assignedBy)
+		if err != nil {
+			return err
+		}
+
+		// Admin role ID is 3 (based on seed order: Author=1, Editor=2, Admin=3)
+		const adminRoleId = 3
+		if currentRoleId == adminRoleId && model.RoleId != adminRoleId {
+			return fmt.Errorf("admins cannot lower their own role")
+		}
+	}
+
 	err := service.repository.AssignRole(userId, model.RoleId)
 	if err != nil {
 		return err

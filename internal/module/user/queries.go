@@ -56,4 +56,8 @@ const (
 		passphrase_hash = ?,
 		updated_at = CURRENT_TIMESTAMP
 	WHERE id = ? AND deleted_at IS NULL;`
+	QueryUserGetRoleById = `
+	SELECT role_id
+	FROM users
+	WHERE id = ? AND deleted_at IS NULL;`
 )

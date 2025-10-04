@@ -2,6 +2,7 @@ package main
 
 import (
 	"bloggo/internal/app"
+	embedpkg "bloggo/internal/embed"
 	"bloggo/internal/middleware"
 	"bloggo/internal/module"
 	"bloggo/internal/module/api"
@@ -14,45 +15,103 @@ import (
 	"bloggo/internal/module/removal_request"
 	"bloggo/internal/module/search"
 	"bloggo/internal/module/session"
+	"bloggo/internal/module/static"
 	"bloggo/internal/module/statistics"
 	"bloggo/internal/module/storage"
 	"bloggo/internal/module/tag"
 	"bloggo/internal/module/user"
 	"bloggo/internal/module/webhook"
+	"log"
 	"net/http"
+
+	"github.com/go-chi/chi"
 )
 
 func main() {
 	// Get singleton application
 	application := app.Get()
 
-	// Register global middlewares
+	// Load embedded frontend
+	distFS, err := embedpkg.GetDistFS()
+	if err != nil {
+		log.Printf("Warning: Failed to load embedded frontend: %v", err)
+		log.Println("Starting without frontend - only API routes will be available")
+	} else {
+		// Register static assets WITHOUT any middlewares
+		staticModule := static.NewModule(distFS)
+		application.Router.Get("/assets/*", staticModule.ServeAssets)
+		application.Router.Get("/favicon.ico", staticModule.ServeStaticFile)
+		application.Router.Get("/manifest.json", staticModule.ServeStaticFile)
+		application.Router.Get("/robots.txt", staticModule.ServeStaticFile)
+		application.Router.Get("/api-docs.json", staticModule.ServeStaticFile)
+		log.Println("Static assets registered")
+	}
+
+	// Create middlewares to apply to API/internal routes only
 	middlewares := []func(http.Handler) http.Handler{
 		middleware.ResponseJSON,
 		middleware.AllowSpecificOrigin,
 		middleware.GlobalRateLimiter(),
 	}
-	application.RegisterGlobalMiddlewares(middlewares)
 
-	// Register modules
-	modules := []module.Module{
-		api.NewModule(), // Public API module (must be first)
-		category.NewModule(),
-		tag.NewModule(),
-		post.NewModule(),
-		user.NewModule(),
-		session.NewModule(),
-		storage.NewModule(),
-		removal_request.NewModule(),
-		statistics.NewModule(),
-		audit.NewModule(),
-		dashboard.NewModule(),
-		search.NewModule(),
-		health.NewModule(),
-		keyvalue.NewModule(),
-		webhook.NewModule(),
+	// Register public API module with middlewares
+	application.Router.Group(func(r chi.Router) {
+		// Apply middlewares to this group
+		for _, mw := range middlewares {
+			r.Use(mw)
+		}
+
+		// Register API modules
+		apiModules := []module.Module{
+			api.NewModule(), // Public API routes at /api/*
+		}
+
+		for _, mod := range apiModules {
+			mod.RegisterModule(r.(*chi.Mux))
+		}
+	})
+
+	// Register public storage module (uploads must be publicly accessible)
+	storage.NewModule().RegisterModule(application.Router)
+
+	// Register internal panel modules under /internal prefix with middlewares
+	application.Router.Group(func(r chi.Router) {
+		// Apply middlewares to this group
+		for _, mw := range middlewares {
+			r.Use(mw)
+		}
+
+		internalRouter := chi.NewRouter()
+		internalModules := []module.Module{
+			category.NewModule(),
+			tag.NewModule(),
+			post.NewModule(),
+			user.NewModule(),
+			session.NewModule(),
+			removal_request.NewModule(),
+			statistics.NewModule(),
+			audit.NewModule(),
+			dashboard.NewModule(),
+			search.NewModule(),
+			health.NewModule(),
+			keyvalue.NewModule(),
+			webhook.NewModule(),
+		}
+
+		for _, mod := range internalModules {
+			mod.RegisterModule(internalRouter)
+		}
+
+		// Mount the internal router at /internal
+		r.Mount("/internal", internalRouter)
+	})
+
+	// Register SPA catch-all (must be last)
+	if distFS != nil {
+		staticModule := static.NewModule(distFS)
+		application.Router.NotFound(staticModule.ServeSPA)
+		log.Println("SPA routing configured")
 	}
-	application.RegisterModules(modules)
 
 	// Start app
 	application.Bootstrap()

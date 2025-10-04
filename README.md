@@ -77,7 +77,7 @@ bloggo/
 │   │   └── user/          # User management
 │   └── utils/             # Utility packages
 ├── uploads/               # File storage directory
-├── bloggo-config.json    # Configuration file
+├── .env                  # Environment variables (create from .env.example)
 ├── bloggo.sqlite         # SQLite database
 ├── go.mod                # Go module definition
 └── LICENSE               # GPLv3 License
@@ -85,13 +85,20 @@ bloggo/
 
 ## 🔧 Configuration
 
-Configuration is managed through `bloggo-config.json`. Key settings include:
+Configuration is managed through environment variables. Create a `.env` file from `.env.example`:
 
-- **Server Configuration** - Port, host settings
-- **Database** - SQLite database path
-- **JWT** - Secret keys and token expiration
-- **File Upload** - Size limits and allowed formats
-- **Rate Limiting** - Request limits and windows
+```bash
+cp .env.example .env
+```
+
+Key environment variables include:
+
+- **PORT** - Server port (default: 8723)
+- **JWT_SECRET** - JWT signing secret (required, min 32 characters)
+- **ACCESS_TOKEN_DURATION** - Access token lifetime in seconds (default: 900)
+- **REFRESH_TOKEN_DURATION** - Refresh token lifetime in seconds (default: 604800)
+- **GEMINI_API_KEY** - Google Gemini API key (optional, for AI features)
+- **TRUSTED_FRONTEND_KEY** - Key for trusted frontend requests (required, min 32 characters)
 
 ## 🗄️ Database Schema
 

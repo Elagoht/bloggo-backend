@@ -3,6 +3,7 @@ package keyvalue
 import (
 	"bloggo/internal/infrastructure/permissions"
 	"bloggo/internal/module/keyvalue/models"
+	"bloggo/internal/module/webhook"
 	"bloggo/internal/utils/apierrors"
 	"bloggo/internal/utils/audit"
 	auditmodels "bloggo/internal/module/audit/models"
@@ -55,6 +56,13 @@ func (service *KeyValueService) BulkUpsert(
 
 	// Log the audit event (using 0 as entity ID since it's a bulk operation)
 	audit.LogAction(&userId, auditmodels.EntityKeyValue, 0, auditmodels.ActionUpdated)
+
+	// Trigger webhook with updated key-value pairs
+	keyValueMap := make(map[string]interface{})
+	for _, item := range items {
+		keyValueMap[item.Key] = item.Value
+	}
+	go func() { webhook.TriggerKeyValueUpdated(keyValueMap) }()
 
 	return nil
 }

@@ -198,3 +198,12 @@ func (repository *UserRepository) UpdatePasswordById(
 	_, err := repository.database.Exec(QueryUserUpdatePasswordById, hashedPassword, userId)
 	return err
 }
+
+func (repository *UserRepository) GetUserRoleById(userId int64) (int64, error) {
+	var roleId int64
+	err := repository.database.QueryRow(QueryUserGetRoleById, userId).Scan(&roleId)
+	if err != nil {
+		return 0, err
+	}
+	return roleId, nil
+}
