@@ -6,8 +6,18 @@ import (
 	"os"
 	"strconv"
 	"sync"
+	"time"
 
 	"github.com/joho/godotenv"
+)
+
+const (
+	// Default port for the server
+	DefaultPort = 8723
+
+	// Default token durations
+	DefaultAccessTokenDuration  = 15 * time.Minute      // 15 minutes
+	DefaultRefreshTokenDuration = 7 * 24 * time.Hour    // 7 days
 )
 
 type Config struct {
@@ -46,8 +56,8 @@ func load() (Config, error) {
 	// Load .env file if it exists (optional - for local development)
 	_ = godotenv.Load()
 
-	// Get port from environment variable, default to 8723
-	port, err := getEnvAsInt("PORT", 8723)
+	// Get port from environment variable
+	port, err := getEnvAsInt("PORT", DefaultPort)
 	if err != nil {
 		return Config{}, err
 	}
@@ -58,14 +68,14 @@ func load() (Config, error) {
 		return Config{}, fmt.Errorf("JWT_SECRET environment variable is required")
 	}
 
-	// Get access token duration - default to 900 seconds (15 minutes)
-	accessTokenDuration, err := getEnvAsInt("ACCESS_TOKEN_DURATION", 900)
+	// Get access token duration
+	accessTokenDuration, err := getEnvAsInt("ACCESS_TOKEN_DURATION", int(DefaultAccessTokenDuration.Seconds()))
 	if err != nil {
 		return Config{}, err
 	}
 
-	// Get refresh token duration - default to 604800 seconds (7 days)
-	refreshTokenDuration, err := getEnvAsInt("REFRESH_TOKEN_DURATION", 604800)
+	// Get refresh token duration
+	refreshTokenDuration, err := getEnvAsInt("REFRESH_TOKEN_DURATION", int(DefaultRefreshTokenDuration.Seconds()))
 	if err != nil {
 		return Config{}, err
 	}
