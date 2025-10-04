@@ -48,7 +48,7 @@ func (service *DisabledAIService) GenerateContentMetadata(
 	availableCategories []string,
 ) (*models.ResponseGenerativeFill, error) {
 	return nil, errors.New(
-		"gemini ai service is not enabled - please configure an api key",
+		"generative ai features are currently unavailable, please contact your administrator to enable this feature,",
 	)
 }
 
@@ -56,7 +56,7 @@ func (service *DisabledAIService) GenerateCategoryMetadata(
 	categoryName string,
 ) (*models.ResponseCategoryGenerativeFill, error) {
 	return nil, errors.New(
-		"gemini ai service is not enabled - please configure an api key",
+		"generative ai features are currently unavailable, please contact your administrator to enable this feature,",
 	)
 }
 
