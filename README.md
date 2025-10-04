@@ -6,7 +6,7 @@
 ![Go](https://img.shields.io/badge/Go-blue.svg?logo=go&logoColor=white&style=for-the-badge)
 ![SQLite](https://img.shields.io/badge/SQLite-gold.svg?logo=sqlite&logoColor=black&style=for-the-badge)
 ![GitHub License](https://img.shields.io/github/license/Elagoht/bloggo-backend?style=for-the-badge)
-![Builds](https://img.shields.io/badge/Download-gold?style=for-the-badge&logo=esbuild&logoColor=black)
+[![Builds](https://img.shields.io/badge/Download-gold?style=for-the-badge&logo=esbuild&logoColor=black)](https://github.com/Elagoht/bloggo)
 
 </div>
 
