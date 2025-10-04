@@ -4,8 +4,16 @@ import (
 	"database/sql"
 	"fmt"
 	"sync"
+	"time"
 
 	_ "github.com/mattn/go-sqlite3"
+)
+
+const (
+	// Database connection pool settings
+	MaxOpenConnections    = 25
+	MaxIdleConnections    = 5
+	ConnectionMaxLifetime = 5 * time.Minute
 )
 
 var (
@@ -23,6 +31,11 @@ func MustConnect() error {
 			initErr = fmt.Errorf("cannot open the database: %w", err)
 			return
 		}
+
+		// Configure connection pool
+		db.SetMaxOpenConns(MaxOpenConnections)
+		db.SetMaxIdleConns(MaxIdleConnections)
+		db.SetConnMaxLifetime(ConnectionMaxLifetime)
 
 		if err = db.Ping(); err != nil {
 			initErr = fmt.Errorf("cannot connect to database: %w", err)

@@ -44,7 +44,6 @@ A modern, feature-rich blog management system built with Go. Bloggo provides a c
 - **SQLite Database** - Lightweight, embedded database with full SQL support
 - **File Storage** - Organized file storage system for uploads
 - **Rate Limiting** - Built-in rate limiting for API protection
-- **CORS Support** - Configurable cross-origin resource sharing
 - **Caching Headers** - Optimized caching for static assets
 
 ## 🚀 Quick Start
@@ -118,7 +117,6 @@ The application uses SQLite with the following main entities:
 - **Rate Limiting** - Protection against abuse
 - **Input Validation** - Comprehensive input validation
 - **SQL Injection Protection** - Parameterized queries
-- **CORS Configuration** - Configurable cross-origin policies
 
 ## 📈 Performance
 
