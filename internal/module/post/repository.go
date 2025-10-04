@@ -1071,3 +1071,29 @@ func (repository *PostRepository) UpdateVersionCategoryOnly(versionId int64, cat
 
 	return nil
 }
+
+func (repository *PostRepository) GetPostCurrentVersionIdAndStatus(postId int64) (*int64, *int64, error) {
+	row := repository.database.QueryRow(QueryGetPostCurrentVersionIdAndStatus, postId)
+
+	var currentVersionId sql.NullInt64
+	var status sql.NullInt64
+	err := row.Scan(&currentVersionId, &status)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	var versionIdPtr, statusPtr *int64
+	if currentVersionId.Valid {
+		versionIdPtr = &currentVersionId.Int64
+	}
+	if status.Valid {
+		statusPtr = &status.Int64
+	}
+
+	return versionIdPtr, statusPtr, nil
+}
+
+func (repository *PostRepository) UnpublishVersionById(versionId int64) error {
+	_, err := repository.database.Exec(QueryUnpublishVersionById, versionId)
+	return err
+}

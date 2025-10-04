@@ -340,4 +340,13 @@ const (
 	UPDATE post_versions
 	SET category_id = ?, updated_at = CURRENT_TIMESTAMP
 	WHERE id = ? AND deleted_at IS NULL;`
+	QueryGetPostCurrentVersionIdAndStatus = `
+	SELECT p.current_version_id, pv.status
+	FROM posts p
+	LEFT JOIN post_versions pv ON pv.id = p.current_version_id
+	WHERE p.id = ? AND p.deleted_at IS NULL;`
+	QueryUnpublishVersionById = `
+	UPDATE post_versions
+	SET status = 2, updated_at = CURRENT_TIMESTAMP
+	WHERE id = ? AND status = 5 AND deleted_at IS NULL;`
 )

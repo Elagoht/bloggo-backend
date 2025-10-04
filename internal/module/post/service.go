@@ -643,6 +643,21 @@ func (service *PostService) PublishVersion(
 		)
 	}
 
+	// Check if the post already has a published version and unpublish it
+	currentVersionId, currentStatus, err := service.repository.GetPostCurrentVersionIdAndStatus(postId)
+	if err != nil {
+		return err
+	}
+
+	// If there's a current version that's published and it's different from the one being published
+	if currentVersionId != nil && currentStatus != nil &&
+		*currentStatus == models.STATUS_PUBLISHED && *currentVersionId != versionId {
+		// Unpublish the previous version (set it back to approved)
+		if err := service.repository.UnpublishVersionById(*currentVersionId); err != nil {
+			return err
+		}
+	}
+
 	// Get the slug of the version being published
 	slug, err := service.repository.GetVersionSlug(versionId)
 	if err != nil {
