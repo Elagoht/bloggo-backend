@@ -302,23 +302,23 @@ func (repository *PostRepository) CreatePost(
 	coverPath string,
 	readTime int,
 	authorId int64,
-) (int64, error) {
+) (int64, int64, error) {
 	transaction, err := repository.database.Begin()
 	if err != nil {
-		return 0, err
+		return 0, 0, err
 	}
 
 	// Create Post
 	createdPost, err := transaction.Exec(QueryPostCreate, authorId)
 	if err != nil {
 		transaction.Rollback()
-		return 0, err
+		return 0, 0, err
 	}
 
 	createdPostId, err := createdPost.LastInsertId()
 	if err != nil {
 		transaction.Rollback()
-		return 0, err
+		return 0, 0, err
 	}
 
 	// Create first version automatically
@@ -338,13 +338,13 @@ func (repository *PostRepository) CreatePost(
 	)
 	if err != nil {
 		transaction.Rollback()
-		return 0, err
+		return 0, 0, err
 	}
 
 	createdVersionId, err := createdVersion.LastInsertId()
 	if err != nil {
 		transaction.Rollback()
-		return 0, err
+		return 0, 0, err
 	}
 
 	// Assign its first version to created post
@@ -355,16 +355,16 @@ func (repository *PostRepository) CreatePost(
 	)
 	if err != nil {
 		transaction.Rollback()
-		return 0, err
+		return 0, 0, err
 	}
 
 	// Run transaction
 	err = transaction.Commit()
 	if err != nil {
-		return 0, err
+		return 0, 0, err
 	}
 
-	return createdPostId, nil
+	return createdPostId, createdVersionId, nil
 }
 
 func (repository *PostRepository) ListPostVersionsGetByPostId(

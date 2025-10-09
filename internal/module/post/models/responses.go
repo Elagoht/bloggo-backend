@@ -99,15 +99,15 @@ type ResponseVersionDetailsOfPost struct {
 		Name   string  `json:"name"`
 		Avatar *string `json:"avatar,omitempty"`
 	} `json:"versionAuthor"`
-	Title            *string `json:"title"`
-	Slug             *string `json:"slug"`
-	Content          *string `json:"content"`
-	CoverImage       *string `json:"coverImage"`
-	Description      *string `json:"description"`
-	Spot             *string `json:"spot"`
-	Status           int64   `json:"status"`
-	StatusChangedAt  *string `json:"statusChangedAt"`
-	StatusChangedBy  *struct {
+	Title           *string `json:"title"`
+	Slug            *string `json:"slug"`
+	Content         *string `json:"content"`
+	CoverImage      *string `json:"coverImage"`
+	Description     *string `json:"description"`
+	Spot            *string `json:"spot"`
+	Status          int64   `json:"status"`
+	StatusChangedAt *string `json:"statusChangedAt"`
+	StatusChangedBy *struct {
 		Id     int64   `json:"id"`
 		Name   string  `json:"name"`
 		Avatar *string `json:"avatar"`
@@ -126,4 +126,10 @@ type ResponseVersionDetailsOfPost struct {
 // -- Version Deletion Response -- //
 type ResponseVersionDeleted struct {
 	PostDeleted bool `json:"postDeleted,omitempty"`
+}
+
+// -- Post with Version Created -- //
+type ResponsePostCreated struct {
+	PostId    int64 `json:"postId"`
+	VersionId int64 `json:"versionId"`
 }

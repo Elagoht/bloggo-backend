@@ -135,7 +135,7 @@ func (handler *PostHandler) CreatePostWithFirstVersion(
 		return
 	}
 
-	createdId, err := handler.service.CreatePostWithFirstVersion(
+	createdPost, err := handler.service.CreatePostWithFirstVersion(
 		body,
 		userId,
 	)
@@ -144,7 +144,7 @@ func (handler *PostHandler) CreatePostWithFirstVersion(
 		return
 	}
 
-	json.NewEncoder(writer).Encode(createdId)
+	json.NewEncoder(writer).Encode(createdPost)
 }
 
 func (handler *PostHandler) ListPostVersionsGetByPostId(

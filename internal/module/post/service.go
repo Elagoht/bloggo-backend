@@ -179,7 +179,7 @@ func (service *PostService) GetPostBySlug(
 func (service *PostService) CreatePostWithFirstVersion(
 	model *models.RequestPostUpsert,
 	userId int64,
-) (*responses.ResponseCreated, error) {
+) (*models.ResponsePostCreated, error) {
 	var filePath string
 
 	// Handle cover file if provided
@@ -211,7 +211,7 @@ func (service *PostService) CreatePostWithFirstVersion(
 	}
 	estimatedReadTime := readtime.EstimateReadTime(content)
 
-	createdId, err := service.repository.CreatePost(model, filePath, estimatedReadTime, userId)
+	createdPostId, createdVersionId, err := service.repository.CreatePost(model, filePath, estimatedReadTime, userId)
 	if err != nil {
 		// If cannot created and file was uploaded, delete it
 		if filePath != "" {
@@ -221,10 +221,11 @@ func (service *PostService) CreatePostWithFirstVersion(
 	}
 
 	// Log post creation audit
-	audit.LogPostAction(&userId, createdId, auditmodels.ActionPostCreated)
+	audit.LogPostAction(&userId, createdPostId, auditmodels.ActionPostCreated)
 
-	return &responses.ResponseCreated{
-		Id: createdId,
+	return &models.ResponsePostCreated{
+		PostId:    createdPostId,
+		VersionId: createdVersionId,
 	}, nil
 }
 
