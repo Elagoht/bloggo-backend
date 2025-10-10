@@ -1,11 +1,11 @@
-package embed
+package frontend
 
 import (
 	"embed"
 	"io/fs"
 )
 
-//go:embed dist
+//go:embed all:dist
 var distFS embed.FS
 
 // GetDistFS returns the embedded dist filesystem

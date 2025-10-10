@@ -1,10 +1,10 @@
 package main
 
 import (
+	"bloggo/frontend"
 	"bloggo/internal/app"
 	"bloggo/internal/config"
 	"bloggo/internal/db"
-	embedpkg "bloggo/internal/embed"
 	"bloggo/internal/middleware"
 	"bloggo/internal/module"
 	"bloggo/internal/module/api"
@@ -55,7 +55,7 @@ func main() {
 	application := app.Get()
 
 	// Load embedded frontend
-	distFS, err := embedpkg.GetDistFS()
+	distFS, err := frontend.GetDistFS()
 	if err != nil {
 		log.Printf("Warning: Failed to load embedded frontend: %v", err)
 		log.Println("Starting without frontend - only API routes will be available")

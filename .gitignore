@@ -18,4 +18,4 @@ bloggo-config.json
 uploads/
 
 # Embedded frontend
-internal/embed/dist/
+frontend/dist/
