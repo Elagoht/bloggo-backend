@@ -114,7 +114,9 @@ func (service *UserService) UserCreate(
 	audit.LogAction(&createdBy, auditmodels.EntityUser, id, auditmodels.ActionUserCreated)
 
 	// Trigger webhook
-	go func() { webhook.TriggerAuthorCreated(id, map[string]interface{}{"name": model.Name, "email": model.Email}) }()
+	go func() {
+		webhook.TriggerAuthorCreated(id, map[string]interface{}{"name": model.Name, "email": model.Email})
+	}()
 
 	return &responses.ResponseCreated{
 		Id: id,
@@ -166,8 +168,11 @@ func (service *UserService) UpdateAvatarById(
 	// Log audit action
 	audit.LogAction(&updatedBy, auditmodels.EntityUser, userId, auditmodels.ActionUpdated)
 
-	// Return the avatar path without .webp suffix
+	// Trigger webhook
 	avatarPath := fmt.Sprintf("/uploads/avatar/%s", imageId)
+	go func() { webhook.TriggerAuthorUpdated(userId, map[string]interface{}{"avatar": avatarPath}) }()
+
+	// Return the avatar path without .webp suffix
 	return avatarPath, nil
 }
 
@@ -184,7 +189,9 @@ func (service *UserService) UpdateUserById(
 	audit.LogAction(&updatedBy, auditmodels.EntityUser, userId, auditmodels.ActionUserUpdated)
 
 	// Trigger webhook
-	go func() { webhook.TriggerAuthorUpdated(userId, map[string]interface{}{"name": model.Name, "email": model.Email}) }()
+	go func() {
+		webhook.TriggerAuthorUpdated(userId, map[string]interface{}{"name": model.Name, "email": model.Email})
+	}()
 
 	return nil
 }
@@ -270,6 +277,10 @@ func (service *UserService) DeleteAvatarById(userId int64, deletedBy int64) erro
 	}
 
 	audit.LogAction(&deletedBy, auditmodels.EntityUser, userId, auditmodels.ActionUpdated)
+
+	// Trigger webhook
+	go func() { webhook.TriggerAuthorUpdated(userId, map[string]interface{}{"avatar": nil}) }()
+
 	return nil
 }
 
