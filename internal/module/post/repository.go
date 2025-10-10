@@ -850,20 +850,20 @@ func (repository *PostRepository) TrackView(postId int64, userAgent string) erro
 	return transaction.Commit()
 }
 
-func (repository *PostRepository) AssignTagsToPost(postId int64, tagIds []int64) error {
+func (repository *PostRepository) AssignTagsToPost(postId int64, tagIds []int64) (addedTagIds []int64, removedTagIds []int64, err error) {
 	// Check if all tags exist
 	for _, tagId := range tagIds {
-		if exists, err := repository.checkTagExists(tagId); err != nil {
-			return err
+		if exists, checkErr := repository.checkTagExists(tagId); checkErr != nil {
+			return nil, nil, checkErr
 		} else if !exists {
-			return apierrors.ErrNotFound
+			return nil, nil, apierrors.ErrNotFound
 		}
 	}
 
 	// Get current tags for the post
 	currentTagIds, err := repository.getCurrentPostTagIds(postId)
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
 
 	// Convert slices to maps for easier comparison
@@ -895,13 +895,13 @@ func (repository *PostRepository) AssignTagsToPost(postId int64, tagIds []int64)
 
 	// If no changes needed, return early
 	if len(tagsToRemove) == 0 && len(tagsToAdd) == 0 {
-		return nil
+		return nil, nil, nil
 	}
 
 	// Start transaction
 	transaction, err := repository.database.Begin()
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
 
 	// Remove tags that are no longer needed (batch operation)
@@ -909,7 +909,7 @@ func (repository *PostRepository) AssignTagsToPost(postId int64, tagIds []int64)
 		err := repository.removeTagsFromPostBatch(transaction, postId, tagsToRemove)
 		if err != nil {
 			transaction.Rollback()
-			return err
+			return nil, nil, err
 		}
 	}
 
@@ -918,11 +918,16 @@ func (repository *PostRepository) AssignTagsToPost(postId int64, tagIds []int64)
 		err := repository.addTagsToPostBatch(transaction, postId, tagsToAdd)
 		if err != nil {
 			transaction.Rollback()
-			return err
+			return nil, nil, err
 		}
 	}
 
-	return transaction.Commit()
+	err = transaction.Commit()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return tagsToAdd, tagsToRemove, nil
 }
 
 func (repository *PostRepository) getCurrentPostTagIds(postId int64) ([]int64, error) {
@@ -1027,6 +1032,54 @@ func (repository *PostRepository) GetPostTags(postId int64) ([]models.TagCard, e
 	}
 
 	return tags, nil
+}
+
+func (repository *PostRepository) GetTagSlugsByIds(tagIds []int64) ([]string, error) {
+	if len(tagIds) == 0 {
+		return []string{}, nil
+	}
+
+	placeholders := make([]string, len(tagIds))
+	args := make([]interface{}, len(tagIds))
+	for i, id := range tagIds {
+		placeholders[i] = "?"
+		args[i] = id
+	}
+
+	query := fmt.Sprintf(QueryGetTagSlugsByIds, strings.Join(placeholders, ","))
+	rows, err := repository.database.Query(query, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	slugs := []string{}
+	for rows.Next() {
+		var slug string
+		if err := rows.Scan(&slug); err != nil {
+			return nil, err
+		}
+		slugs = append(slugs, slug)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return slugs, nil
+}
+
+func (repository *PostRepository) GetPostPublishedSlug(postId int64) (*string, error) {
+	row := repository.database.QueryRow(QueryGetPostPublishedSlug, postId)
+	var slug string
+	err := row.Scan(&slug)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &slug, nil
 }
 
 func (repository *PostRepository) CountPostVersions(postId int64) (int, error) {

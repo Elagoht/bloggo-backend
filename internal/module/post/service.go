@@ -17,6 +17,7 @@ import (
 	"bloggo/internal/utils/schemas/responses"
 	"bloggo/internal/utils/validate"
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 	"sync"
@@ -849,7 +850,46 @@ func (service *PostService) AssignTagsToPost(
 		return apierrors.ErrForbidden
 	}
 
-	return service.repository.AssignTagsToPost(postId, tagIds)
+	addedTagIds, removedTagIds, err := service.repository.AssignTagsToPost(postId, tagIds)
+	if err != nil {
+		return err
+	}
+
+	// If there were changes, trigger webhook
+	if len(addedTagIds) > 0 || len(removedTagIds) > 0 {
+		// Get the published slug for this post
+		publishedSlug, err := service.repository.GetPostPublishedSlug(postId)
+		if err != nil {
+			// Log error but don't fail the operation
+			log.Printf("Failed to get published slug for webhook: %v", err)
+		}
+
+		// Only trigger webhook if post has a published version
+		if publishedSlug != nil {
+			// Get slugs for added and removed tags
+			addedTagSlugs, err := service.repository.GetTagSlugsByIds(addedTagIds)
+			if err != nil {
+				log.Printf("Failed to get added tag slugs for webhook: %v", err)
+				addedTagSlugs = []string{}
+			}
+
+			removedTagSlugs, err := service.repository.GetTagSlugsByIds(removedTagIds)
+			if err != nil {
+				log.Printf("Failed to get removed tag slugs for webhook: %v", err)
+				removedTagSlugs = []string{}
+			}
+
+			// Trigger webhook with tag changes
+			go func() {
+				webhook.TriggerPostUpdated(postId, *publishedSlug, nil, map[string]interface{}{
+					"addedTags":   addedTagSlugs,
+					"removedTags": removedTagSlugs,
+				})
+			}()
+		}
+	}
+
+	return nil
 }
 
 func (service *PostService) UpdateVersionCategory(

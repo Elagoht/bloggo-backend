@@ -349,4 +349,13 @@ const (
 	UPDATE post_versions
 	SET status = 2, updated_at = CURRENT_TIMESTAMP
 	WHERE id = ? AND status = 5 AND deleted_at IS NULL;`
+	QueryGetTagSlugsByIds = `
+	SELECT slug
+	FROM tags
+	WHERE id IN (%s) AND deleted_at IS NULL;`
+	QueryGetPostPublishedSlug = `
+	SELECT pv.slug
+	FROM posts p
+	JOIN post_versions pv ON pv.id = p.current_version_id
+	WHERE p.id = ? AND pv.status = 5 AND p.deleted_at IS NULL AND pv.deleted_at IS NULL;`
 )
