@@ -1082,6 +1082,19 @@ func (repository *PostRepository) GetPostPublishedSlug(postId int64) (*string, e
 	return &slug, nil
 }
 
+func (repository *PostRepository) GetVersionCategorySlug(versionId int64) (*string, error) {
+	row := repository.database.QueryRow(QueryGetVersionCategorySlug, versionId)
+	var slug string
+	err := row.Scan(&slug)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &slug, nil
+}
+
 func (repository *PostRepository) CountPostVersions(postId int64) (int, error) {
 	row := repository.database.QueryRow(QueryCountPostVersions, postId)
 

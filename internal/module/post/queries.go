@@ -358,4 +358,9 @@ const (
 	FROM posts p
 	JOIN post_versions pv ON pv.id = p.current_version_id
 	WHERE p.id = ? AND pv.status = 5 AND p.deleted_at IS NULL AND pv.deleted_at IS NULL;`
+	QueryGetVersionCategorySlug = `
+	SELECT c.slug
+	FROM post_versions pv
+	JOIN categories c ON c.id = pv.category_id
+	WHERE pv.id = ? AND pv.deleted_at IS NULL AND c.deleted_at IS NULL;`
 )

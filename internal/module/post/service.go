@@ -651,12 +651,17 @@ func (service *PostService) PublishVersion(
 		return err
 	}
 
-	// Get the old slug (from currently published version) if it exists
+	// Get the old slug and category (from currently published version) if it exists
 	var oldSlug *string
+	var oldCategory *string
 	if currentVersionId != nil && currentStatus != nil && *currentStatus == models.STATUS_PUBLISHED {
 		oldSlugValue, err := service.repository.GetVersionSlug(*currentVersionId)
 		if err == nil {
 			oldSlug = &oldSlugValue
+		}
+		oldCategoryValue, err := service.repository.GetVersionCategorySlug(*currentVersionId)
+		if err == nil {
+			oldCategory = oldCategoryValue
 		}
 	}
 
@@ -669,8 +674,13 @@ func (service *PostService) PublishVersion(
 		}
 	}
 
-	// Get the slug of the version being published
+	// Get the slug and category of the version being published
 	slug, err := service.repository.GetVersionSlug(versionId)
+	if err != nil {
+		return err
+	}
+
+	newCategory, err := service.repository.GetVersionCategorySlug(versionId)
 	if err != nil {
 		return err
 	}
@@ -709,10 +719,21 @@ func (service *PostService) PublishVersion(
 
 	// Trigger webhook for post publish
 	go func() {
-		webhook.TriggerPostUpdated(postId, slug, oldSlug, map[string]interface{}{
+		data := map[string]interface{}{
 			"versionId": versionId,
 			"slug":      slug,
-		})
+		}
+
+		// Include category information if categories are different
+		if oldCategory != nil && newCategory != nil && *oldCategory != *newCategory {
+			data["oldCategory"] = *oldCategory
+			data["newCategory"] = *newCategory
+		} else if oldCategory == nil && newCategory != nil {
+			// First publish or old version had no category
+			data["newCategory"] = *newCategory
+		}
+
+		webhook.TriggerPostUpdated(postId, slug, oldSlug, data)
 	}()
 
 	return nil
