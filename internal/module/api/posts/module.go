@@ -36,6 +36,7 @@ func (module PostsAPIModule) RegisterModule(router *chi.Mux) {
 		r.Use(middleware.TrustedFrontendMiddleware(&config))
 
 		r.Get("/", module.Handler.ListPublishedPosts)
+		r.Get("/views", module.Handler.GetAllViewCounts)
 		r.Get("/{slug}", module.Handler.GetPublishedPostBySlug)
 		r.Post("/{slug}/view", module.Handler.TrackPostView)
 	})

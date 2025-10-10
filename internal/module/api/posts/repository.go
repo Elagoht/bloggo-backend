@@ -266,3 +266,24 @@ func (r *PostsAPIRepository) TrackView(slug string, userAgent string) error {
 
 	return transaction.Commit()
 }
+
+func (r *PostsAPIRepository) GetAllViewCounts() (map[string]int64, error) {
+	rows, err := r.database.Query(QueryAPIGetAllViewCounts)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	viewCounts := make(map[string]int64)
+	for rows.Next() {
+		var slug string
+		var readCount int64
+		err := rows.Scan(&slug, &readCount)
+		if err != nil {
+			return nil, err
+		}
+		viewCounts[slug] = readCount
+	}
+
+	return viewCounts, nil
+}

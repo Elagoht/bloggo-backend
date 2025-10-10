@@ -84,3 +84,13 @@ func (h *PostsAPIHandler) TrackPostView(writer http.ResponseWriter, request *htt
 
 	writer.WriteHeader(http.StatusNoContent)
 }
+
+func (h *PostsAPIHandler) GetAllViewCounts(writer http.ResponseWriter, request *http.Request) {
+	viewCounts, err := h.service.GetAllViewCounts()
+	if err != nil {
+		apierrors.MapErrors(err, writer, nil)
+		return
+	}
+
+	json.NewEncoder(writer).Encode(viewCounts)
+}

@@ -76,4 +76,14 @@ const (
 	JOIN post_tags pt ON pt.tag_id = t.id
 	WHERE pt.post_id = ?
 		AND t.deleted_at IS NULL;`
+
+	QueryAPIGetAllViewCounts = `
+	SELECT
+		pv.slug,
+		p.read_count
+	FROM posts p
+	JOIN post_versions pv ON pv.id = p.current_version_id
+	WHERE p.deleted_at IS NULL
+		AND pv.deleted_at IS NULL
+		AND pv.status = 5;`
 )

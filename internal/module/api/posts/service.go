@@ -31,3 +31,7 @@ func (service *PostsAPIService) GetPublishedPostBySlug(slug string) (*models.API
 func (service *PostsAPIService) TrackView(slug string, userAgent string) error {
 	return service.repository.TrackView(slug, userAgent)
 }
+
+func (service *PostsAPIService) GetAllViewCounts() (map[string]int64, error) {
+	return service.repository.GetAllViewCounts()
+}
