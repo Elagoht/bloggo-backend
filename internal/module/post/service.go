@@ -665,16 +665,7 @@ func (service *PostService) PublishVersion(
 		}
 	}
 
-	// If there's a current version that's published and it's different from the one being published
-	if currentVersionId != nil && currentStatus != nil &&
-		*currentStatus == models.STATUS_PUBLISHED && *currentVersionId != versionId {
-		// Unpublish the previous version (set it back to approved)
-		if err := service.repository.UnpublishVersionById(*currentVersionId); err != nil {
-			return err
-		}
-	}
-
-	// Get the slug and category of the version being published
+	// Get the slug and category of the version being published (before transaction)
 	slug, err := service.repository.GetVersionSlug(versionId)
 	if err != nil {
 		return err
@@ -685,22 +676,57 @@ func (service *PostService) PublishVersion(
 		return err
 	}
 
-	// Check if there's already a published version with the same slug
+	// Check if there's already a published version with the same slug (before transaction)
 	existingPublished, err := service.repository.GetPublishedVersionBySlug(slug)
-	if err == nil && existingPublished != nil {
+	// Ignore "not found" errors - it's OK if no published version exists
+	if err != nil {
+		// Check if it's a "not found" error - that's expected and OK
+		if err.Error() != "sql: no rows in result set" {
+			return err
+		}
+		// Reset error to nil since "not found" is not an error in this context
+		err = nil
+	}
+
+	// Start a transaction to ensure atomicity of the publish operation
+	tx, err := service.repository.BeginTransaction()
+	if err != nil {
+		return err
+	}
+
+	// Use a variable to track transaction state
+	committed := false
+	defer func() {
+		if !committed {
+			tx.Rollback()
+		}
+	}()
+
+	// If there's a current version that's published and it's different from the one being published
+	if currentVersionId != nil && currentStatus != nil &&
+		*currentStatus == models.STATUS_PUBLISHED && *currentVersionId != versionId {
+		// Unpublish the previous version (set it back to approved)
+		if err := service.repository.UnpublishVersionByIdTx(tx, *currentVersionId); err != nil {
+			return err
+		}
+	}
+
+	// If there's already a published version with the same slug (from another post)
+	if existingPublished != nil {
 		// Unpublish the existing version (set it back to approved status)
-		if err := service.repository.UnpublishVersionBySlug(slug); err != nil {
+		if err := service.repository.UnpublishVersionBySlugTx(tx, slug); err != nil {
 			return err
 		}
 
 		// Clear the current_version_id from the post that was using the old published version
-		if err := service.repository.SetPostCurrentVersionToNull(existingPublished.Id); err != nil {
+		if err := service.repository.SetPostCurrentVersionToNullTx(tx, existingPublished.Id); err != nil {
 			return err
 		}
 	}
 
 	// Update version status to published
-	if err := service.repository.UpdateVersionStatus(
+	if err := service.repository.UpdateVersionStatusTx(
+		tx,
 		versionId,
 		models.STATUS_PUBLISHED,
 		userId,
@@ -708,14 +734,19 @@ func (service *PostService) PublishVersion(
 		return err
 	}
 
-	// Log version publication audit
-	audit.LogVersionAction(&userId, versionId, auditmodels.ActionVersionPublished, nil)
-
 	// Set this version as the current published version for the post
-	err = service.repository.SetCurrentVersionForPost(postId, versionId)
-	if err != nil {
+	if err := service.repository.SetCurrentVersionForPostTx(tx, postId, versionId); err != nil {
 		return err
 	}
+
+	// Commit the transaction
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+	committed = true
+
+	// Log version publication audit (after successful commit)
+	audit.LogVersionAction(&userId, versionId, auditmodels.ActionVersionPublished, nil)
 
 	// Trigger webhook for post publish
 	go func() {

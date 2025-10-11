@@ -1163,3 +1163,33 @@ func (repository *PostRepository) UnpublishVersionById(versionId int64) error {
 	_, err := repository.database.Exec(QueryUnpublishVersionById, versionId)
 	return err
 }
+
+// Transaction-aware methods for atomic publish operations
+func (repository *PostRepository) BeginTransaction() (*sql.Tx, error) {
+	return repository.database.Begin()
+}
+
+func (repository *PostRepository) UnpublishVersionByIdTx(tx *sql.Tx, versionId int64) error {
+	_, err := tx.Exec(QueryUnpublishVersionById, versionId)
+	return err
+}
+
+func (repository *PostRepository) UnpublishVersionBySlugTx(tx *sql.Tx, slug string) error {
+	_, err := tx.Exec(QueryUnpublishVersionBySlug, slug)
+	return err
+}
+
+func (repository *PostRepository) SetPostCurrentVersionToNullTx(tx *sql.Tx, versionId int64) error {
+	_, err := tx.Exec(QuerySetPostCurrentVersionToNull, versionId)
+	return err
+}
+
+func (repository *PostRepository) UpdateVersionStatusTx(tx *sql.Tx, versionId int64, status int64, statusChangedBy int64) error {
+	_, err := tx.Exec(QueryPostVersionUpdateStatus, status, statusChangedBy, versionId)
+	return err
+}
+
+func (repository *PostRepository) SetCurrentVersionForPostTx(tx *sql.Tx, postId int64, versionId int64) error {
+	_, err := tx.Exec(QueryPostSetCurrentVersion, versionId, postId)
+	return err
+}
