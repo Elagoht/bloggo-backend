@@ -676,18 +676,6 @@ func (service *PostService) PublishVersion(
 		return err
 	}
 
-	// Check if there's already a published version with the same slug (before transaction)
-	existingPublished, err := service.repository.GetPublishedVersionBySlug(slug)
-	// Ignore "not found" errors - it's OK if no published version exists
-	if err != nil {
-		// Check if it's a "not found" error - that's expected and OK
-		if err.Error() != "sql: no rows in result set" {
-			return err
-		}
-		// Reset error to nil since "not found" is not an error in this context
-		err = nil
-	}
-
 	// Start a transaction to ensure atomicity of the publish operation
 	tx, err := service.repository.BeginTransaction()
 	if err != nil {
@@ -702,24 +690,17 @@ func (service *PostService) PublishVersion(
 		}
 	}()
 
-	// If there's a current version that's published and it's different from the one being published
+	// FIRST: Unconditionally unpublish ANY version with this slug (safe - does nothing if none exists)
+	// This ensures we never hit the unique constraint on (slug, status=5)
+	if err := service.repository.UnpublishVersionBySlugTx(tx, slug); err != nil {
+		return err
+	}
+
+	// SECOND: If this post has a different published version, unpublish it too
 	if currentVersionId != nil && currentStatus != nil &&
 		*currentStatus == models.STATUS_PUBLISHED && *currentVersionId != versionId {
 		// Unpublish the previous version (set it back to approved)
 		if err := service.repository.UnpublishVersionByIdTx(tx, *currentVersionId); err != nil {
-			return err
-		}
-	}
-
-	// If there's already a published version with the same slug (from another post)
-	if existingPublished != nil {
-		// Unpublish the existing version (set it back to approved status)
-		if err := service.repository.UnpublishVersionBySlugTx(tx, slug); err != nil {
-			return err
-		}
-
-		// Clear the current_version_id from the post that was using the old published version
-		if err := service.repository.SetPostCurrentVersionToNullTx(tx, existingPublished.Id); err != nil {
 			return err
 		}
 	}
