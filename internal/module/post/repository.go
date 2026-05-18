@@ -28,6 +28,15 @@ func formatCoverImagePath(filename *string) *string {
 	return &formatted
 }
 
+func formatAudioPath(filename *string) *string {
+	if filename == nil || *filename == "" {
+		return nil
+	}
+
+	formatted := "/uploads/audio/" + *filename
+	return &formatted
+}
+
 func NewPostRepository(database *sql.DB) PostRepository {
 	return PostRepository{
 		database,
@@ -47,6 +56,7 @@ func (repository *PostRepository) GetPostList() (
 	for rows.Next() {
 		var post models.ResponsePostCard
 		var rawCoverImage *string
+		var rawAudioFile *string
 
 		err := rows.Scan(
 			&post.PostId,
@@ -59,6 +69,7 @@ func (repository *PostRepository) GetPostList() (
 			&post.Spot,
 			&post.Status,
 			&post.ReadCount,
+			&rawAudioFile,
 			&post.CreatedAt,
 			&post.UpdatedAt,
 			&post.Category.Slug,
@@ -72,6 +83,8 @@ func (repository *PostRepository) GetPostList() (
 
 		// Format cover image path
 		post.CoverImage = formatCoverImagePath(rawCoverImage)
+		// Format audio file path
+		post.AudioFile = formatAudioPath(rawAudioFile)
 
 		posts = append(posts, post)
 	}
@@ -184,6 +197,7 @@ func (repository *PostRepository) GetPostListPaginated(
 	for rows.Next() {
 		var post models.ResponsePostCard
 		var rawCoverImage *string
+	var rawAudioFile *string
 
 		err := rows.Scan(
 			&post.PostId,
@@ -196,6 +210,7 @@ func (repository *PostRepository) GetPostListPaginated(
 			&post.Spot,
 			&post.Status,
 			&post.ReadCount,
+			&rawAudioFile,
 			&post.CreatedAt,
 			&post.UpdatedAt,
 			&post.Category.Slug,
@@ -209,6 +224,7 @@ func (repository *PostRepository) GetPostListPaginated(
 
 		// Format cover image path
 		post.CoverImage = formatCoverImagePath(rawCoverImage)
+		post.AudioFile = formatAudioPath(rawAudioFile)
 
 		posts = append(posts, post)
 	}
@@ -228,6 +244,7 @@ func (repository *PostRepository) GetPostById(
 
 	var post models.ResponsePostDetails
 	var rawCoverImage *string
+	var rawAudioFile *string
 	err := row.Scan(
 		&post.PostId,
 		&post.VersionId,
@@ -242,6 +259,7 @@ func (repository *PostRepository) GetPostById(
 		&post.Spot,
 		&post.Status,
 		&post.ReadCount,
+			&rawAudioFile,
 		&post.CreatedAt,
 		&post.UpdatedAt,
 		&post.Category.Slug,
@@ -253,6 +271,7 @@ func (repository *PostRepository) GetPostById(
 		return nil, err
 	}
 
+	post.AudioFile = formatAudioPath(rawAudioFile)
 	// Format cover image path
 	post.CoverImage = formatCoverImagePath(rawCoverImage)
 
@@ -266,7 +285,8 @@ func (repository *PostRepository) GetPostGetByCurrentVersionSlug(
 
 	var post models.ResponsePostDetails
 	var rawCoverImage *string
-	err := row.Scan(
+	var rawAudioFile *string
+		err := row.Scan(
 		&post.PostId,
 		&post.VersionId,
 		&post.Author.Id,
@@ -280,6 +300,7 @@ func (repository *PostRepository) GetPostGetByCurrentVersionSlug(
 		&post.Spot,
 		&post.Status,
 		&post.ReadCount,
+		&rawAudioFile,
 		&post.CreatedAt,
 		&post.UpdatedAt,
 		&post.Category.Slug,
@@ -292,6 +313,7 @@ func (repository *PostRepository) GetPostGetByCurrentVersionSlug(
 	}
 
 	// Format cover image path
+	post.AudioFile = formatAudioPath(rawAudioFile)
 	post.CoverImage = formatCoverImagePath(rawCoverImage)
 
 	return &post, nil
@@ -1192,4 +1214,23 @@ func (repository *PostRepository) UpdateVersionStatusTx(tx *sql.Tx, versionId in
 func (repository *PostRepository) SetCurrentVersionForPostTx(tx *sql.Tx, postId int64, versionId int64) error {
 	_, err := tx.Exec(QueryPostSetCurrentVersion, versionId, postId)
 	return err
+}
+
+func (repository *PostRepository) UpdatePostAudioFile(postId int64, audioFile string) error {
+	_, err := repository.database.Exec(QueryPostUpdateAudioFile, audioFile, postId)
+	return err
+}
+
+func (repository *PostRepository) DeletePostAudioFile(postId int64) error {
+	_, err := repository.database.Exec(QueryPostDeleteAudioFile, postId)
+	return err
+}
+
+func (repository *PostRepository) GetPostAudioFile(postId int64) (*string, error) {
+	var audioFile *string
+	err := repository.database.QueryRow(QueryGetPostAudioFile, postId).Scan(&audioFile)
+	if err != nil {
+		return nil, err
+	}
+	return audioFile, nil
 }

@@ -17,6 +17,7 @@ type ResponsePostDetails struct {
 	Spot        *string `json:"spot"`
 	Status      int64   `json:"status"`
 	ReadCount   int64   `json:"readCount"`
+	AudioFile   *string `json:"audioFile,omitempty"`
 	CreatedAt   *string `json:"createdAt"`
 	UpdatedAt   *string `json:"updatedAt"`
 	Category    struct {
@@ -48,6 +49,7 @@ type ResponsePostCard struct {
 	Spot       *string `json:"spot"`
 	Status     int64   `json:"status"`
 	ReadCount  int64   `json:"readCount"`
+	AudioFile  *string `json:"audioFile,omitempty"`
 	CreatedAt  string  `json:"createdAt"`
 	UpdatedAt  string  `json:"updatedAt"`
 	Category   struct {

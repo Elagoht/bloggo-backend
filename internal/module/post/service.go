@@ -18,6 +18,7 @@ import (
 	"bloggo/internal/utils/validate"
 	"fmt"
 	"log"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"sync"
@@ -969,4 +970,68 @@ func (service *PostService) UpdateVersionCategory(
 
 	// Automatically publish the version after updating the category
 	return service.PublishVersion(postId, versionId, userId, roleId)
+}
+
+func (service *PostService) UploadPostAudio(postId int64, filename string, fileBytes []byte) error {
+	// Validate file extension
+	ext := strings.ToLower(filepath.Ext(filename))
+	if ext != ".ogg" {
+		return fmt.Errorf("only OGG audio files are allowed")
+	}
+
+	// Validate file size (10MB max)
+	const maxFileSize = 10 * 1024 * 1024
+	if len(fileBytes) > maxFileSize {
+		return fmt.Errorf("audio file size must be less than 10MB")
+	}
+
+	// Get existing audio file to delete if replacing
+	existingAudio, err := service.repository.GetPostAudioFile(postId)
+	if err != nil && err.Error() != "sql: no rows in result set" {
+		return err
+	}
+
+	// Save file to disk
+	audioPath := "../../../audio/" + filename
+	if err := service.bucket.Save(fileBytes, audioPath); err != nil {
+		return err
+	}
+
+	// Update database
+	if err := service.repository.UpdatePostAudioFile(postId, filename); err != nil {
+		// Rollback file save on database error
+		_ = service.bucket.Delete(audioPath)
+		return err
+	}
+
+	// Delete old audio file if it existed
+	if existingAudio != nil && *existingAudio != "" {
+		oldPath := "../../../audio/" + *existingAudio
+		_ = service.bucket.Delete(oldPath)
+	}
+
+	return nil
+}
+
+func (service *PostService) DeletePostAudio(postId int64) error {
+	// Get existing audio file
+	existingAudio, err := service.repository.GetPostAudioFile(postId)
+	if err != nil {
+		return err
+	}
+
+	if existingAudio == nil || *existingAudio == "" {
+		return nil // No audio to delete
+	}
+
+	// Delete from database
+	if err := service.repository.DeletePostAudioFile(postId); err != nil {
+		return err
+	}
+
+	// Delete file from disk
+	audioPath := "../../../audio/" + *existingAudio
+	_ = service.bucket.Delete(audioPath)
+
+	return nil
 }

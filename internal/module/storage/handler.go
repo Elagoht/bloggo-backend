@@ -26,6 +26,26 @@ func (handler *StorageHandler) ServePostCovers(
 	handler.serveImage(writer, request, "uploads", "posts", "versions", "covers")
 }
 
+func (handler *StorageHandler) ServePostAudio(
+	writer http.ResponseWriter,
+	request *http.Request,
+) {
+	audioId, ok := handlers.GetParam[string](writer, request, "audioId")
+	if !ok {
+		return
+	}
+
+	audioPath := filepath.Join("uploads", "audio", audioId)
+
+	// Add caching headers
+	writer.Header().Set("Cache-Control", "public, max-age=86400") // Cache for 1 day
+	// Set response type
+	writer.Header().Set("Content-Type", "audio/ogg")
+
+	// Serve the file
+	http.ServeFile(writer, request, audioPath)
+}
+
 func (handler *StorageHandler) serveImage(
 	writer http.ResponseWriter,
 	request *http.Request,

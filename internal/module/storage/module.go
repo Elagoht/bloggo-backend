@@ -32,5 +32,6 @@ func (module StorageModule) RegisterModule(router *chi.Mux) {
 		// Public
 		router.Get("/avatar/{imageId}", module.Handler.ServeUserAvatars)
 		router.Get("/cover/{imageId}", module.Handler.ServePostCovers)
+			router.Get("/audio/{audioId}", module.Handler.ServePostAudio)
 	})
 }

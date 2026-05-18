@@ -3,6 +3,7 @@ package post
 import (
 	"bloggo/internal/module/post/models"
 	"bloggo/internal/utils/apierrors"
+	"bloggo/internal/utils/cryptography"
 	"bloggo/internal/utils/filter"
 	"bloggo/internal/utils/handlers"
 	"bloggo/internal/utils/pagination"
@@ -672,6 +673,70 @@ func (handler *PostHandler) UpdateVersionCategory(
 				Status:  http.StatusPreconditionFailed,
 			},
 		})
+		return
+	}
+
+	writer.WriteHeader(http.StatusNoContent)
+}
+
+func (handler *PostHandler) UploadPostAudio(
+	writer http.ResponseWriter,
+	request *http.Request,
+) {
+	postId, ok := handlers.GetParam[int64](writer, request, "id")
+	if !ok {
+		return
+	}
+
+	// Parse multipart form (max 11MB for 10MB file + overhead)
+	if err := request.ParseMultipartForm(11 << 20); err != nil {
+		http.Error(writer, "Failed to parse form data", http.StatusBadRequest)
+		return
+	}
+
+	file, header, err := request.FormFile("audio")
+	if err != nil {
+		http.Error(writer, "Audio file is required", http.StatusBadRequest)
+		return
+	}
+	defer file.Close()
+
+	// Read file content
+	fileBytes := make([]byte, header.Size)
+	_, err = file.Read(fileBytes)
+	if err != nil {
+		http.Error(writer, "Failed to read file", http.StatusInternalServerError)
+		return
+	}
+
+	// Generate unique filename
+	filename := cryptography.GenerateUniqueId() + ".ogg"
+
+	err = handler.service.UploadPostAudio(postId, filename, fileBytes)
+	if err != nil {
+		apierrors.MapErrors(err, writer, nil)
+		return
+	}
+
+	writer.WriteHeader(http.StatusCreated)
+	json.NewEncoder(writer).Encode(map[string]interface{}{
+		"message":   "Audio uploaded successfully",
+		"audioFile": "/uploads/audio/" + filename,
+	})
+}
+
+func (handler *PostHandler) DeletePostAudio(
+	writer http.ResponseWriter,
+	request *http.Request,
+) {
+	postId, ok := handlers.GetParam[int64](writer, request, "id")
+	if !ok {
+		return
+	}
+
+	err := handler.service.DeletePostAudio(postId)
+	if err != nil {
+		apierrors.MapErrors(err, writer, nil)
 		return
 	}
 

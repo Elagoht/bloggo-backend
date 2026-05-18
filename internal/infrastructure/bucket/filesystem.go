@@ -68,6 +68,11 @@ func (bucket *fileSystemBucket) Save(file []byte, name string) error {
 
 	filePath := filepath.Join(bucket.RootDir, name)
 
+	// Ensure parent directory exists
+	if err := os.MkdirAll(filepath.Dir(filePath), 0755); err != nil {
+		return fmt.Errorf("failed to create directory: %w", err)
+	}
+
 	// Save file
 	if err := os.WriteFile(filePath, file, 0600); err != nil {
 		return fmt.Errorf("failed to write file: %w", err)
@@ -93,6 +98,11 @@ func (bucket *fileSystemBucket) SaveMultiPart(
 	}
 
 	filePath := filepath.Join(bucket.RootDir, name)
+
+	// Ensure parent directory exists
+	if err := os.MkdirAll(filepath.Dir(filePath), 0755); err != nil {
+		return fmt.Errorf("failed to create directory: %w", err)
+	}
 
 	// Create file
 	out, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)

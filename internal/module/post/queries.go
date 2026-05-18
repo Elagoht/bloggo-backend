@@ -14,6 +14,7 @@ const (
 		COALESCE(current_pv.spot, best_pv.spot) as spot,
 		COALESCE(current_pv.status, best_pv.status) as status,
 		p.read_count,
+		p.audio_file as audio_file,
 		COALESCE(current_pv.created_at, best_pv.created_at) as created_at,
 		COALESCE(current_pv.updated_at, best_pv.updated_at) as updated_at,
 		c.slug AS category_slug, c.id AS category_id, c.name AS category_name, c.deleted_at AS category_deleted_at
@@ -55,6 +56,7 @@ const (
 		COALESCE(current_pv.spot, best_pv.spot) as spot,
 		COALESCE(current_pv.status, best_pv.status) as status,
 		p.read_count,
+		p.audio_file as audio_file,
 		COALESCE(current_pv.created_at, best_pv.created_at) as created_at,
 		COALESCE(current_pv.updated_at, best_pv.updated_at) as updated_at,
 		c.slug AS category_slug, c.id AS category_id, c.name AS category_name, c.deleted_at AS category_deleted_at
@@ -93,6 +95,7 @@ const (
 		COALESCE(current_pv.spot, best_pv.spot) as spot,
 		COALESCE(current_pv.status, best_pv.status) as status,
 		p.read_count,
+		p.audio_file as audio_file,
 		COALESCE(current_pv.created_at, best_pv.created_at) as created_at,
 		COALESCE(current_pv.updated_at, best_pv.updated_at) as updated_at,
 		c.slug AS category_slug, c.id AS category_id, c.name AS category_name, c.deleted_at AS category_deleted_at
@@ -363,4 +366,20 @@ const (
 	FROM post_versions pv
 	JOIN categories c ON c.id = pv.category_id
 	WHERE pv.id = ? AND pv.deleted_at IS NULL AND c.deleted_at IS NULL;`
+	// Audio File
+	QueryPostUpdateAudioFile = `
+	UPDATE posts
+	SET audio_file = ?
+	WHERE id = ?
+	AND deleted_at IS NULL;`
+	QueryPostDeleteAudioFile = `
+	UPDATE posts
+	SET audio_file = NULL
+	WHERE id = ?
+	AND deleted_at IS NULL;`
+	QueryGetPostAudioFile = `
+	SELECT audio_file
+	FROM posts
+	WHERE id = ?
+	AND deleted_at IS NULL;`
 )

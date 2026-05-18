@@ -27,6 +27,14 @@ func formatCoverImagePath(filename *string) *string {
 	return &formatted
 }
 
+func formatAudioPath(filename *string) *string {
+	if filename == nil || *filename == "" {
+		return nil
+	}
+	formatted := "/uploads/audio/" + *filename
+	return &formatted
+}
+
 // formatAvatarPath converts database avatar filename to API path format
 func formatAvatarPath(filename *string) *string {
 	if filename == nil || *filename == "" {
@@ -97,6 +105,7 @@ func (r *PostsAPIRepository) GetPublishedPosts(page, limit int, categorySlug, ta
 	for rows.Next() {
 		var post models.APIPostCard
 		var rawCoverImage *string
+		var rawAudioFile *string
 
 		err := rows.Scan(
 			&post.Slug,
@@ -105,6 +114,7 @@ func (r *PostsAPIRepository) GetPublishedPosts(page, limit int, categorySlug, ta
 			&post.Spot,
 			&rawCoverImage,
 			&post.ReadCount,
+			&rawAudioFile,
 			&post.ReadTime,
 			&post.PublishedAt,
 			&post.Author.ID,
@@ -118,6 +128,7 @@ func (r *PostsAPIRepository) GetPublishedPosts(page, limit int, categorySlug, ta
 		}
 
 		post.CoverImage = formatCoverImagePath(rawCoverImage)
+		post.AudioFile = formatAudioPath(rawAudioFile)
 		post.Author.Avatar = formatAvatarPath(post.Author.Avatar)
 
 		posts = append(posts, post)
@@ -145,6 +156,7 @@ func (r *PostsAPIRepository) GetPublishedPostBySlug(slug string) (*models.APIPos
 
 	var post models.APIPostDetails
 	var rawCoverImage *string
+	var rawAudioFile *string
 	var postId int64
 	var categoryDescription *string
 
@@ -156,6 +168,7 @@ func (r *PostsAPIRepository) GetPublishedPostBySlug(slug string) (*models.APIPos
 		&post.Spot,
 		&rawCoverImage,
 		&post.ReadCount,
+		&rawAudioFile,
 		&post.ReadTime,
 		&post.PublishedAt,
 		&post.UpdatedAt,
@@ -175,6 +188,7 @@ func (r *PostsAPIRepository) GetPublishedPostBySlug(slug string) (*models.APIPos
 	}
 
 	post.CoverImage = formatCoverImagePath(rawCoverImage)
+	post.AudioFile = formatAudioPath(rawAudioFile)
 	post.Author.Avatar = formatAvatarPath(post.Author.Avatar)
 
 	// Get tags

@@ -61,6 +61,7 @@ const (
 		created_by INTEGER NOT NULL,
 		current_version_id INTEGER NULL,
 		read_count INTEGER NOT NULL DEFAULT 0,
+		audio_file VARCHAR(255),
 		created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
 		deleted_at TIMESTAMP WITH TIME ZONE,
 		FOREIGN KEY (created_by) REFERENCES users(id)

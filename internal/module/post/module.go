@@ -63,6 +63,8 @@ func (module PostModule) RegisterModule(router *chi.Mux) {
 			router.Delete("/{id}/versions/{versionId}", module.Handler.DeleteVersionById)
 			router.Get("/{id}/versions/{versionId}/generative-fill", module.Handler.GenerativeFill)
 			router.Post("/{id}/tags", module.Handler.AssignTagsToPost)
+				router.Post("/{id}/audio", module.Handler.UploadPostAudio)
+				router.Delete("/{id}/audio", module.Handler.DeletePostAudio)
 		})
 
 		// Track-view endpoint only requires trusted frontend header

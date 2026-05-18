@@ -7,6 +7,7 @@ type APIPostCard struct {
 	Description *string    `json:"description,omitempty"`
 	Spot        *string    `json:"spot,omitempty"`
 	CoverImage  *string    `json:"coverImage,omitempty"`
+	AudioFile   *string    `json:"audioFile,omitempty"`
 	ReadCount   int64      `json:"readCount"`
 	ReadTime    int        `json:"readTime"`
 	PublishedAt string     `json:"publishedAt"`
@@ -23,6 +24,7 @@ type APIPostDetails struct {
 	Description *string     `json:"description,omitempty"`
 	Spot        *string     `json:"spot,omitempty"`
 	CoverImage  *string     `json:"coverImage,omitempty"`
+	AudioFile   *string     `json:"audioFile,omitempty"`
 	ReadCount   int64       `json:"readCount"`
 	ReadTime    int         `json:"readTime"`
 	PublishedAt string      `json:"publishedAt"`
